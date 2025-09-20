@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom Fonts */
+@font-face {
+  font-family: 'Zapfino';
+  src: url('/fonts/Zapfino.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* AI Training System Design System - 智涌·人工智能中心 */
 
 @layer base {

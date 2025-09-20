@@ -47,7 +47,7 @@ export const Home = () => {
         <div className="container mx-auto px-6 py-24 relative">
           <div className="max-w-4xl">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-              2025年7月人工智能训练师
+              <span className="font-zapfino">2025</span>年7月人工智能训练师
               <br />
               职业技能等级认定考场安排
             </h1>
