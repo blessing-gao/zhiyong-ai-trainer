@@ -7,94 +7,129 @@ import aiCourseHero from "@/assets/ai-course-hero.jpg";
 export const Home = () => {
   const navigate = useNavigate();
 
-  const features = [
+  const cards = [
     {
       icon: BookOpen,
-      title: "课程中心",
-      description: "系统性学习生成式人工智能基础知识和实际应用",
-      path: "/courses"
-    },
-    {
-      icon: Target,
-      title: "训练中心", 
-      description: "题目练习、模拟考试，全方位提升应试能力",
-      path: "/training"
+      title: "认证与培训",
+      description: "了解我们的认证与培训",
+      path: "/courses",
+      color: "from-blue-500 to-blue-600"
     },
     {
       icon: Award,
-      title: "考试中心",
-      description: "正式考试认证，获得权威人工智能训练师证书",
-      path: "/login/exam"
+      title: "权威认证",
+      description: "获得权威人工智能训练师证书",
+      path: "/login/exam",
+      color: "from-green-500 to-green-600"
+    },
+    {
+      icon: Target,
+      title: "模拟考试",
+      description: "题目练习、模拟考试，全方位提升应试能力",
+      path: "/training",
+      color: "from-purple-500 to-purple-600"
     },
     {
       icon: Users,
       title: "个人中心",
       description: "管理个人信息，查看学习进度和考试成绩",
-      path: "/profile"
+      path: "/profile",
+      color: "from-orange-500 to-orange-600"
     }
   ];
 
-  const stats = [
-    { label: "注册学员", value: "10,000+", icon: Users },
-    { label: "课程时长", value: "50+小时", icon: BookOpen },
-    { label: "通过率", value: "95%", icon: TrendingUp },
-    { label: "证书颁发", value: "8,500+", icon: Award }
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary to-background">
-      {/* Hero Section */}
-      <section className="relative py-20 px-4">
-        <div className="container mx-auto text-center">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-primary-hover to-accent bg-clip-text text-transparent">
-              开启AI未来之门
+    <div className="min-h-screen bg-background">
+      {/* Main Hero Section with Dark Blue Background */}
+      <section className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMzMzMiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSI0Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
+        
+        <div className="container mx-auto px-6 py-24 relative">
+          <div className="max-w-4xl">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+              2025年7月人工智能训练师
+              <br />
+              职业技能等级认定考场安排
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-              成为专业的人工智能训练师，掌握生成式AI核心技术
+            <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-2xl">
+              智涌智能科技有限公司于2025年7月举行职业技能等级认定，现将考场安排有关事宜进行公告
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button 
-                size="lg" 
-                className="gradient-primary text-white hover:opacity-90 shadow-medium"
-                onClick={() => navigate('/courses')}
-              >
-                <BookOpen className="mr-2 h-5 w-5" />
-                开始学习
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                onClick={() => navigate('/training')}
-              >
-                <Target className="mr-2 h-5 w-5" />
-                模拟练习
-              </Button>
+            <Button 
+              size="lg" 
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-medium"
+              onClick={() => navigate('/courses')}
+            >
+              了解详情 
+              <span className="ml-2">→</span>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Organization Section */}
+      <section className="py-16 px-6 bg-white">
+        <div className="container mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-12">
+            <div className="lg:w-1/2">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                智涌·人工智能中心
+              </h2>
+              <p className="text-lg text-gray-600 mb-6">
+                中国企业首选的数字经济人才服务提供商
+              </p>
+              <p className="text-gray-600 leading-relaxed">
+                智涌智能人才中心是基于人工智能和大数据领域，为企业提供"懂业务、懂数据、懂AI"的复合型人才，同时提供数字人才全生命周期服务。
+              </p>
             </div>
-            
-            {/* Hero Image */}
-            <div className="relative max-w-4xl mx-auto">
-              <img 
-                src={aiCourseHero} 
-                alt="AI训练课程" 
-                className="w-full h-auto rounded-2xl shadow-strong"
-              />
-              <div className="absolute inset-0 gradient-hero opacity-20 rounded-2xl"></div>
+            <div className="lg:w-1/2 flex justify-center">
+              <div className="relative">
+                <div className="w-80 h-80 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-blue-600 mb-2">数智人才</div>
+                    <div className="flex space-x-4 text-blue-500">
+                      <span className="block w-8 h-8 bg-blue-400 rounded"></span>
+                      <span className="block w-8 h-8 bg-blue-500 rounded"></span>
+                      <span className="block w-8 h-8 bg-blue-600 rounded"></span>
+                    </div>
+                  </div>
+                </div>
+                {/* Floating buttons */}
+                <Button className="absolute top-4 right-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2">
+                  培训课程
+                </Button>
+                <Button className="absolute bottom-16 left-4 bg-blue-500 hover:bg-blue-600 text-white rounded-full px-4 py-2">
+                  模拟AI
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 px-4">
+      {/* Cards Section */}
+      <section className="py-16 px-6 bg-gray-50">
         <div className="container mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat, index) => (
-              <Card key={index} className="text-center shadow-soft hover:shadow-medium transition-shadow">
-                <CardContent className="pt-6">
-                  <stat.icon className="h-8 w-8 mx-auto mb-2 text-primary" />
-                  <div className="text-2xl font-bold text-primary mb-1">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
+          <h2 className="text-3xl font-bold text-center mb-4 text-gray-900">
+            了解我们的认证与培训
+          </h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            {cards.map((card, index) => (
+              <Card 
+                key={index} 
+                className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-lg overflow-hidden"
+                onClick={() => navigate(card.path)}
+              >
+                <div className={`h-40 bg-gradient-to-br ${card.color} relative`}>
+                  <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <card.icon className="h-8 w-8 mb-2" />
+                    <h3 className="text-lg font-bold">{card.title}</h3>
+                  </div>
+                </div>
+                <CardContent className="p-4">
+                  <p className="text-gray-600 text-sm">
+                    {card.description}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -102,62 +137,26 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 text-foreground">
-              全方位AI训练体系
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              从基础理论到实战应用，系统化培养专业AI训练师
-            </p>
+      {/* Success Cases Section */}
+      <section className="py-16 px-6 bg-white">
+        <div className="container mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-12 text-gray-900">
+            了解我们的成功案例
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="p-6">
+              <h3 className="text-xl font-bold mb-4 text-blue-600">社会责任（集团公益）</h3>
+              <p className="text-gray-600">致力于推动AI教育普及，培养更多数字化人才</p>
+            </div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold mb-4 text-green-600">政府（香港VTC职业训练局）</h3>
+              <p className="text-gray-600">与政府机构合作，提供权威认证培训服务</p>
+            </div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold mb-4 text-purple-600">企业培训合作</h3>
+              <p className="text-gray-600">为企业提供定制化AI人才培养解决方案</p>
+            </div>
           </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, index) => (
-              <Card 
-                key={index} 
-                className="group hover:shadow-medium transition-all duration-300 cursor-pointer shadow-soft"
-                onClick={() => navigate(feature.path)}
-              >
-                <CardHeader className="text-center">
-                  <div className="gradient-primary w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <feature.icon className="h-8 w-8 text-white" />
-                  </div>
-                  <CardTitle className="text-xl mb-2">{feature.title}</CardTitle>
-                  <CardDescription className="text-center">
-                    {feature.description}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto">
-          <Card className="gradient-hero text-white shadow-strong">
-            <CardContent className="text-center py-16">
-              <Brain className="h-16 w-16 mx-auto mb-6 opacity-90" />
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                立即开始您的AI训练师之旅
-              </h2>
-              <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-                加入我们的专业培训体系，获得权威认证，成为AI时代的专业训练师
-              </p>
-              <Button 
-                size="lg" 
-                variant="secondary"
-                className="bg-white text-primary hover:bg-gray-100"
-                onClick={() => navigate('/login/student')}
-              >
-                立即注册学习
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       </section>
     </div>
