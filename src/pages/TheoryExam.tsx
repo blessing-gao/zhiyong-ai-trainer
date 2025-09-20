@@ -26,6 +26,8 @@ export const TheoryExam = () => {
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
   const [timeLeft, setTimeLeft] = useState(7200); // 120分钟 = 7200秒
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [switchCount, setSwitchCount] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // 模拟试题数据
   const questions: Question[] = [
@@ -60,6 +62,56 @@ export const TheoryExam = () => {
       options: ['TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn']
     }
   ];
+
+  // 进入全屏和监听切屏
+  useEffect(() => {
+    const enterFullscreen = async () => {
+      try {
+        await document.documentElement.requestFullscreen();
+        setIsFullscreen(true);
+      } catch (error) {
+        console.error('无法进入全屏模式:', error);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && !isSubmitted) {
+        setSwitchCount(prev => {
+          const newCount = prev + 1;
+          toast({
+            title: "检测到切屏",
+            description: `警告！已切屏 ${newCount} 次，切屏3次将自动提交考试`,
+            variant: "destructive",
+          });
+          
+          if (newCount >= 3) {
+            handleSubmit();
+          }
+          
+          return newCount;
+        });
+      }
+    };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!isSubmitted) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    enterFullscreen();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      }
+    };
+  }, [isSubmitted, toast]);
 
   // 计时器
   useEffect(() => {
@@ -114,6 +166,10 @@ export const TheoryExam = () => {
   // 提交考试
   const handleSubmit = () => {
     setIsSubmitted(true);
+    // 退出全屏
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
     toast({
       title: "考试已提交",
       description: "感谢您的参与，考试结果将在审核后公布"
@@ -190,6 +246,14 @@ export const TheoryExam = () => {
                   {formatTime(timeLeft)}
                 </span>
               </div>
+              {switchCount > 0 && (
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
+                  <span className="text-sm text-destructive font-medium">
+                    切屏警告: {switchCount}/3
+                  </span>
+                </div>
+              )}
               <Button variant="outline" size="sm" onClick={handleSave}>
                 <Save className="h-4 w-4 mr-1" />
                 保存
