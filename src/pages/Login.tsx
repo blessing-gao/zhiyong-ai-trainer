@@ -95,7 +95,7 @@ export const Login = ({ onLogin }: LoginProps) => {
     if (type === 'admin') {
       navigate('/admin');
     } else if (type === 'exam') {
-      navigate('/exam/start');
+      navigate('/exam');
     } else {
       // 学生登录后，如果有重定向地址就跳转到原来想访问的页面，否则跳转到首页
       const from = (location.state as any)?.from?.pathname || '/';

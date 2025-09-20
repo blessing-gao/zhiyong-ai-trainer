@@ -11,6 +11,9 @@ import { Courses } from "@/pages/Courses";
 import { Training } from "@/pages/Training";
 import { Profile } from "@/pages/Profile";
 import { Admin } from "@/pages/Admin";
+import { Exam } from "@/pages/Exam";
+import { TheoryExam } from "@/pages/TheoryExam";
+import { PracticalExam } from "@/pages/PracticalExam";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -60,6 +63,9 @@ const App = () => {
               <Route path="/training" element={<Training />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/exam" element={<Exam />} />
+              <Route path="/exam/theory" element={<TheoryExam />} />
+              <Route path="/exam/practical" element={<PracticalExam />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
