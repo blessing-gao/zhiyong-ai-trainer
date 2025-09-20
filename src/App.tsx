@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Home } from "@/pages/Home";
 import { Login } from "@/pages/Login";
@@ -19,9 +19,26 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userType, setUserType] = useState<'student' | 'admin' | null>(null);
 
+  // 从localStorage恢复登录状态
+  useEffect(() => {
+    const savedLoginState = localStorage.getItem('loginState');
+    if (savedLoginState) {
+      const { isLoggedIn: savedIsLoggedIn, userType: savedUserType } = JSON.parse(savedLoginState);
+      setIsLoggedIn(savedIsLoggedIn);
+      setUserType(savedUserType);
+    }
+  }, []);
+
+  const handleLogin = (type: 'student' | 'admin') => {
+    setIsLoggedIn(true);
+    setUserType(type);
+    localStorage.setItem('loginState', JSON.stringify({ isLoggedIn: true, userType: type }));
+  };
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserType(null);
+    localStorage.removeItem('loginState');
   };
 
   return (
@@ -38,7 +55,7 @@ const App = () => {
             />
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/login/:type" element={<Login />} />
+              <Route path="/login/:type" element={<Login onLogin={handleLogin} />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/training" element={<Training />} />
               <Route path="/profile" element={<Profile />} />

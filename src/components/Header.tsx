@@ -21,7 +21,8 @@ export const Header = ({ isLoggedIn = false, userType = null, onLogout }: Header
         description: "请先登录后再访问此功能",
         variant: "destructive"
       });
-      navigate('/login/student');
+      // 传递当前想访问的页面信息
+      navigate('/login/student', { state: { from: { pathname: path } } });
       return;
     }
     navigate(path);

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,9 +7,14 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { User, Shield, Clipboard } from "lucide-react";
 
-export const Login = () => {
+interface LoginProps {
+  onLogin?: (type: 'student' | 'admin') => void;
+}
+
+export const Login = ({ onLogin }: LoginProps) => {
   const { type } = useParams<{ type: 'student' | 'admin' | 'exam' }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
@@ -81,13 +86,20 @@ export const Login = () => {
       description: `欢迎${type === 'admin' ? '管理员' : ''}登录智涌·人工智能中心`
     });
 
+    // 调用登录回调更新状态
+    if (type === 'student' || type === 'admin') {
+      onLogin?.(type);
+    }
+
     // 根据登录类型跳转
     if (type === 'admin') {
       navigate('/admin');
     } else if (type === 'exam') {
       navigate('/exam/start');
     } else {
-      navigate('/');
+      // 学生登录后，如果有重定向地址就跳转到原来想访问的页面，否则跳转到首页
+      const from = (location.state as any)?.from?.pathname || '/';
+      navigate(from);
     }
   };
 
