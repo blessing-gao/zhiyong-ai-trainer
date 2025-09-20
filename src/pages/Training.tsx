@@ -152,62 +152,110 @@ export const Training = () => {
 
           {/* 题目练习 */}
           <TabsContent value="practice" className="space-y-6">
-            <div className="grid lg:grid-cols-2 gap-6">
-              {practiceModules.map((module) => (
-                <Card key={module.id} className="shadow-medium">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="gradient-primary w-12 h-12 rounded-lg flex items-center justify-center">
-                        <module.icon className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle>{module.title}</CardTitle>
-                        <CardDescription>{module.description}</CardDescription>
+            {practiceModules.map((module) => (
+              <Card key={module.id} className="shadow-medium hover:shadow-strong transition-all duration-300 border-0 gradient-secondary">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="gradient-primary w-16 h-16 rounded-xl flex items-center justify-center shadow-soft">
+                      <module.icon className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <CardTitle className="text-xl text-card-foreground">{module.title}</CardTitle>
+                      <CardDescription className="text-muted-foreground mt-1">{module.description}</CardDescription>
+                      <div className="flex items-center gap-4 mt-3">
+                        <Badge variant="outline" className="bg-background/50 border-primary/20">
+                          <BookOpen className="h-3 w-3 mr-1" />
+                          共 {module.questions} 道题目
+                        </Badge>
+                        <Badge variant="outline" className="bg-background/50 border-primary/20">
+                          <Clock className="h-3 w-3 mr-1" />
+                          6个章节
+                        </Badge>
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="mb-4">
-                      <div className="text-sm text-muted-foreground mb-2">
-                        共 {module.questions} 道题目
-                      </div>
-                      
-                      <div className="space-y-3">
-                        {module.chapters.map((chapter, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                            <div className="flex-1">
-                              <div className="font-medium">{chapter.name}</div>
-                              <div className="text-sm text-muted-foreground">
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="grid gap-3">
+                    {module.chapters.map((chapter, index) => (
+                      <div key={index} className="group relative overflow-hidden">
+                        <div className="flex items-center justify-between p-4 bg-background/60 backdrop-blur-sm rounded-xl border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-soft">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold ${
+                              chapter.completed ? 'bg-green-100 text-green-700' : 
+                              chapter.current ? 'gradient-primary text-white' : 
+                              'bg-muted text-muted-foreground'
+                            }`}>
+                              {index + 1}
+                            </div>
+                            <div>
+                              <div className="font-medium text-card-foreground group-hover:text-primary transition-colors">
+                                {chapter.name}
+                              </div>
+                              <div className="text-sm text-muted-foreground flex items-center gap-1">
+                                <Target className="h-3 w-3" />
                                 {chapter.questions} 题
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              {chapter.completed && (
-                                <Badge variant="secondary" className="bg-green-100 text-green-700">
-                                  已完成
-                                </Badge>
-                              )}
-                              {chapter.current && (
-                                <Badge className="bg-primary text-white">
-                                  进行中
-                                </Badge>
-                              )}
-                              <Button 
-                                size="sm"
-                                onClick={() => handleStartPractice('chapter', chapter.name)}
-                              >
-                                <Target className="h-4 w-4 mr-1" />
-                                {chapter.completed ? '重新练习' : '开始练习'}
-                              </Button>
-                            </div>
                           </div>
-                        ))}
+                          
+                          <div className="flex items-center gap-3">
+                            {chapter.completed && (
+                              <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
+                                ✓ 已完成
+                              </Badge>
+                            )}
+                            {chapter.current && (
+                              <Badge className="gradient-primary text-white border-0 shadow-soft">
+                                🔥 进行中
+                              </Badge>
+                            )}
+                            <Button 
+                              size="sm"
+                              variant={chapter.completed ? "outline" : "default"}
+                              className={`transition-all duration-300 ${
+                                chapter.completed ? 'hover:bg-primary hover:text-primary-foreground' : 
+                                'shadow-soft hover:shadow-medium'
+                              }`}
+                              onClick={() => handleStartPractice('chapter', chapter.name)}
+                            >
+                              <Target className="h-4 w-4 mr-1" />
+                              {chapter.completed ? '重新练习' : chapter.current ? '继续练习' : '开始练习'}
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Progress bar for completed chapters */}
+                        {chapter.completed && (
+                          <div className="absolute bottom-0 left-0 w-full h-1 bg-green-200">
+                            <div className="h-full bg-green-500 w-full rounded-b-xl"></div>
+                          </div>
+                        )}
+                        {chapter.current && (
+                          <div className="absolute bottom-0 left-0 w-full h-1 bg-primary/20">
+                            <div className="h-full bg-primary w-3/4 rounded-b-xl"></div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Chapter overview */}
+                  <div className="mt-6 p-4 bg-background/40 backdrop-blur-sm rounded-xl border border-border/30">
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm text-muted-foreground">章节完成进度</div>
+                      <div className="text-sm font-medium text-primary">
+                        {module.chapters.filter(c => c.completed).length} / {module.chapters.length} 章节已完成
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <Progress 
+                      value={(module.chapters.filter(c => c.completed).length / module.chapters.length) * 100} 
+                      className="h-2 mt-2"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </TabsContent>
 
           {/* 模拟考试 */}
