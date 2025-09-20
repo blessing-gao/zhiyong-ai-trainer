@@ -46,36 +46,49 @@ export const Header = ({ isLoggedIn = false, userType = null, onLogout }: Header
 
           {/* Navigation Menu */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link 
-              to="/" 
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              首页
-            </Link>
-            <button
-              onClick={() => handleNavClick('/courses')}
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              课程中心
-            </button>
-            <button
-              onClick={() => handleNavClick('/training')}
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              训练中心
-            </button>
-            <button
-              onClick={handleExamCenter}
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              考试中心
-            </button>
-            <button
-              onClick={() => handleNavClick('/profile')}
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              个人中心
-            </button>
+            {userType === 'admin' ? (
+              // 管理员导航
+              <Link 
+                to="/admin" 
+                className="text-foreground hover:text-primary transition-colors font-medium"
+              >
+                管理中心
+              </Link>
+            ) : (
+              // 普通用户导航
+              <>
+                <Link 
+                  to="/" 
+                  className="text-foreground hover:text-primary transition-colors font-medium"
+                >
+                  首页
+                </Link>
+                <button
+                  onClick={() => handleNavClick('/courses')}
+                  className="text-foreground hover:text-primary transition-colors font-medium"
+                >
+                  课程中心
+                </button>
+                <button
+                  onClick={() => handleNavClick('/training')}
+                  className="text-foreground hover:text-primary transition-colors font-medium"
+                >
+                  训练中心
+                </button>
+                <button
+                  onClick={handleExamCenter}
+                  className="text-foreground hover:text-primary transition-colors font-medium"
+                >
+                  考试中心
+                </button>
+                <button
+                  onClick={() => handleNavClick('/profile')}
+                  className="text-foreground hover:text-primary transition-colors font-medium"
+                >
+                  个人中心
+                </button>
+              </>
+            )}
           </nav>
 
           {/* User Actions */}
