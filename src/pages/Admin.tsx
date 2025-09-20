@@ -69,9 +69,6 @@ export const Admin = () => {
               <Badge className="bg-green-100 text-green-700">
                 系统正常运行
               </Badge>
-              <Button variant="outline">
-                返回主页
-              </Button>
             </div>
           </div>
         </div>
