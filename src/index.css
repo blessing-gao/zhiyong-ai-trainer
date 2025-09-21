@@ -145,7 +145,7 @@
 }
 
 .gradient-background {
-  background: var(--gradient-background);
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 25%, #1d4ed8 50%, #2563eb 75%, #3b82f6 100%);
 }
 
 .floating-element {
