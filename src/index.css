@@ -48,12 +48,11 @@
 
     --radius: 0.75rem;
 
-    /* Modern Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(32 95% 65%) 0%, hsl(25 95% 73%) 50%, hsl(207 89% 54%) 100%);
+    /* AI Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(207 89% 54%), hsl(217 91% 60%));
     --gradient-secondary: linear-gradient(135deg, hsl(214 100% 97%), hsl(217 91% 95%));
     --gradient-hero: linear-gradient(135deg, hsl(38 92% 70%) 0%, hsl(25 95% 73%) 50%, hsl(207 89% 54%) 100%);
-    --gradient-background: linear-gradient(135deg, hsl(32 95% 85%) 0%, hsl(25 95% 80%) 50%, hsl(207 89% 90%) 100%);
-    --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%);
+    --gradient-background: linear-gradient(135deg, hsl(38 92% 95%) 0%, hsl(25 95% 90%) 50%, hsl(207 89% 95%) 100%);
     
     /* Shadows */
     --shadow-soft: 0 4px 20px -2px hsl(217 91% 60% / 0.1);
@@ -159,33 +158,9 @@
 }
 
 .glassmorphism {
-  background: var(--gradient-card);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-}
-
-.modern-card {
-  background: var(--gradient-card);
-  border-radius: 24px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-}
-
-.modern-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-}
-
-.floating-shape {
-  animation: floatShape 8s ease-in-out infinite;
-}
-
-@keyframes floatShape {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  33% { transform: translateY(-15px) rotate(120deg); }
-  66% { transform: translateY(-8px) rotate(240deg); }
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
   
   .shadow-soft {
