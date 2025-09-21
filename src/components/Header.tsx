@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import aiLogo from "@/assets/ai-center-logo.png";
+import newLogo from "@/assets/new-logo.png";
+import oilanText from "@/assets/oilan-text.png";
 
 interface HeaderProps {
   isLoggedIn?: boolean;
@@ -38,10 +39,8 @@ export const Header = ({ isLoggedIn = false, userType = null, onLogout }: Header
         <div className="flex items-center justify-between">
           {/* Logo and System Name */}
           <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-            <img src={aiLogo} alt="智涌·人工智能中心" className="h-12 w-auto" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-hover bg-clip-text text-transparent">
-              智涌·人工智能中心
-            </h1>
+            <img src={newLogo} alt="智涌·人工智能中心" className="h-12 w-auto" />
+            <img src={oilanText} alt="oilan.ai" className="h-8 w-auto" />
           </Link>
 
           {/* Navigation Menu */}

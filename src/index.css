@@ -16,7 +16,7 @@
 @layer base {
   :root {
     /* Modern AI-themed color palette */
-    --background: 240 100% 99%;
+    --background: 40 100% 95%;
     --foreground: 210 40% 15%;
 
     --card: 0 0% 100%;
@@ -26,7 +26,7 @@
     --popover-foreground: 210 40% 15%;
 
     /* AI Blue theme */
-    --primary: 217 91% 60%;
+    --primary: 207 89% 54%;
     --primary-foreground: 0 0% 100%;
     --primary-hover: 217 91% 55%;
 
@@ -49,9 +49,10 @@
     --radius: 0.75rem;
 
     /* AI Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(230 80% 70%));
+    --gradient-primary: linear-gradient(135deg, hsl(207 89% 54%), hsl(217 91% 60%));
     --gradient-secondary: linear-gradient(135deg, hsl(214 100% 97%), hsl(217 91% 95%));
-    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60%), hsl(230 80% 70%), hsl(245 75% 75%));
+    --gradient-hero: linear-gradient(135deg, hsl(38 92% 70%) 0%, hsl(25 95% 73%) 50%, hsl(207 89% 54%) 100%);
+    --gradient-background: linear-gradient(135deg, hsl(38 92% 95%) 0%, hsl(25 95% 90%) 50%, hsl(207 89% 95%) 100%);
     
     /* Shadows */
     --shadow-soft: 0 4px 20px -2px hsl(217 91% 60% / 0.1);
@@ -139,9 +140,28 @@
     background: var(--gradient-secondary);
   }
   
-  .gradient-hero {
-    background: var(--gradient-hero);
-  }
+.gradient-hero {
+  background: var(--gradient-hero);
+}
+
+.gradient-background {
+  background: var(--gradient-background);
+}
+
+.floating-element {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
   
   .shadow-soft {
     box-shadow: var(--shadow-soft);
