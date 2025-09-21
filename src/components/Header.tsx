@@ -34,90 +34,31 @@ export const Header = ({ isLoggedIn = false, userType = null, onLogout }: Header
   };
 
   return (
-    <header className="bg-white border-b border-border shadow-soft sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-3">
+    <header className="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+      <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo and System Name */}
-          <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-            <img src={newLogo} alt="智涌·人工智能中心" className="h-12 w-auto" />
-            <img src={oilanText} alt="oilan.ai" className="h-8 w-auto" />
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+            <img src={newLogo} alt="AI Logo" className="h-8 w-auto" />
+            <span className="text-lg font-bold text-gray-800">iMedio.by</span>
           </Link>
 
-          {/* Navigation Menu */}
+          {/* Center Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            {userType === 'admin' ? (
-              // 管理员导航
-              <Link 
-                to="/admin" 
-                className="text-foreground hover:text-primary transition-colors font-medium"
-              >
-                管理中心
-              </Link>
-            ) : (
-              // 普通用户导航
-              <>
-                <Link 
-                  to="/" 
-                  className="text-foreground hover:text-primary transition-colors font-medium"
-                >
-                  首页
-                </Link>
-                <button
-                  onClick={() => handleNavClick('/courses')}
-                  className="text-foreground hover:text-primary transition-colors font-medium"
-                >
-                  课程中心
-                </button>
-                <button
-                  onClick={() => handleNavClick('/training')}
-                  className="text-foreground hover:text-primary transition-colors font-medium"
-                >
-                  训练中心
-                </button>
-                <button
-                  onClick={handleExamCenter}
-                  className="text-foreground hover:text-primary transition-colors font-medium"
-                >
-                  考试中心
-                </button>
-                <button
-                  onClick={() => handleNavClick('/profile')}
-                  className="text-foreground hover:text-primary transition-colors font-medium"
-                >
-                  个人中心
-                </button>
-              </>
-            )}
+            <Link to="/" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">О компании</Link>
+            <Link to="/courses" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Услуги</Link>
+            <Link to="/training" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Проекты</Link>
+            <Link to="/login/exam" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Контакты</Link>
           </nav>
 
-          {/* User Actions */}
-          <div className="flex items-center space-x-3">
-            {!isLoggedIn ? (
-              <>
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/login/student')}
-                  className="hidden sm:inline-flex"
-                >
-                  学生登录
-                </Button>
-                <Button 
-                  onClick={() => navigate('/login/admin')}
-                  className="gradient-primary text-white hover:opacity-90"
-                >
-                  管理员登录
-                </Button>
-              </>
-            ) : (
-              <div className="flex items-center space-x-3">
-                <span className="text-sm text-muted-foreground">
-                  欢迎，{userType === 'admin' ? '管理员' : '学生'}
-                </span>
-                <Button variant="outline" onClick={onLogout}>
-                  退出登录
-                </Button>
-              </div>
-            )}
+          {/* Right Actions */}
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="outline" 
+              className="text-blue-600 border-blue-600 hover:bg-blue-50 rounded-full px-6"
+            >
+              Консультация
+            </Button>
           </div>
         </div>
       </div>
