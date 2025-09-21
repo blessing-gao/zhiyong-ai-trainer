@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Users, Trophy, User, Brain, Cpu, Zap, Play, ArrowRight, Award, Target, Sparkles } from "lucide-react";
+import { BookOpen, Users, Trophy, User, Brain, Cpu, Zap, Play, ArrowRight, Award, Target, Sparkles, CheckCircle, Star, Clock } from "lucide-react";
 import newLogo from "@/assets/new-logo.png";
 import oilanText from "@/assets/oilan-text.png";
 import aiCourseHero from "@/assets/ai-course-hero.jpg";
@@ -9,225 +9,301 @@ import aiCourseHero from "@/assets/ai-course-hero.jpg";
 const Index = () => {
   const navigate = useNavigate();
 
-  const features = [
-    {
-      icon: BookOpen,
-      title: "智能课程体系",
-      description: "AI训练师专业认证课程",
-      details: "系统性学习生成式AI技术",
-      color: "from-blue-500 to-cyan-500"
-    },
+  const mainFeatures = [
     {
       icon: Brain,
-      title: "实战训练中心", 
-      description: "海量题库智能练习",
-      details: "巩固理论知识，提升实践能力",
-      color: "from-purple-500 to-pink-500"
+      title: "智能课程体系",
+      description: "专业的AI训练师认证课程，涵盖生成式AI核心技术"
     },
     {
-      icon: Trophy,
+      icon: Target,
+      title: "实战项目训练",
+      description: "真实项目场景训练，提升实际应用能力"
+    },
+    {
+      icon: Award,
       title: "权威认证考试",
-      description: "行业标准认证体系",
-      details: "获得专业AI训练师证书",
-      color: "from-green-500 to-teal-500"
+      description: "获得行业认可的AI训练师专业资格证书"
     }
   ];
 
-  const stats = [
-    { number: "10K+", label: "累计学员", icon: Users },
-    { number: "95%", label: "通过率", icon: Award },
-    { number: "500+", label: "企业合作", icon: Target },
-    { number: "24/7", label: "在线支持", icon: Sparkles }
+  const serviceCards = [
+    {
+      icon: BookOpen,
+      title: "课程中心",
+      description: "系统性学习AI技术",
+      path: "/courses",
+      color: "from-blue-500 to-blue-600"
+    },
+    {
+      icon: Cpu,
+      title: "训练中心",
+      description: "智能题库练习",
+      path: "/training", 
+      color: "from-purple-500 to-purple-600"
+    },
+    {
+      icon: Trophy,
+      title: "考试中心",
+      description: "专业认证考试",
+      path: "/login/exam",
+      color: "from-green-500 to-green-600"
+    }
+  ];
+
+  const advantages = [
+    {
+      icon: Users,
+      title: "专业师资团队",
+      description: "由行业专家和资深AI工程师组成的教学团队",
+      image: "👨‍🏫"
+    },
+    {
+      icon: Sparkles,
+      title: "前沿技术内容",
+      description: "紧跟AI技术发展，及时更新课程内容",
+      image: "🚀"
+    },
+    {
+      icon: CheckCircle,
+      title: "个性化学习路径",
+      description: "根据学员基础制定专属学习计划",
+      image: "🎯"
+    }
+  ];
+
+  const processSteps = [
+    { title: "注册账号", color: "bg-pink-500" },
+    { title: "选择课程", color: "bg-orange-500" },
+    { title: "完成学习", color: "bg-purple-500" },
+    { title: "参加考试", color: "bg-blue-500" },
+    { title: "获得认证", color: "bg-green-500" }
   ];
 
   return (
-    <div className="min-h-screen overflow-hidden relative">
-      {/* Animated Background */}
-      <div className="fixed inset-0 gradient-background">
-        {/* Floating Shapes */}
-        <div className="absolute top-20 left-[10%] w-24 h-24 bg-gradient-to-br from-orange-400 to-pink-400 rounded-full opacity-20 floating-shape"></div>
-        <div className="absolute top-[30%] right-[15%] w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full opacity-20 floating-shape" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-[25%] left-[20%] w-20 h-20 bg-gradient-to-br from-green-400 to-teal-400 rounded-full opacity-20 floating-shape" style={{animationDelay: '4s'}}></div>
-        <div className="absolute bottom-[40%] right-[25%] w-18 h-18 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full opacity-20 floating-shape" style={{animationDelay: '1s'}}></div>
-        
-        {/* Geometric Shapes */}
-        <div className="absolute top-[15%] right-[8%] w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-400 transform rotate-45 opacity-15 floating-shape" style={{animationDelay: '3s'}}></div>
-        <div className="absolute bottom-[15%] left-[8%] w-14 h-14 bg-gradient-to-br from-pink-400 to-red-400 transform rotate-12 opacity-15 floating-shape" style={{animationDelay: '5s'}}></div>
+    <div className="min-h-screen overflow-hidden relative" style={{background: 'linear-gradient(135deg, #FF8A3D 0%, #FFB347 50%, #FFA500 100%)'}}>
+      
+      {/* Floating Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-[5%] w-20 h-20 bg-white/20 rounded-full floating-element"></div>
+        <div className="absolute top-[60%] left-[3%] w-16 h-16 bg-white/15 rounded-full floating-element" style={{animationDelay: '2s'}}></div>
+        <div className="absolute bottom-20 right-[8%] w-24 h-24 bg-white/10 rounded-full floating-element" style={{animationDelay: '4s'}}></div>
+        <div className="absolute top-[40%] right-[5%] w-14 h-14 bg-white/20 rounded-full floating-element" style={{animationDelay: '1s'}}></div>
       </div>
 
       {/* Main Content Container */}
-      <div className="relative z-10 max-w-7xl mx-auto">
-        
-        {/* Hero Section */}
-        <section className="px-6 pt-20 pb-12">
-          <div className="modern-card p-12 mx-4 mb-16 relative overflow-hidden">
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+          
+          {/* Hero Section */}
+          <div className="relative overflow-hidden" style={{background: 'linear-gradient(135deg, #E8F4FD 0%, #F3E8FF 50%, #FFF7ED 100%)'}}>
             
-            {/* Content Grid */}
-            <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
+            {/* Floating Decorative Elements */}
+            <div className="absolute top-10 right-20 w-12 h-12 bg-blue-200 rounded-full opacity-60 floating-element"></div>
+            <div className="absolute top-32 right-32 w-8 h-8 bg-purple-200 rounded-full opacity-50 floating-element" style={{animationDelay: '1s'}}></div>
+            <div className="absolute bottom-20 left-16 w-16 h-16 bg-orange-200 rounded-full opacity-40 floating-element" style={{animationDelay: '2s'}}></div>
+            <div className="absolute bottom-32 left-32 w-6 h-6 bg-green-200 rounded-full opacity-60 floating-element" style={{animationDelay: '3s'}}></div>
+            <div className="absolute top-20 left-20 w-10 h-10 bg-yellow-200 rounded-full opacity-50 floating-element" style={{animationDelay: '4s'}}></div>
+
+            <div className="grid lg:grid-cols-2 gap-12 items-center p-12">
               
               {/* Left Content */}
               <div className="space-y-8">
                 {/* Logo and Brand */}
-                <div className="flex items-center gap-4 mb-8">
-                  <img src={newLogo} alt="AI Logo" className="h-16 w-auto" />
-                  <img src={oilanText} alt="Oilan.ai" className="h-10 w-auto" />
+                <div className="flex items-center gap-4">
+                  <img src={newLogo} alt="AI Logo" className="h-12 w-auto" />
+                  <img src={oilanText} alt="Oilan.ai" className="h-8 w-auto" />
                 </div>
 
-                {/* Announcement Badge */}
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-100 to-blue-100 text-orange-800 px-6 py-3 rounded-full text-sm font-semibold border border-orange-200/50">
-                  <Play className="h-4 w-4" />
-                  AI训练师认证考试正在报名中
-                </div>
-
-                {/* Main Heading */}
+                {/* Main Title */}
                 <div className="space-y-4">
-                  <h1 className="text-5xl lg:text-6xl font-bold text-gray-800 leading-tight">
-                    成为顶尖
+                  <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 leading-tight">
+                    <span className="text-blue-600">AI训练师</span> 第一平台
                     <br />
-                    <span className="bg-gradient-to-r from-orange-500 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-                      AI训练师
-                    </span>
+                    <span className="text-2xl text-gray-600 font-normal">专业认证 · 权威培训</span>
                   </h1>
-                  <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
-                    掌握生成式人工智能核心技术，获得行业权威认证，成为数字化时代的技术专家
-                  </p>
+                </div>
+
+                {/* Feature List */}
+                <div className="space-y-4">
+                  {mainFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 bg-white/50 rounded-2xl">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mt-1">
+                        <feature.icon className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-800 mb-1">{feature.title}</h3>
+                        <p className="text-sm text-gray-600">{feature.description}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* CTA Buttons */}
-                <div className="flex flex-wrap gap-4">
+                <div className="flex gap-4">
                   <Button 
-                    size="lg"
                     onClick={() => navigate('/courses')}
-                    className="bg-gradient-to-r from-orange-500 to-blue-500 hover:from-orange-600 hover:to-blue-600 text-white px-8 py-4 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 group"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    开始学习之旅
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    开始学习
                   </Button>
                   <Button 
                     variant="outline"
-                    size="lg"
                     onClick={() => navigate('/login/exam')}
-                    className="border-2 border-blue-200 hover:border-blue-300 text-blue-700 hover:bg-blue-50 px-8 py-4 text-lg rounded-2xl transition-all duration-300"
+                    className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-2xl transition-all duration-300"
                   >
-                    立即考试
+                    参加考试
                   </Button>
                 </div>
               </div>
 
-              {/* Right Content - Hero Image */}
+              {/* Right Content - Hero Visual */}
               <div className="relative">
-                <div className="relative z-10 modern-card p-8 border-0 bg-gradient-to-br from-blue-50 to-purple-50">
-                  <img 
-                    src={aiCourseHero} 
-                    alt="AI Training" 
-                    className="w-full h-80 object-cover rounded-2xl shadow-2xl"
-                  />
+                <div className="relative z-10 text-center">
+                  {/* 3D Character Placeholder */}
+                  <div className="w-80 h-80 mx-auto mb-6 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 rounded-3xl flex items-center justify-center text-8xl shadow-2xl">
+                    🤖
+                  </div>
                   
                   {/* Floating Stats */}
-                  <div className="absolute -top-4 -right-4 modern-card p-4 bg-white/90">
+                  <div className="absolute -top-4 -right-4 bg-white rounded-2xl p-4 shadow-lg">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-sm font-semibold text-gray-700">实时在线</span>
+                      <span className="text-sm font-semibold">10K+ 学员在线</span>
                     </div>
                   </div>
                   
-                  <div className="absolute -bottom-4 -left-4 modern-card p-4 bg-white/90">
+                  <div className="absolute -bottom-4 -left-4 bg-white rounded-2xl p-4 shadow-lg">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">10K+</div>
-                      <div className="text-xs text-gray-600">学员</div>
+                      <div className="text-2xl font-bold text-blue-600">95%</div>
+                      <div className="text-xs text-gray-600">通过率</div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </section>
 
-        {/* Stats Section */}
-        <section className="px-6 mb-16">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mx-4">
-            {stats.map((stat, index) => (
-              <div key={index} className="modern-card p-6 text-center border-0">
-                <stat.icon className="h-8 w-8 mx-auto mb-3 text-blue-500" />
-                <div className="text-3xl font-bold text-gray-800 mb-1">{stat.number}</div>
-                <div className="text-sm text-gray-600">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="px-6 mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">
-              为什么选择我们？
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              专业的AI训练师培养平台，提供全方位的学习和认证服务
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-8 mx-4">
-            {features.map((feature, index) => (
-              <div 
-                key={index}
-                className="modern-card p-8 border-0 group cursor-pointer"
-                onClick={() => navigate(index === 0 ? '/courses' : index === 1 ? '/training' : '/login/exam')}
-              >
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} p-4 mb-6 mx-auto group-hover:scale-110 transition-transform duration-300`}>
-                  <feature.icon className="h-8 w-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-3 text-center">
-                  {feature.title}
-                </h3>
-                <p className="text-lg text-gray-600 mb-2 text-center">
-                  {feature.description}
-                </p>
-                <p className="text-sm text-gray-500 text-center">
-                  {feature.details}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Process Section */}
-        <section className="px-6 pb-16">
-          <div className="modern-card p-12 mx-4 border-0">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gray-800 mb-4">
-                学习流程
-              </h2>
-              <p className="text-xl text-gray-600">
-                简单四步，成为认证AI训练师
-              </p>
-            </div>
-
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
-              {['注册学习', '课程培训', '模拟练习', '认证考试'].map((step, index) => (
-                <div key={index} className="flex flex-col items-center text-center group">
-                  <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl mb-4 group-hover:scale-110 transition-transform">
-                    {index + 1}
+          {/* Service Cards Section */}
+          <div className="p-12 bg-gray-50">
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              {serviceCards.map((card, index) => (
+                <div 
+                  key={index}
+                  className="bg-white rounded-2xl p-8 text-center shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group hover:-translate-y-2"
+                  onClick={() => navigate(card.path)}
+                >
+                  <div className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-br ${card.color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                    <card.icon className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{step}</h3>
-                  {index < 3 && (
-                    <ArrowRight className="hidden lg:block h-6 w-6 text-gray-400 absolute translate-x-20" />
-                  )}
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">{card.title}</h3>
+                  <p className="text-gray-600 text-sm">{card.description}</p>
                 </div>
               ))}
             </div>
 
-            <div className="text-center mt-12">
+            <div className="text-center">
               <Button 
-                size="lg"
                 onClick={() => navigate('/courses')}
-                className="bg-gradient-to-r from-orange-500 to-blue-500 hover:from-orange-600 hover:to-blue-600 text-white px-12 py-4 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
+                className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-8 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                立即开始
+                查看所有服务
               </Button>
             </div>
           </div>
-        </section>
+
+          {/* Why Choose Us Section */}
+          <div className="p-12">
+            <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
+              为什么选择我们？
+            </h2>
+            
+            <div className="grid md:grid-cols-3 gap-8 mb-12">
+              {advantages.map((advantage, index) => (
+                <div key={index} className="text-center group">
+                  <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                    {advantage.image}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-3">{advantage.title}</h3>
+                  <p className="text-gray-600">{advantage.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA Section with 3D Character */}
+          <div className="p-12 bg-gradient-to-br from-blue-50 to-purple-50">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-800 mb-6">
+                  创建专属学习计划
+                  <br />
+                  <span className="text-orange-500">仅需5天！</span>
+                </h2>
+                <p className="text-lg text-gray-600 mb-8">
+                  如果你想快速掌握AI技术，我们提供最优质的培训方案。
+                  从基础理论到实践应用，全方位提升你的AI技能。
+                </p>
+                <Button 
+                  onClick={() => navigate('/courses')}
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  制定学习计划
+                </Button>
+              </div>
+              
+              <div className="relative">
+                <div className="flex items-center justify-center">
+                  <div className="text-6xl">🧠</div>
+                  <div className="text-4xl mx-4">+</div>
+                  <div className="text-6xl">💻</div>
+                  <div className="text-4xl mx-4">+</div>
+                  <div className="text-6xl">🎓</div>
+                </div>
+                <div className="text-center mt-4">
+                  <span className="text-lg font-semibold text-gray-700">理论 + 实践 + 认证</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Learning Process Section */}
+          <div className="p-12 bg-white">
+            <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
+              学习流程
+            </h2>
+            
+            <div className="relative">
+              <div className="flex justify-between items-center mb-8">
+                {processSteps.map((step, index) => (
+                  <div key={index} className="flex flex-col items-center">
+                    <div className={`w-12 h-12 ${step.color} rounded-full flex items-center justify-center text-white font-bold text-lg mb-2`}>
+                      {index + 1}
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">{step.title}</span>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="relative h-2 bg-gray-200 rounded-full mx-6">
+                <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-pink-500 via-orange-500 via-purple-500 via-blue-500 to-green-500 rounded-full" style={{width: '100%'}}></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer CTA */}
+          <div className="p-12 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-center">
+            <h2 className="text-3xl font-bold mb-4">🙏 感谢您的关注！</h2>
+            <p className="text-xl mb-8">开始您的AI学习之旅</p>
+            <Button 
+              onClick={() => navigate('/courses')}
+              className="bg-white text-orange-500 hover:bg-gray-100 px-8 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
+            >
+              立即开始学习
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
