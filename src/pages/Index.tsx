@@ -1,180 +1,234 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Users, Trophy, User, Brain, Cpu, Zap } from "lucide-react";
+import { BookOpen, Users, Trophy, User, Brain, Cpu, Zap, Play, ArrowRight, Award, Target, Sparkles } from "lucide-react";
 import newLogo from "@/assets/new-logo.png";
+import oilanText from "@/assets/oilan-text.png";
 import aiCourseHero from "@/assets/ai-course-hero.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
 
-  const cards = [
+  const features = [
     {
       icon: BookOpen,
-      title: "课程中心",
-      description: "系统性学习生成式人工智能技术",
-      path: "/courses",
-      color: "text-blue-600"
+      title: "智能课程体系",
+      description: "AI训练师专业认证课程",
+      details: "系统性学习生成式AI技术",
+      color: "from-blue-500 to-cyan-500"
     },
     {
       icon: Brain,
-      title: "训练中心", 
-      description: "通过练习题巩固AI训练师知识",
-      path: "/training",
-      color: "text-purple-600"
+      title: "实战训练中心", 
+      description: "海量题库智能练习",
+      details: "巩固理论知识，提升实践能力",
+      color: "from-purple-500 to-pink-500"
     },
     {
       icon: Trophy,
-      title: "考试中心",
-      description: "参加正式的AI训练师认证考试",
-      path: "/login/exam",
-      color: "text-green-600"
-    },
-    {
-      icon: User,
-      title: "个人中心",
-      description: "查看学习进度和成绩记录",
-      path: "/profile",
-      color: "text-orange-600"
+      title: "权威认证考试",
+      description: "行业标准认证体系",
+      details: "获得专业AI训练师证书",
+      color: "from-green-500 to-teal-500"
     }
   ];
 
+  const stats = [
+    { number: "10K+", label: "累计学员", icon: Users },
+    { number: "95%", label: "通过率", icon: Award },
+    { number: "500+", label: "企业合作", icon: Target },
+    { number: "24/7", label: "在线支持", icon: Sparkles }
+  ];
+
   return (
-    <div className="min-h-screen gradient-background">
-      {/* Floating Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-20 h-20 bg-blue-400 rounded-full opacity-20 floating-element"></div>
-        <div className="absolute top-40 right-20 w-16 h-16 bg-orange-400 rounded-full opacity-20 floating-element" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-purple-400 rounded-full opacity-20 floating-element" style={{animationDelay: '4s'}}></div>
-        <div className="absolute bottom-40 right-1/3 w-14 h-14 bg-green-400 rounded-full opacity-20 floating-element" style={{animationDelay: '1s'}}></div>
+    <div className="min-h-screen overflow-hidden relative">
+      {/* Animated Background */}
+      <div className="fixed inset-0 gradient-background">
+        {/* Floating Shapes */}
+        <div className="absolute top-20 left-[10%] w-24 h-24 bg-gradient-to-br from-orange-400 to-pink-400 rounded-full opacity-20 floating-shape"></div>
+        <div className="absolute top-[30%] right-[15%] w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full opacity-20 floating-shape" style={{animationDelay: '2s'}}></div>
+        <div className="absolute bottom-[25%] left-[20%] w-20 h-20 bg-gradient-to-br from-green-400 to-teal-400 rounded-full opacity-20 floating-shape" style={{animationDelay: '4s'}}></div>
+        <div className="absolute bottom-[40%] right-[25%] w-18 h-18 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full opacity-20 floating-shape" style={{animationDelay: '1s'}}></div>
+        
+        {/* Geometric Shapes */}
+        <div className="absolute top-[15%] right-[8%] w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-400 transform rotate-45 opacity-15 floating-shape" style={{animationDelay: '3s'}}></div>
+        <div className="absolute bottom-[15%] left-[8%] w-14 h-14 bg-gradient-to-br from-pink-400 to-red-400 transform rotate-12 opacity-15 floating-shape" style={{animationDelay: '5s'}}></div>
       </div>
 
-      <main className="container mx-auto px-4 py-12 relative">
+      {/* Main Content Container */}
+      <div className="relative z-10 max-w-7xl mx-auto">
+        
         {/* Hero Section */}
-        <section className="text-center mb-20">
-          <div className="glassmorphism rounded-3xl p-12 mb-8 relative overflow-hidden">
-            <div className="absolute inset-0 gradient-hero opacity-10"></div>
-            <div className="relative z-10">
-              <div className="flex justify-center mb-6">
-                <img src={newLogo} alt="AI Logo" className="h-24 w-auto floating-element" />
-              </div>
-              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
-                <Zap className="h-4 w-4" />
-                最新公告：AI训练师认证考试现已开放报名
-              </div>
-              <h1 className="text-5xl font-bold text-foreground mb-6 leading-tight">
-                开启您的
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  AI训练师
-                </span>
-                学习之旅
-              </h1>
-              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                掌握生成式人工智能核心技术，成为数字化转型的领军人才
-              </p>
-              <Button 
-                size="lg"
-                onClick={() => navigate('/courses')}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg shadow-xl hover:shadow-2xl transition-all duration-300"
-              >
-                立即开始学习
-              </Button>
-            </div>
-          </div>
-        </section>
+        <section className="px-6 pt-20 pb-12">
+          <div className="modern-card p-12 mx-4 mb-16 relative overflow-hidden">
+            
+            {/* Content Grid */}
+            <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
+              
+              {/* Left Content */}
+              <div className="space-y-8">
+                {/* Logo and Brand */}
+                <div className="flex items-center gap-4 mb-8">
+                  <img src={newLogo} alt="AI Logo" className="h-16 w-auto" />
+                  <img src={oilanText} alt="Oilan.ai" className="h-10 w-auto" />
+                </div>
 
-        {/* About Section */}
-        <section className="mb-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-foreground mb-6">
-                关于智涌·人工智能中心
-              </h2>
-              <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                智涌·人工智能中心是专业的数字经济人才服务提供商，致力于培养高质量的AI训练师人才。
-                我们提供系统性的课程体系、实战化的训练环境，助力学员掌握前沿的人工智能技术。
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-blue-600" />
-                  <span className="text-sm font-medium">专业师资团队</span>
+                {/* Announcement Badge */}
+                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-100 to-blue-100 text-orange-800 px-6 py-3 rounded-full text-sm font-semibold border border-orange-200/50">
+                  <Play className="h-4 w-4" />
+                  AI训练师认证考试正在报名中
                 </div>
-                <div className="flex items-center gap-2">
-                  <Cpu className="h-5 w-5 text-purple-600" />
-                  <span className="text-sm font-medium">前沿技术内容</span>
-                </div>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="glassmorphism rounded-2xl p-8 relative overflow-hidden">
-                <img 
-                  src={aiCourseHero} 
-                  alt="AI Course" 
-                  className="w-full h-64 object-cover rounded-xl shadow-lg"
-                />
-                <div className="absolute top-4 right-4">
-                  <img src={newLogo} alt="Logo" className="h-12 w-auto opacity-80" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Cards Section */}
-        <section className="mb-20">
-          <h2 className="text-3xl font-bold text-center text-foreground mb-12">
-            学习服务平台
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {cards.map((card, index) => (
-              <Card 
-                key={index}
-                className="glassmorphism hover:shadow-xl transition-all duration-300 cursor-pointer border-0 hover:scale-105"
-                onClick={() => navigate(card.path)}
-              >
-                <CardHeader className="text-center pb-4">
-                  <div className="mx-auto w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                    <card.icon className={`h-6 w-6 ${card.color}`} />
+                {/* Main Heading */}
+                <div className="space-y-4">
+                  <h1 className="text-5xl lg:text-6xl font-bold text-gray-800 leading-tight">
+                    成为顶尖
+                    <br />
+                    <span className="bg-gradient-to-r from-orange-500 via-blue-500 to-purple-500 bg-clip-text text-transparent">
+                      AI训练师
+                    </span>
+                  </h1>
+                  <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
+                    掌握生成式人工智能核心技术，获得行业权威认证，成为数字化时代的技术专家
+                  </p>
+                </div>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-wrap gap-4">
+                  <Button 
+                    size="lg"
+                    onClick={() => navigate('/courses')}
+                    className="bg-gradient-to-r from-orange-500 to-blue-500 hover:from-orange-600 hover:to-blue-600 text-white px-8 py-4 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 group"
+                  >
+                    开始学习之旅
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="lg"
+                    onClick={() => navigate('/login/exam')}
+                    className="border-2 border-blue-200 hover:border-blue-300 text-blue-700 hover:bg-blue-50 px-8 py-4 text-lg rounded-2xl transition-all duration-300"
+                  >
+                    立即考试
+                  </Button>
+                </div>
+              </div>
+
+              {/* Right Content - Hero Image */}
+              <div className="relative">
+                <div className="relative z-10 modern-card p-8 border-0 bg-gradient-to-br from-blue-50 to-purple-50">
+                  <img 
+                    src={aiCourseHero} 
+                    alt="AI Training" 
+                    className="w-full h-80 object-cover rounded-2xl shadow-2xl"
+                  />
+                  
+                  {/* Floating Stats */}
+                  <div className="absolute -top-4 -right-4 modern-card p-4 bg-white/90">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-semibold text-gray-700">实时在线</span>
+                    </div>
                   </div>
-                  <CardTitle className="text-lg font-semibold">{card.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center pt-0">
-                  <CardDescription className="text-sm leading-relaxed">
-                    {card.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
+                  
+                  <div className="absolute -bottom-4 -left-4 modern-card p-4 bg-white/90">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">10K+</div>
+                      <div className="text-xs text-gray-600">学员</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="px-6 mb-16">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mx-4">
+            {stats.map((stat, index) => (
+              <div key={index} className="modern-card p-6 text-center border-0">
+                <stat.icon className="h-8 w-8 mx-auto mb-3 text-blue-500" />
+                <div className="text-3xl font-bold text-gray-800 mb-1">{stat.number}</div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
+              </div>
             ))}
           </div>
         </section>
 
-        {/* Success Cases Section */}
-        <section className="text-center">
-          <div className="glassmorphism rounded-3xl p-12">
-            <h2 className="text-3xl font-bold text-foreground mb-6">
-              成功案例展示
+        {/* Features Section */}
+        <section className="px-6 mb-16">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-800 mb-4">
+              为什么选择我们？
             </h2>
-            <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-              我们已成功为政府机构、大型企业等提供专业的AI训练师培养服务，
-              培训学员超过10000人次，获得业界广泛认可。
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              专业的AI训练师培养平台，提供全方位的学习和认证服务
             </p>
-            <div className="flex justify-center items-center gap-8 flex-wrap">
-              <div className="flex items-center gap-2 text-blue-600 font-semibold">
-                <Brain className="h-5 w-5" />
-                <span>政府合作</span>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8 mx-4">
+            {features.map((feature, index) => (
+              <div 
+                key={index}
+                className="modern-card p-8 border-0 group cursor-pointer"
+                onClick={() => navigate(index === 0 ? '/courses' : index === 1 ? '/training' : '/login/exam')}
+              >
+                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} p-4 mb-6 mx-auto group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-3 text-center">
+                  {feature.title}
+                </h3>
+                <p className="text-lg text-gray-600 mb-2 text-center">
+                  {feature.description}
+                </p>
+                <p className="text-sm text-gray-500 text-center">
+                  {feature.details}
+                </p>
               </div>
-              <div className="flex items-center gap-2 text-purple-600 font-semibold">
-                <Users className="h-5 w-5" />
-                <span>企业培训</span>
-              </div>
-              <div className="flex items-center gap-2 text-green-600 font-semibold">
-                <Trophy className="h-5 w-5" />
-                <span>认证考试</span>
-              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Process Section */}
+        <section className="px-6 pb-16">
+          <div className="modern-card p-12 mx-4 border-0">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gray-800 mb-4">
+                学习流程
+              </h2>
+              <p className="text-xl text-gray-600">
+                简单四步，成为认证AI训练师
+              </p>
+            </div>
+
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+              {['注册学习', '课程培训', '模拟练习', '认证考试'].map((step, index) => (
+                <div key={index} className="flex flex-col items-center text-center group">
+                  <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl mb-4 group-hover:scale-110 transition-transform">
+                    {index + 1}
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{step}</h3>
+                  {index < 3 && (
+                    <ArrowRight className="hidden lg:block h-6 w-6 text-gray-400 absolute translate-x-20" />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="text-center mt-12">
+              <Button 
+                size="lg"
+                onClick={() => navigate('/courses')}
+                className="bg-gradient-to-r from-orange-500 to-blue-500 hover:from-orange-600 hover:to-blue-600 text-white px-12 py-4 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
+              >
+                立即开始
+              </Button>
             </div>
           </div>
         </section>
-      </main>
+      </div>
     </div>
   );
 };
