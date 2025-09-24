@@ -141,17 +141,17 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
   };
 
   return (
-    <Sidebar className={collapsed ? "w-16" : "w-72"}>
+    <Sidebar className={collapsed ? "w-16" : "w-64"}>
       {/* 侧边栏头部 */}
       <div className="p-4 border-b">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Settings className="h-6 w-6 text-primary" />
+        <div className="flex items-center gap-2">
+          <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+            <Settings className="h-5 w-5 text-primary" />
           </div>
           {!collapsed && (
             <div>
-              <h2 className="font-semibold text-lg">管理中心</h2>
-              <p className="text-sm text-muted-foreground">系统管理控制台</p>
+              <h2 className="font-semibold">管理中心</h2>
+              <p className="text-xs text-muted-foreground">控制台</p>
             </div>
           )}
         </div>
@@ -170,24 +170,19 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
                   <SidebarMenuButton
                     asChild
                     isActive={isActive(item.url)}
-                    className="h-12"
+                    className="h-10"
                   >
                     <button
                       onClick={() => handleMenuClick(item.url)}
-                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
                         isActive(item.url)
                           ? "bg-primary text-primary-foreground"
                           : "hover:bg-muted"
                       }`}
                     >
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      <item.icon className="h-4 w-4 flex-shrink-0" />
                       {!collapsed && (
-                        <div className="flex-1 text-left">
-                          <div className="font-medium">{item.title}</div>
-                          <div className="text-xs text-muted-foreground line-clamp-1">
-                            {item.description}
-                          </div>
-                        </div>
+                        <span className="font-medium text-sm truncate">{item.title}</span>
                       )}
                     </button>
                   </SidebarMenuButton>
@@ -209,7 +204,7 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
                   <SidebarMenuButton
                     asChild
                     isActive={isActive(item.url)}
-                    className="h-10"
+                    className="h-9"
                   >
                     <button
                       onClick={() => handleMenuClick(item.url)}
