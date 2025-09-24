@@ -15,6 +15,7 @@ import { Exam } from "@/pages/Exam";
 import { TheoryExam } from "@/pages/TheoryExam";
 import { PracticalExam } from "@/pages/PracticalExam";
 import NotFound from "./pages/NotFound";
+import { CourseLearning } from "@/pages/CourseLearning";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => {
               <Route path="/" element={<Home />} />
               <Route path="/login/:type" element={<Login onLogin={handleLogin} />} />
               <Route path="/courses" element={<Courses />} />
+              <Route path="/courses/:courseId/learn" element={<CourseLearning />} />
               <Route path="/training" element={<Training />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<Admin />} />
