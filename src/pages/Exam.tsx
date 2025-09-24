@@ -1,215 +1,221 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, FlaskConical, Clock, User, Calendar, MapPin, AlertCircle } from "lucide-react";
+import { ExternalLink, FileText, FlaskConical, Clock, User, Calendar, Shield, AlertCircle, Award, BookOpen, Trophy, Target } from "lucide-react";
 
 export const Exam = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
-  
-  // 模拟考生信息（实际应该从登录状态或API获取）
-  const candidateInfo = {
-    name: "张三",
-    candidateId: "2024AI001",
-    idCard: "320123199901011234",
-    examDate: "2024年3月25日",
-    examTime: "上午 9:00 - 12:00",
-    examRoom: "计算机实验室A-101",
-    seatNumber: "15",
-    examSession: "AI训练师认证考试-2024年3月"
+
+  // 跳转到独立考试系统
+  const handleExamSystem = () => {
+    toast({
+      title: "正在跳转考试系统",
+      description: "请在新窗口中完成考试，考试期间请勿关闭窗口"
+    });
+    // 在实际项目中，这里应该是独立的考试系统域名
+    window.open('https://exam.example.com', '_blank');
   };
 
-  const handleTheoryExam = () => {
-    toast({
-      title: "正在进入理论考试",
-      description: "请仔细阅读考试规则，诚信应考"
-    });
-    navigate('/exam/theory');
-  };
-
-  const handlePracticalExam = () => {
-    toast({
-      title: "正在进入实验考试",
-      description: "请确保网络连接稳定，诚信应考"
-    });
-    navigate('/exam/practical');
+  // 考试信息数据
+  const examInfo = {
+    title: "AI训练师认证考试",
+    description: "通过权威认证，证明您的AI技能水平",
+    examTypes: [
+      {
+        id: "theory",
+        name: "理论考试",
+        description: "AI基础理论知识测试",
+        duration: "120分钟",
+        questions: "100题",
+        icon: FileText,
+        color: "blue"
+      },
+      {
+        id: "practical", 
+        name: "实践考试",
+        description: "AI实际操作技能测试",
+        duration: "90分钟",
+        questions: "5个项目",
+        icon: FlaskConical,
+        color: "green"
+      }
+    ],
+    requirements: [
+      "完成所有课程学习",
+      "通过模拟考试练习",
+      "具备基础编程能力",
+      "了解AI基本概念"
+    ],
+    benefits: [
+      "获得权威认证证书",
+      "提升职业竞争力",
+      "证明专业技能水平",
+      "拓展职业发展机会"
+    ]
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
       <div className="container mx-auto px-4 py-8">
         {/* 页面标题 */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-hover bg-clip-text text-transparent mb-2">
-            智涌·AI训练师认证考试
-          </h1>
-          <p className="text-muted-foreground">请核对准考证信息，选择对应的考试类型</p>
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="p-3 bg-primary/10 rounded-full">
+              <Award className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              {examInfo.title}
+            </h1>
+          </div>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            {examInfo.description}
+          </p>
         </div>
 
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* 准考证信息 */}
-          <Card className="shadow-elegant border-l-4 border-l-primary">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-xl text-primary">准考证</CardTitle>
-                  <CardDescription>{candidateInfo.examSession}</CardDescription>
-                </div>
-                <Badge className="bg-green-100 text-green-700 px-3 py-1">
-                  有效
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* 考生信息 */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                    <User className="h-5 w-5 text-primary" />
-                    考生信息
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">姓名：</span>
-                      <span className="font-medium">{candidateInfo.name}</span>
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* 考试类型介绍 */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {examInfo.examTypes.map((examType) => {
+              const IconComponent = examType.icon;
+              return (
+                <Card key={examType.id} className="shadow-elegant hover:shadow-strong transition-all duration-300">
+                  <CardHeader className="text-center">
+                    <div className={`mx-auto mb-4 p-4 bg-${examType.color}-100 rounded-full w-20 h-20 flex items-center justify-center`}>
+                      <IconComponent className={`h-10 w-10 text-${examType.color}-600`} />
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">准考证号：</span>
-                      <span className="font-medium text-primary">{candidateInfo.candidateId}</span>
+                    <CardTitle className="text-2xl">{examType.name}</CardTitle>
+                    <CardDescription className="text-base">
+                      {examType.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-center">
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <Clock className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+                        <div className="text-sm font-medium">{examType.duration}</div>
+                        <div className="text-xs text-muted-foreground">考试时长</div>
+                      </div>
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <Target className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+                        <div className="text-sm font-medium">{examType.questions}</div>
+                        <div className="text-xs text-muted-foreground">题目数量</div>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">身份证号：</span>
-                      <span className="font-medium">{candidateInfo.idCard}</span>
-                    </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
 
-                {/* 考试安排 */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-primary" />
-                    考试安排
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">考试日期：</span>
-                      <span className="font-medium">{candidateInfo.examDate}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">考试时间：</span>
-                      <span className="font-medium">{candidateInfo.examTime}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">考试地点：</span>
-                      <span className="font-medium">{candidateInfo.examRoom}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">座位号：</span>
-                      <span className="font-medium text-primary">{candidateInfo.seatNumber}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* 考试要求和收益 */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* 考试要求 */}
+            <Card className="shadow-medium">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  考试要求
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {examInfo.requirements.map((requirement, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
+                      <span className="text-muted-foreground">{requirement}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
 
-          {/* 考试注意事项 */}
-          <Card className="shadow-medium border-orange-200">
+            {/* 认证收益 */}
+            <Card className="shadow-medium">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-secondary" />
+                  认证收益
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {examInfo.benefits.map((benefit, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <div className="w-2 h-2 bg-secondary rounded-full mt-2 flex-shrink-0" />
+                      <span className="text-muted-foreground">{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 安全提示 */}
+          <Card className="border-orange-200 bg-orange-50/50">
             <CardHeader>
               <CardTitle className="text-orange-700 flex items-center gap-2">
-                <AlertCircle className="h-5 w-5" />
-                考试注意事项
+                <Shield className="h-5 w-5" />
+                考试安全说明
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
-                <ul className="space-y-2">
-                  <li>• 请提前15分钟到达考场</li>
-                  <li>• 携带身份证和准考证</li>
-                  <li>• 考试期间禁止使用手机等电子设备</li>
-                  <li>• 保持考场安静，不得交头接耳</li>
-                </ul>
-                <ul className="space-y-2">
-                  <li>• 理论考试时长：120分钟</li>
-                  <li>• 实验考试时长：90分钟</li>
-                  <li>• 考试结束后请有序退场</li>
-                  <li>• 严禁作弊，违者取消考试资格</li>
-                </ul>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold mb-3 text-orange-800">为什么使用独立考试系统？</h4>
+                  <ul className="space-y-2 text-sm text-orange-700">
+                    <li>• 防止考试期间查看课程资料</li>
+                    <li>• 避免访问训练记录作弊</li>
+                    <li>• 确保考试环境纯净安全</li>
+                    <li>• 保障考试结果公平公正</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-3 text-orange-800">考试注意事项</h4>
+                  <ul className="space-y-2 text-sm text-orange-700">
+                    <li>• 考试将在新窗口中进行</li>
+                    <li>• 考试期间请勿关闭窗口</li>
+                    <li>• 确保网络连接稳定</li>
+                    <li>• 严格遵守考试纪律</li>
+                  </ul>
+                </div>
               </div>
             </CardContent>
           </Card>
 
           <Separator className="my-8" />
 
-          {/* 考试入口 */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* 理论考试 */}
-            <Card className="shadow-elegant hover:shadow-strong transition-all duration-300 group cursor-pointer border-2 hover:border-primary/50">
-              <CardHeader className="text-center pb-4">
-                <div className="mx-auto mb-4 p-3 bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                  <FileText className="h-8 w-8 text-blue-600" />
-                </div>
-                <CardTitle className="text-xl text-blue-700">理论考试</CardTitle>
-                <CardDescription>
-                  人工智能基础理论知识考试
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center space-y-4">
-                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>考试时长：120分钟</span>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  包含选择题、判断题、简答题等题型
-                </div>
-                <Button 
-                  onClick={handleTheoryExam}
-                  className="w-full gradient-primary text-white hover:opacity-90 transition-all"
-                  size="lg"
-                >
-                  进入理论考试
-                </Button>
-              </CardContent>
-            </Card>
+          {/* 考试系统入口 */}
+          <Card className="shadow-elegant border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl text-primary mb-2">
+                准备开始考试？
+              </CardTitle>
+              <CardDescription className="text-base">
+                点击下方按钮进入独立的考试系统
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <Button 
+                onClick={handleExamSystem}
+                size="lg"
+                className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white"
+              >
+                <ExternalLink className="h-5 w-5 mr-2" />
+                进入考试系统
+              </Button>
+              <p className="text-sm text-muted-foreground mt-4">
+                系统将在新窗口中打开，请确保浏览器允许弹出窗口
+              </p>
+            </CardContent>
+          </Card>
 
-            {/* 实验考试 */}
-            <Card className="shadow-elegant hover:shadow-strong transition-all duration-300 group cursor-pointer border-2 hover:border-primary/50">
-              <CardHeader className="text-center pb-4">
-                <div className="mx-auto mb-4 p-3 bg-green-100 rounded-full w-16 h-16 flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                  <FlaskConical className="h-8 w-8 text-green-600" />
-                </div>
-                <CardTitle className="text-xl text-green-700">实验考试</CardTitle>
-                <CardDescription>
-                  人工智能实践操作技能考试
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center space-y-4">
-                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>考试时长：90分钟</span>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  包含编程实践、模型训练、数据分析等
-                </div>
-                <Button 
-                  onClick={handlePracticalExam}
-                  className="w-full gradient-secondary text-white hover:opacity-90 transition-all"
-                  size="lg"
-                >
-                  进入实验考试
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* 底部提示 */}
-          <div className="text-center text-sm text-muted-foreground bg-blue-50 p-4 rounded-lg">
-            <p>如有技术问题，请联系监考老师或技术支持人员</p>
-            <p className="mt-1">祝您考试顺利！</p>
+          {/* 联系信息 */}
+          <div className="text-center text-sm text-muted-foreground bg-muted/30 p-6 rounded-lg">
+            <p className="font-medium mb-2">技术支持</p>
+            <p>如遇技术问题，请联系：support@example.com 或拨打 400-123-4567</p>
+            <p className="mt-2">考试时间：周一至周五 9:00-17:00</p>
           </div>
         </div>
       </div>
