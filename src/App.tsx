@@ -14,6 +14,10 @@ import { Admin } from "@/pages/Admin";
 import { Exam } from "@/pages/Exam";
 import { TheoryExam } from "@/pages/TheoryExam";
 import { PracticalExam } from "@/pages/PracticalExam";
+import { PracticeDetail } from "@/pages/PracticeDetail";
+import { SimulationDetail } from "@/pages/SimulationDetail";
+import { TrainingHistory } from "@/pages/TrainingHistory";
+import { KnowledgeAnalysis } from "@/pages/KnowledgeAnalysis";
 import NotFound from "./pages/NotFound";
 import { CourseLearning } from "@/pages/CourseLearning";
 
@@ -63,6 +67,10 @@ const App = () => {
               <Route path="/courses" element={<Courses />} />
               <Route path="/courses/:courseId/learn" element={<CourseLearning />} />
               <Route path="/training" element={<Training />} />
+              <Route path="/training/chapter/:chapterName" element={<PracticeDetail />} />
+              <Route path="/training/simulation/:examId" element={<SimulationDetail />} />
+              <Route path="/training/history" element={<TrainingHistory />} />
+              <Route path="/training/analysis" element={<KnowledgeAnalysis />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/exam" element={<Exam />} />

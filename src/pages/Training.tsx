@@ -92,6 +92,17 @@ export const Training = () => {
           <p className="text-xl text-muted-foreground">
             全方位练习提升，轻松通过AI训练师认证考试
           </p>
+          
+          <div className="flex justify-center gap-4 mt-6">
+            <Button variant="outline" onClick={() => navigate("/training/history")}>
+              <Clock className="h-4 w-4 mr-2" />
+              训练历史
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/training/analysis")}>
+              <Target className="h-4 w-4 mr-2" />
+              知识点分析
+            </Button>
+          </div>
         </div>
 
         {/* 统计面板 */}
