@@ -30,7 +30,7 @@ export const Header = ({ isLoggedIn = false, userType = null, onLogout }: Header
   };
 
   const handleExamCenter = () => {
-    navigate('/login/exam');
+    navigate('/exam');
   };
 
   return (
