@@ -9,30 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
-import { 
-  Database, 
-  Users, 
-  FileText, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Download, 
-  Upload,
-  BarChart3,
-  Calendar,
-  Award,
-  BookOpen,
-  TrendingUp,
-  Activity,
-  GraduationCap,
-  Bell,
-  Settings,
-  Search,
-  Filter,
-  Shield,
-  MessageSquare,
-  Clipboard
-} from "lucide-react";
+import { Database, Users, FileText, Plus, CreditCard as Edit, Trash2, Download, Upload, ChartBar as BarChart3, Calendar, Award, BookOpen, TrendingUp, Activity, GraduationCap, Bell, Settings, Search, Filter, Shield, MessageSquare, Clipboard } from "lucide-react";
 
 export const Admin = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
