@@ -83,7 +83,7 @@ export const Training = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary to-background py-8">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto page-container">
         {/* 页面标题 */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary-hover bg-clip-text text-transparent">

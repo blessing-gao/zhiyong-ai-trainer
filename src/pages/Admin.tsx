@@ -104,7 +104,7 @@ export const Admin = () => {
           </header>
 
           {/* 主内容区域 */}
-          <main className="flex-1 overflow-auto p-6">
+          <main className="flex-1 overflow-auto admin-content">
             {renderContent(activeSection)}
           </main>
         </div>
