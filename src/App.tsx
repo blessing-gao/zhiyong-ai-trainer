@@ -17,6 +17,7 @@ import ChapterPractice from "./pages/ChapterPractice";
 import SimulationExam from "./pages/SimulationExam";
 import WrongQuestionsPractice from "./pages/WrongQuestionsPractice";
 import ExamCenter from "./pages/ExamCenter";
+import FormalExam from "./pages/FormalExam";
 import PersonalCenter from "./pages/PersonalCenter";
 import NotFound from "./pages/NotFound";
 
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/training/simulation/:examId" element={<ProtectedRoute><SimulationExam /></ProtectedRoute>} />
               <Route path="/training/wrong-questions" element={<ProtectedRoute><WrongQuestionsPractice /></ProtectedRoute>} />
               <Route path="/exam" element={<ProtectedRoute><ExamCenter /></ProtectedRoute>} />
+              <Route path="/exam/start" element={<ProtectedRoute><FormalExam /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><PersonalCenter /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

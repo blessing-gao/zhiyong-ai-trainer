@@ -7,10 +7,12 @@ import { useToast } from "@/hooks/use-toast";
 import { ExternalLink, FileText, FlaskConical, Clock, User, Calendar, Shield, CircleAlert as AlertCircle, Award, BookOpen, Trophy, Target } from "lucide-react";
 import Header from "@/components/Header";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useNavigate } from "react-router-dom";
 
 const ExamCenter = () => {
   const { applyRoleTheme } = useTheme();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isVertical, setIsVertical] = useState(() => {
     const saved = localStorage.getItem("navPosition");
     return saved === "vertical";
@@ -34,12 +36,7 @@ const ExamCenter = () => {
 
   // 跳转到独立考试系统
   const handleExamSystem = () => {
-    toast({
-      title: "正在跳转考试系统",
-      description: "请在新窗口中完成考试，考试期间请勿关闭窗口"
-    });
-    // 在实际项目中，这里应该是独立的考试系统域名
-    window.open('https://exam.example.com', '_blank');
+    navigate('/exam/start');
   };
 
   // 考试信息数据
