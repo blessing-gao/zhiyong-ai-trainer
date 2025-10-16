@@ -1334,10 +1334,10 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 h-full bg-gradient-to-b from-blue-100/70 to-cyan-100/60 border-r border-blue-200/30 overflow-y-auto z-0 transition-all duration-300 ${sidebarCollapsed ? 'w-0 -translate-x-full' : 'w-56'}`}>
+      <aside className={`fixed left-0 top-0 h-full bg-gradient-to-b from-blue-100/70 to-cyan-100/60 border-r border-blue-200/30 overflow-y-auto z-0 transition-all duration-300 flex flex-col ${sidebarCollapsed ? 'w-0 -translate-x-full' : 'w-56'}`}>
         {/* Profile */}
-        <div className={`mb-8 ${sidebarCollapsed ? 'p-2' : 'p-5'}`}>
-          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'space-x-3'} mb-6`}>
+        <div className={`mb-3 ${sidebarCollapsed ? 'p-2' : 'p-5'}`}>
+          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'space-x-3'} mb-3`}>
             <Avatar className="h-12 w-12 bg-gradient-to-br from-blue-400 to-cyan-400">
               <AvatarFallback className="bg-transparent text-white font-semibold">管</AvatarFallback>
                       </Avatar>
@@ -1350,19 +1350,8 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
-        {/* Logout Button */}
-        <div className={`mt-8 mb-6 ${sidebarCollapsed ? 'px-2' : 'px-5'}`}>
-          <Button 
-            onClick={handleLogout} 
-            className={`${sidebarCollapsed ? 'w-12 h-12 p-0' : 'w-32'} bg-gradient-to-r from-gray-700 to-gray-900 text-white hover:from-gray-600 hover:to-gray-800 rounded-xl`}
-            title={sidebarCollapsed ? "退出" : ""}
-          >
-            {sidebarCollapsed ? <Settings className="h-5 w-5" /> : "退出登录"}
-          </Button>
-        </div>
-
         {/* Navigation */}
-        <nav className={`space-y-3 pb-8 ${sidebarCollapsed ? 'px-2' : 'px-5'}`}>
+        <nav className={`space-y-1 pb-8 flex-1 ${sidebarCollapsed ? 'px-2' : 'px-5'}`}>
           {sidebarItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
@@ -1370,7 +1359,7 @@ const AdminDashboard = () => {
               <button
                 key={item.id}
                 onClick={() => setActiveSection(item.id)}
-                className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} py-4 transition-all duration-300 ${
+                className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} py-2 transition-all duration-300 ${
                   isActive 
                     ? "bg-white rounded-l-[2rem] shadow-lg relative z-20 -mr-8 pr-20" 
                     : "text-gray-500 hover:bg-white/30 hover:text-gray-700 rounded-l-xl hover:transform hover:-translate-x-1"
@@ -1383,6 +1372,17 @@ const AdminDashboard = () => {
             );
           })}
         </nav>
+
+        {/* Logout Button - 放在菜单底部 */}
+        <div className={`mt-auto pt-4 border-t border-white/20 ${sidebarCollapsed ? 'px-2' : 'px-5'}`}>
+          <Button
+            onClick={handleLogout}
+            className={`w-full bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-500 hover:to-red-600 rounded-xl ${sidebarCollapsed ? 'p-2' : 'px-4 py-2'}`}
+            title={sidebarCollapsed ? "退出登录" : ""}
+          >
+            {sidebarCollapsed ? <Settings className="h-5 w-5" /> : "退出登录"}
+          </Button>
+        </div>
 
       </aside>
 

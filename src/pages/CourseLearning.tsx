@@ -3,12 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  BookOpen, 
-  Clock, 
-  CheckCircle, 
+import {
+  BookOpen,
+  Clock,
+  CheckCircle,
   ArrowLeft,
-  Award
+  ChevronRight
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -621,8 +621,8 @@ const CourseLearning = () => {
 
                     <div className="flex items-center justify-end gap-2">
                       <Button variant="outline" className="border-border text-foreground hover:bg-muted/50">
-                    <Award className="h-4 w-4 mr-2" />
-                    查看证书
+                    <ChevronRight className="h-4 w-4 mr-2" />
+                    前往下一课
                   </Button>
                 </div>
               </div>
