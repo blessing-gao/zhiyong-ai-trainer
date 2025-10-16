@@ -1,26 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft, 
-  ArrowRight, 
-  CheckCircle, 
-  XCircle, 
   Clock, 
-  Target,
-  BookOpen,
-  Trophy,
-  RotateCcw
+  Target
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-const ChapterPractice = () => {
+const FormalExam = () => {
   const { applyRoleTheme } = useTheme();
   const navigate = useNavigate();
-  const { chapterName } = useParams();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [answers, setAnswers] = useState<{ [key: number]: number | null }>({});
@@ -140,11 +131,11 @@ const ChapterPractice = () => {
             <div className="flex items-center justify-between mb-8">
               <Button 
                 variant="outline" 
-                onClick={() => navigate('/training')}
+                onClick={() => navigate('/exam')}
                 className="border-border text-foreground hover:bg-muted/50"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                返回训练中心
+                返回考试中心
               </Button>
               
               <div className="text-center">
@@ -280,4 +271,5 @@ const ChapterPractice = () => {
   );
 };
 
-export default ChapterPractice;
+export default FormalExam;
+
