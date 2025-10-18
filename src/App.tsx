@@ -13,6 +13,8 @@ import StudentLogin from "./pages/StudentLogin";
 import CourseCenter from "./pages/CourseCenter";
 import CourseLearning from "./pages/CourseLearning";
 import TrainingCenter from "./pages/TrainingCenter";
+import KnowledgeExplore from "./pages/KnowledgeExplore";
+import AutoExam from "./pages/AutoExam";
 import ChapterPractice from "./pages/ChapterPractice";
 import SimulationExam from "./pages/SimulationExam";
 import WrongQuestionsPractice from "./pages/WrongQuestionsPractice";
@@ -39,6 +41,8 @@ const App = () => (
               <Route path="/courses" element={<ProtectedRoute><CourseCenter /></ProtectedRoute>} />
               <Route path="/courses/:courseId/learn" element={<ProtectedRoute><CourseLearning /></ProtectedRoute>} />
               <Route path="/training" element={<ProtectedRoute><TrainingCenter /></ProtectedRoute>} />
+              <Route path="/training/knowledge-explore" element={<ProtectedRoute><KnowledgeExplore /></ProtectedRoute>} />
+              <Route path="/training/auto-exam" element={<ProtectedRoute><AutoExam /></ProtectedRoute>} />
               <Route path="/training/chapter/:chapterName" element={<ProtectedRoute><ChapterPractice /></ProtectedRoute>} />
               <Route path="/training/simulation/:examId" element={<ProtectedRoute><SimulationExam /></ProtectedRoute>} />
               <Route path="/training/wrong-questions" element={<ProtectedRoute><WrongQuestionsPractice /></ProtectedRoute>} />

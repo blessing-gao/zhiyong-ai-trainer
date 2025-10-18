@@ -17,6 +17,7 @@ import {
   Clock, 
   CheckCircle, 
   ArrowLeft,
+  ChevronRight,
   Award
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";

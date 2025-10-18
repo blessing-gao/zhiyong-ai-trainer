@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { User, Award, BookOpen, TrendingUp, Calendar, Mail, Phone, CreditCard as Edit3, Settings, GraduationCap, Target, Clock, Trophy, Star, Download, Eye, ChevronRight, Activity, ChartBar as BarChart3, Users, Shield } from "lucide-react";
+import { User, Award, BookOpen, TrendingUp, Calendar, Mail, Phone, CreditCard as Edit3, Settings, GraduationCap, Target, Clock, Trophy, Star, Download, Eye, ChevronRight, Activity, ChartBar as BarChart3, Users, Shield, AlertCircle, RotateCcw } from "lucide-react";
 import Header from "@/components/Header";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -180,6 +180,79 @@ const PersonalCenter = () => {
     }
   ];
 
+  const wrongQuestions = [
+    {
+      id: 1,
+      question: "关于深度学习中的反向传播算法，以下说法正确的是？",
+      type: "单选题",
+      category: "深度学习",
+      difficulty: "中等",
+      wrongCount: 2,
+      lastWrongDate: "2024-03-20",
+      correctRate: "50%",
+      options: ["A. 用于计算梯度", "B. 用于前向传播", "C. 用于数据预处理", "D. 用于模型评估"],
+      correctAnswer: "A",
+      yourAnswer: "B",
+      explanation: "反向传播算法是用于计算神经网络中每个参数的梯度，这些梯度用于更新权重。"
+    },
+    {
+      id: 2,
+      question: "卷积神经网络（CNN）中，池化层的主要作用是什么？",
+      type: "单选题",
+      category: "计算机视觉",
+      difficulty: "中等",
+      wrongCount: 1,
+      lastWrongDate: "2024-03-18",
+      correctRate: "75%",
+      options: ["A. 增加参数数量", "B. 降低维度和计算量", "C. 增加非线性", "D. 提取特征"],
+      correctAnswer: "B",
+      yourAnswer: "D",
+      explanation: "池化层通过下采样来降低特征图的维度，从而减少计算量和参数数量。"
+    },
+    {
+      id: 3,
+      question: "以下哪些是常见的激活函数？（多选题）",
+      type: "多选题",
+      category: "神经网络基础",
+      difficulty: "简单",
+      wrongCount: 1,
+      lastWrongDate: "2024-03-15",
+      correctRate: "80%",
+      options: ["A. ReLU", "B. Sigmoid", "C. Tanh", "D. Linear"],
+      correctAnswer: "A, B, C",
+      yourAnswer: "A, B",
+      explanation: "常见的激活函数包括ReLU、Sigmoid、Tanh等。Linear不是激活函数。"
+    },
+    {
+      id: 4,
+      question: "过拟合是指模型在训练集上表现很好，但在测试集上表现很差。",
+      type: "判断题",
+      category: "机器学习基础",
+      difficulty: "简单",
+      wrongCount: 1,
+      lastWrongDate: "2024-03-10",
+      correctRate: "85%",
+      options: ["正确", "错误"],
+      correctAnswer: "正确",
+      yourAnswer: "错误",
+      explanation: "这是过拟合的定义。模型在训练数据上学到了噪声和特殊模式，导致泛化能力差。"
+    },
+    {
+      id: 5,
+      question: "在机器学习中，特征工程的目的是什么？",
+      type: "单选题",
+      category: "机器学习基础",
+      difficulty: "中等",
+      wrongCount: 3,
+      lastWrongDate: "2024-03-22",
+      correctRate: "40%",
+      options: ["A. 提高模型复杂度", "B. 提取和构造有用的特征", "C. 增加训练时间", "D. 减少数据量"],
+      correctAnswer: "B",
+      yourAnswer: "A",
+      explanation: "特征工程是从原始数据中提取和构造有用的特征，以提高模型的性能。"
+    }
+  ];
+
   const handleSave = () => {
     setIsEditing(false);
   };
@@ -277,7 +350,7 @@ const PersonalCenter = () => {
             </div>
             
             <Tabs defaultValue="dashboard" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid bg-white/10 border-white/20">
+              <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid bg-white/10 border-white/20">
                 <TabsTrigger value="dashboard" className="flex items-center gap-2 data-[state=active]:bg-white/20">
                   <BarChart3 className="h-4 w-4" />
                   <span className="hidden sm:inline">仪表盘</span>
@@ -289,6 +362,10 @@ const PersonalCenter = () => {
                 <TabsTrigger value="exams" className="flex items-center gap-2 data-[state=active]:bg-white/20">
                   <Award className="h-4 w-4" />
                   <span className="hidden sm:inline">考试记录</span>
+                </TabsTrigger>
+                <TabsTrigger value="wrong-questions" className="flex items-center gap-2 data-[state=active]:bg-white/20">
+                  <AlertCircle className="h-4 w-4" />
+                  <span className="hidden sm:inline">错题集</span>
                 </TabsTrigger>
                 <TabsTrigger value="certificates" className="flex items-center gap-2 data-[state=active]:bg-white/20">
                   <GraduationCap className="h-4 w-4" />
@@ -542,6 +619,131 @@ const PersonalCenter = () => {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* 错题集 */}
+              <TabsContent value="wrong-questions" className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <AlertCircle className="h-8 w-8 mx-auto mb-2 text-red-500" />
+                        <div className="text-2xl font-bold text-foreground">{wrongQuestions.length}</div>
+                        <div className="text-sm text-muted-foreground">错题总数</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <Target className="h-8 w-8 mx-auto mb-2 text-orange-500" />
+                        <div className="text-2xl font-bold text-foreground">65%</div>
+                        <div className="text-sm text-muted-foreground">平均正确率</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <Clock className="h-8 w-8 mx-auto mb-2 text-blue-500" />
+                        <div className="text-2xl font-bold text-foreground">3天</div>
+                        <div className="text-sm text-muted-foreground">最后复习</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <Trophy className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
+                        <div className="text-2xl font-bold text-foreground">已掌握</div>
+                        <div className="text-sm text-muted-foreground">2道题目</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card className="bg-white/10 border-white/20 backdrop-blur-sm shadow-medium">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-foreground">
+                      <AlertCircle className="h-5 w-5" />
+                      我的错题集
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground">共 {wrongQuestions.length} 道错题，需要重点复习</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {wrongQuestions.map((question, index) => (
+                        <div key={question.id} className="p-4 border border-white/20 rounded-lg hover:bg-white/5 transition-colors">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className="text-sm font-medium text-primary">第 {index + 1} 题</span>
+                                <Badge variant="outline" className="bg-white/10 border-white/20 text-foreground">
+                                  {question.type}
+                                </Badge>
+                                <Badge variant="outline" className="bg-white/10 border-white/20 text-foreground">
+                                  {question.category}
+                                </Badge>
+                                <Badge
+                                  variant="outline"
+                                  className={`${
+                                    question.difficulty === "简单" ? "bg-green-500/20 border-green-500/30 text-green-400" :
+                                    question.difficulty === "中等" ? "bg-yellow-500/20 border-yellow-500/30 text-yellow-400" :
+                                    "bg-red-500/20 border-red-500/30 text-red-400"
+                                  }`}
+                                >
+                                  {question.difficulty}
+                                </Badge>
+                              </div>
+                              <h4 className="font-semibold text-foreground mb-3">{question.question}</h4>
+
+                              <div className="grid grid-cols-2 gap-4 mb-3">
+                                <div className="p-3 bg-white/5 rounded-lg">
+                                  <p className="text-xs text-muted-foreground mb-1">错误次数</p>
+                                  <p className="text-lg font-bold text-red-400">{question.wrongCount} 次</p>
+                                </div>
+                                <div className="p-3 bg-white/5 rounded-lg">
+                                  <p className="text-xs text-muted-foreground mb-1">正确率</p>
+                                  <p className="text-lg font-bold text-green-400">{question.correctRate}</p>
+                                </div>
+                              </div>
+
+                              <div className="space-y-2 mb-3">
+                                <p className="text-sm text-muted-foreground">
+                                  <span className="font-medium">你的答案：</span>
+                                  <span className="text-red-400 ml-2">{question.yourAnswer}</span>
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  <span className="font-medium">正确答案：</span>
+                                  <span className="text-green-400 ml-2">{question.correctAnswer}</span>
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  <span className="font-medium">解析：</span>
+                                  <span className="text-foreground ml-2">{question.explanation}</span>
+                                </p>
+                              </div>
+                            </div>
+                            <Button variant="outline" size="sm" className="ml-4 whitespace-nowrap">
+                              <RotateCcw className="h-3 w-3 mr-1" />
+                              重新练习
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="flex gap-3 justify-center">
+                  <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    进入错题集练习
+                  </Button>
+                  <Button variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    导出错题集
+                  </Button>
+                </div>
               </TabsContent>
 
               {/* 证书管理 */}
