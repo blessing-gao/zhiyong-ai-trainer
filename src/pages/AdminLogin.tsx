@@ -4,37 +4,69 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+
+// 简单的验证函数
+const validateUsername = (username: string): string | null => {
+  if (!username || username.length < 3) {
+    return "用户名至少需要3个字符";
+  }
+  return null;
+};
+
+const validatePassword = (password: string): string | null => {
+  if (!password || password.length < 6) {
+    return "密码至少需要6个字符";
+  }
+  return null;
+};
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !password) {
-      toast.error("请填写邮箱和密码");
+
+    // 验证输入
+    const usernameError = validateUsername(username);
+    if (usernameError) {
+      toast.error(usernameError);
+      return;
+    }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      toast.error(passwordError);
       return;
     }
 
     setIsLoading(true);
-    
-    // 简单验证，实际应用中需要真实的验证逻辑
-    setTimeout(() => {
-      if (email && password) {
-        toast.success("登录成功", {
-          description: "欢迎回到管理后台",
-        });
-        setTimeout(() => {
-          navigate("/admin");
-        }, 1000);
-      } else {
-        toast.error("登录失败，请检查邮箱和密码");
+
+    try {
+      const { error } = await login(username, password);
+
+      if (error) {
+        toast.error(error.message || "登录失败，请检查用户名和密码");
         setIsLoading(false);
+        return;
       }
-    }, 1000);
+
+      toast.success("登录成功", {
+        description: "欢迎回到管理后台",
+      });
+
+      setTimeout(() => {
+        navigate("/admin");
+      }, 1000);
+    } catch (err) {
+      console.error('Login error:', err);
+      toast.error("登录失败，请重试");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -88,15 +120,15 @@ const AdminLogin = () => {
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-foreground">
-                  管理员邮箱
+                <label htmlFor="username" className="text-sm font-medium text-foreground">
+                  管理员用户名
                 </label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="username"
+                  type="text"
+                  placeholder="请输入用户名（至少3个字符）"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="h-12 bg-background/50 border-input/50 focus:border-primary focus:bg-background/80 transition-smooth"
                   disabled={isLoading}
                 />

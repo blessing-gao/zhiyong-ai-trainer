@@ -7,6 +7,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import UserManagement from "@/components/UserManagement";
+import QuestionBankManagement from "@/components/QuestionBankManagement";
+import PaperManagement from "@/components/PaperManagement";
+import ExamManagement from "@/components/ExamManagement";
 import { 
   LayoutDashboard, 
   GraduationCap, 
@@ -51,6 +54,7 @@ const AdminDashboard = () => {
     { id: "Users", label: "用户管理", icon: Users },
     { id: "Courses", label: "课程管理", icon: GraduationCap },
     { id: "QuestionBank", label: "题库管理", icon: FileText },
+    { id: "Papers", label: "试卷管理", icon: FileText },
     { id: "Exams", label: "考试管理", icon: FileText },
     { id: "Certificates", label: "证书管理", icon: FileText },
     { id: "Analytics", label: "数据统计", icon: BarChart3 },
@@ -86,27 +90,14 @@ const AdminDashboard = () => {
     { name: "刘同学", message: "考试时间确认", time: "10:27" },
   ];
 
-  // 题库数据
-  const questionBanks = [
-    { id: 1, name: "人工智能概述", category: "基础理论", questions: 150, difficulty: "初级" },
-    { id: 2, name: "机器学习算法", category: "核心技术", questions: 300, difficulty: "中级" },
-    { id: 3, name: "深度学习实践", category: "应用实战", questions: 250, difficulty: "高级" }
-  ];
-
-  // 考试数据
-  const examSessions = [
-    { id: 1, name: "AI训练师认证考试-2024年3月", date: "2024-03-25", participants: 85, status: "进行中" },
-    { id: 2, name: "AI训练师模拟考试", date: "2024-03-20", participants: 120, status: "已结束" },
-    { id: 3, name: "AI训练师补考", date: "2024-03-30", participants: 25, status: "未开始" }
-  ];
-
   // 获取当前区域标题
   function getSectionTitle(section: string): string {
     const titles: Record<string, string> = {
       Dashboard: "仪表盘",
       Users: "用户管理",
-      Courses: "课程管理", 
+      Courses: "课程管理",
       QuestionBank: "题库管理",
+      Papers: "试卷管理",
       Exams: "考试管理",
       Certificates: "证书管理",
       Analytics: "数据统计",
@@ -124,6 +115,7 @@ const AdminDashboard = () => {
       Users: "学生和管理员账户管理",
       Courses: "课程内容和学习材料管理",
       QuestionBank: "试题库和题目维护管理",
+      Papers: "试卷创建、编辑和发布管理",
       Exams: "考试场次安排和成绩管理",
       Certificates: "认证证书颁发和管理",
       Analytics: "学习数据分析和系统统计",
@@ -141,6 +133,7 @@ const AdminDashboard = () => {
       Users: <Users className="h-5 w-5 text-white" />,
       Courses: <GraduationCap className="h-5 w-5 text-white" />,
       QuestionBank: <FileText className="h-5 w-5 text-white" />,
+      Papers: <FileText className="h-5 w-5 text-white" />,
       Exams: <FileText className="h-5 w-5 text-white" />,
       Certificates: <Award className="h-5 w-5 text-white" />,
       Analytics: <BarChart3 className="h-5 w-5 text-white" />,
@@ -162,6 +155,8 @@ const AdminDashboard = () => {
         return renderCourses();
       case "QuestionBank":
         return renderQuestions();
+      case "Papers":
+        return renderPapers();
       case "Exams":
         return renderExams();
       case "Certificates":
@@ -511,289 +506,17 @@ const AdminDashboard = () => {
 
   // 渲染题库管理
   function renderQuestions() {
-    const questionStats = [
-      { category: "AI基础理论", total: 458, easy: 180, medium: 205, hard: 73 },
-      { category: "机器学习", total: 332, easy: 125, medium: 142, hard: 65 },
-      { category: "深度学习", total: 289, easy: 98, medium: 134, hard: 57 },
-      { category: "实践应用", total: 216, easy: 89, medium: 92, hard: 35 }
-    ];
+    return <QuestionBankManagement />;
+  }
 
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Input placeholder="搜索题目..." className="w-64" />
-            <select className="w-32 px-3 py-2 border border-gray-300 rounded-md text-sm">
-              <option>全部分类</option>
-              <option>AI基础理论</option>
-              <option>机器学习</option>
-              <option>深度学习</option>
-              <option>实践应用</option>
-            </select>
-            <select className="w-32 px-3 py-2 border border-gray-300 rounded-md text-sm">
-              <option>全部难度</option>
-              <option>简单</option>
-              <option>中等</option>
-              <option>困难</option>
-            </select>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline">
-              <Upload className="h-4 w-4 mr-2" />
-              批量导入
-            </Button>
-            <Button variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              导出题库
-            </Button>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              新增题目
-            </Button>
-          </div>
-        </div>
-
-        {/* 题库统计 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {questionStats.map((stat, index) => (
-            <Card key={index} className="bg-white/80 backdrop-blur-sm border-gray-100 shadow-sm">
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-sm">{stat.category}</h3>
-                    <Database className="h-4 w-4 text-gray-500" />
-                  </div>
-                  <div className="text-2xl font-bold">{stat.total}</div>
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div className="text-green-600">
-                      <div className="font-medium">{stat.easy}</div>
-                      <div>简单</div>
-                    </div>
-                    <div className="text-yellow-600">
-                      <div className="font-medium">{stat.medium}</div>
-                      <div>中等</div>
-                    </div>
-                    <div className="text-red-600">
-                      <div className="font-medium">{stat.hard}</div>
-                      <div>困难</div>
-                    </div>
-                  </div>
-                </div>
-          </CardContent>
-        </Card>
-          ))}
-        </div>
-
-        <Card className="bg-white/80 backdrop-blur-sm border-gray-100 shadow-sm">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">题目信息</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">分类</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">难度</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">题型</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">使用次数</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">正确率</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {questionBanks.map((bank) => (
-                    <tr key={bank.id}>
-                      <td className="px-6 py-4">
-                        <div>
-                          <p className="font-medium">{bank.name}</p>
-                          <p className="text-sm text-gray-500">{bank.questions} 道题目</p>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">{bank.category}</td>
-                      <td className="px-6 py-4">
-                        <Badge variant="outline" className={
-                          bank.difficulty === '初级' ? 'text-green-600 border-green-200' :
-                          bank.difficulty === '中级' ? 'text-yellow-600 border-yellow-200' :
-                          'text-red-600 border-red-200'
-                        }>
-                          {bank.difficulty}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">选择题</td>
-                      <td className="px-6 py-4">156次</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">78%</span>
-                          <div className="w-12 bg-gray-200 rounded-full h-1">
-                            <div className="bg-green-600 h-1 rounded-full" style={{ width: '78%' }}></div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-3 w-3" />
-          </Button>
-                          <Button size="sm" variant="outline">
-                            预览
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Download className="h-3 w-3" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-600">
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  // 渲染试卷管理
+  function renderPapers() {
+    return <PaperManagement />;
   }
 
   // 渲染考试管理
   function renderExams() {
-    const examStats = [
-      { name: "今日考试", value: 12, icon: Calendar, color: "blue" },
-      { name: "本周考试", value: 45, icon: Calendar, color: "green" },
-      { name: "总考试场次", value: 234, icon: Award, color: "blue" },
-      { name: "平均通过率", value: "87.5%", icon: TrendingUp, color: "green" }
-    ];
-
-    return (
-      <div className="space-y-6">
-        {/* 考试统计 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {examStats.map((stat, index) => {
-            const IconComponent = stat.icon;
-            return (
-              <Card key={index} className="bg-white/80 backdrop-blur-sm border-gray-100 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-500">{stat.name}</p>
-                      <p className="text-2xl font-bold">{stat.value}</p>
-          </div>
-                    <div className={`p-3 bg-${stat.color}-100 rounded-lg`}>
-                      <IconComponent className={`h-5 w-5 text-${stat.color}-600`} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Input placeholder="搜索考试..." className="w-64" />
-            <select className="w-32 px-3 py-2 border border-gray-300 rounded-md text-sm">
-              <option>全部</option>
-              <option>进行中</option>
-              <option>已结束</option>
-              <option>未开始</option>
-            </select>
-            <select className="w-32 px-3 py-2 border border-gray-300 rounded-md text-sm">
-              <option>全部类型</option>
-              <option>正式考试</option>
-              <option>模拟考试</option>
-              <option>练习测试</option>
-            </select>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              导出成绩
-            </Button>
-            <Button>
-            <Plus className="h-4 w-4 mr-2" />
-              创建考试
-          </Button>
-          </div>
-        </div>
-
-        <Card className="bg-white/80 backdrop-blur-sm border-gray-100 shadow-sm">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">考试信息</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">类型</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">时间安排</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">参考人数</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">平均分</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">通过率</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">状态</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {examSessions.map((exam) => (
-                    <tr key={exam.id}>
-                      <td className="px-6 py-4">
-            <div>
-                          <p className="font-medium">{exam.name}</p>
-                          <p className="text-sm text-gray-500">ID: {exam.id}</p>
-                </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge variant="outline">认证考试</Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm">
-                          <div>{exam.date}</div>
-                          <div className="text-gray-500">9:00-11:00</div>
-              </div>
-                      </td>
-                      <td className="px-6 py-4">{exam.participants}人</td>
-                      <td className="px-6 py-4">
-                        <span className="font-medium">85.6分</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">87%</span>
-                          <div className="w-12 bg-gray-200 rounded-full h-1">
-                            <div className="bg-green-600 h-1 rounded-full" style={{ width: '87%' }}></div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge 
-                          variant={
-                            exam.status === '进行中' ? 'default' :
-                            exam.status === '已结束' ? 'secondary' : 'outline'
-                          }
-                        >
-                          {exam.status}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="outline">
-                            详情
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Download className="h-3 w-3" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            监控
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <ExamManagement />;
   }
 
   // 渲染证书管理

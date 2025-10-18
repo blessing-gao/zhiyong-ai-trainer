@@ -1,15 +1,18 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from "@/integrations/supabase/client";
 
 type UserRole = 'student' | 'teacher';
 
+interface LocalUser {
+  id: string;
+  username: string;
+  role: UserRole;
+}
+
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: LocalUser | null;
   userRole: UserRole | null;
-  login: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signup: (email: string, password: string, fullName: string, role: UserRole) => Promise<{ error: Error | null }>;
+  login: (username: string, password: string) => Promise<{ error: Error | null }>;
+  signup: (username: string, password: string, fullName: string, role: UserRole) => Promise<{ error: Error | null }>;
   logout: () => Promise<void>;
   isLoggedIn: boolean;
   loading: boolean;
@@ -17,96 +20,117 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// 简单的本地用户存储（实际应用中应使用真实数据库）
+const getStoredUsers = (): LocalUser[] => {
+  const stored = localStorage.getItem('app_users');
+  return stored ? JSON.parse(stored) : [];
+};
+
+const saveUsers = (users: LocalUser[]) => {
+  localStorage.setItem('app_users', JSON.stringify(users));
+};
+
+const getCurrentUser = (): LocalUser | null => {
+  const stored = localStorage.getItem('current_user');
+  return stored ? JSON.parse(stored) : null;
+};
+
+const setCurrentUser = (user: LocalUser | null) => {
+  if (user) {
+    localStorage.setItem('current_user', JSON.stringify(user));
+  } else {
+    localStorage.removeItem('current_user');
+  }
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<LocalUser | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Fetch user role when session changes
-        if (session?.user) {
-          setTimeout(() => {
-            fetchUserRole(session.user.id);
-          }, 0);
-        } else {
-          setUserRole(null);
-        }
-      }
-    );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchUserRole(session.user.id);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    // 初始化时从本地存储恢复用户状态
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+      setUserRole(currentUser.role);
+    }
+    setLoading(false);
   }, []);
 
-  const fetchUserRole = async (userId: string) => {
+  const login = async (username: string, password: string) => {
     try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .single();
-      
-      if (error) throw error;
-      setUserRole(data?.role as UserRole || null);
-    } catch (error) {
-      console.error('Error fetching user role:', error);
-    }
-  };
+      // 验证用户名和密码长度
+      if (!username || username.length < 3) {
+        return { error: new Error('用户名至少需要3个字符') };
+      }
+      if (!password || password.length < 6) {
+        return { error: new Error('密码至少需要6个字符') };
+      }
 
-  const login = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      return { error };
+      // 从本地存储中查找用户
+      const users = getStoredUsers();
+      const foundUser = users.find(u => u.username === username);
+
+      if (!foundUser) {
+        return { error: new Error('用户不存在') };
+      }
+
+      // 简单的密码验证（实际应用中应使用加密）
+      const storedPassword = localStorage.getItem(`pwd_${username}`);
+      if (storedPassword !== password) {
+        return { error: new Error('密码错误') };
+      }
+
+      // 登录成功
+      setUser(foundUser);
+      setUserRole(foundUser.role);
+      setCurrentUser(foundUser);
+
+      return { error: null };
     } catch (error) {
       return { error: error as Error };
     }
   };
 
-  const signup = async (email: string, password: string, fullName: string, role: UserRole) => {
+  const signup = async (username: string, password: string, fullName: string, role: UserRole) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: fullName,
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      // Insert user role
-      if (data.user) {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({ user_id: data.user.id, role });
-        
-        if (roleError) throw roleError;
+      // 验证用户名和密码长度
+      if (!username || username.length < 3) {
+        return { error: new Error('用户名至少需要3个字符') };
       }
+      if (!password || password.length < 6) {
+        return { error: new Error('密码至少需要6个字符') };
+      }
+      if (!fullName || fullName.length < 2) {
+        return { error: new Error('姓名至少需要2个字符') };
+      }
+
+      // 检查用户名是否已存在
+      const users = getStoredUsers();
+      if (users.some(u => u.username === username)) {
+        return { error: new Error('用户名已存在') };
+      }
+
+      // 创建新用户
+      const newUser: LocalUser = {
+        id: Date.now().toString(),
+        username,
+        role,
+      };
+
+      // 保存用户信息
+      users.push(newUser);
+      saveUsers(users);
+
+      // 保存密码（实际应用中应使用加密）
+      localStorage.setItem(`pwd_${username}`, password);
+      localStorage.setItem(`fullname_${username}`, fullName);
+
+      // 自动登录
+      setUser(newUser);
+      setUserRole(role);
+      setCurrentUser(newUser);
 
       return { error: null };
     } catch (error) {
@@ -115,22 +139,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
     setUser(null);
-    setSession(null);
     setUserRole(null);
+    setCurrentUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      session, 
-      userRole, 
-      login, 
-      signup, 
-      logout, 
+    <AuthContext.Provider value={{
+      user,
+      userRole,
+      login,
+      signup,
+      logout,
       isLoggedIn: !!user,
-      loading 
+      loading
     }}>
       {children}
     </AuthContext.Provider>

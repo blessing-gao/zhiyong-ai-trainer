@@ -5,19 +5,31 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
-import { z } from "zod";
 
-const loginSchema = z.object({
-  email: z.string().email({ message: "请输入有效的邮箱地址" }),
-  password: z.string().min(6, { message: "密码至少需要6个字符" }),
-});
+// 简单的验证函数
+const validateUsername = (username: string): string | null => {
+  if (!username || username.length < 3) {
+    return "用户名至少需要3个字符";
+  }
+  return null;
+};
 
-const signupSchema = loginSchema.extend({
-  fullName: z.string().min(2, { message: "姓名至少需要2个字符" }),
-});
+const validatePassword = (password: string): string | null => {
+  if (!password || password.length < 6) {
+    return "密码至少需要6个字符";
+  }
+  return null;
+};
+
+const validateFullName = (fullName: string): string | null => {
+  if (!fullName || fullName.length < 2) {
+    return "姓名至少需要2个字符";
+  }
+  return null;
+};
 
 const StudentLogin = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -30,22 +42,29 @@ const StudentLogin = () => {
 
     try {
       if (isSignup) {
-        // 注册流程
-        const validation = signupSchema.safeParse({
-          email,
-          password,
-          fullName,
-        });
+        // 注册流程 - 验证输入
+        const usernameError = validateUsername(username);
+        if (usernameError) {
+          toast.error(usernameError);
+          return;
+        }
 
-        if (!validation.success) {
-          toast.error(validation.error.errors[0].message);
+        const passwordError = validatePassword(password);
+        if (passwordError) {
+          toast.error(passwordError);
+          return;
+        }
+
+        const fullNameError = validateFullName(fullName);
+        if (fullNameError) {
+          toast.error(fullNameError);
           return;
         }
 
         setIsLoading(true);
         // 默认所有用户都是学生身份
-        const { error } = await signup(email, password, fullName, 'student');
-        
+        const { error } = await signup(username, password, fullName, 'student');
+
         if (error) {
           toast.error(error.message || "注册失败，请重试");
           setIsLoading(false);
@@ -55,31 +74,29 @@ const StudentLogin = () => {
         toast.success("注册成功！", {
           description: `正在为您登录...`,
         });
-        
+
         setTimeout(() => {
           navigate("/");
         }, 1500);
       } else {
-        // 登录流程
-        const validation = loginSchema.safeParse({ email, password });
+        // 登录流程 - 验证输入
+        const usernameError = validateUsername(username);
+        if (usernameError) {
+          toast.error(usernameError);
+          return;
+        }
 
-        if (!validation.success) {
-          toast.error(validation.error.errors[0].message);
+        const passwordError = validatePassword(password);
+        if (passwordError) {
+          toast.error(passwordError);
           return;
         }
 
         setIsLoading(true);
-        const { error } = await login(email, password);
-        
+        const { error } = await login(username, password);
+
         if (error) {
-          const errorMsg = error.message || "登录失败";
-          if (errorMsg.includes("Invalid login credentials")) {
-            toast.error("邮箱或密码错误，请重试");
-          } else if (errorMsg.includes("Email not confirmed")) {
-            toast.error("请先确认您的邮箱");
-          } else {
-            toast.error("登录失败，请检查邮箱和密码");
-          }
+          toast.error(error.message || "登录失败，请重试");
           setIsLoading(false);
           return;
         }
@@ -87,7 +104,7 @@ const StudentLogin = () => {
         toast.success("登录成功", {
           description: `欢迎回到智涌·人工智能中心`,
         });
-        
+
         setTimeout(() => {
           navigate("/");
         }, 1500);
@@ -146,15 +163,15 @@ const StudentLogin = () => {
                 </div>
               )}
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-foreground">
-                  用户名或邮箱地址
+                <label htmlFor="username" className="text-sm font-medium text-foreground">
+                  用户名
                 </label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="hello@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="username"
+                  type="text"
+                  placeholder="请输入用户名（至少3个字符）"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="h-12 bg-background/50 border-input/50 focus:border-primary focus:bg-background/80 transition-smooth"
                   disabled={isLoading}
                 />

@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { 
+  ArrowLeft, 
+  Clock, 
+  Target
+} from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Clock, Target } from "lucide-react";
 
 const FormalExam = () => {
   const { applyRoleTheme } = useTheme();
   const navigate = useNavigate();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]); // 用于多选题
-  const [answers, setAnswers] = useState<{ [key: number]: number | number[] | null }>({});
+  const [answers, setAnswers] = useState<{ [key: number]: number | null }>({});
   const [timeLeft, setTimeLeft] = useState(100 * 60); // 100分钟倒计时
   const totalQuestions = 100; // 总题数
 
@@ -34,77 +37,38 @@ const FormalExam = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // 生成100道题目（支持多种题型）
+  // 生成100道题目
   const generateQuestions = () => {
     const baseQuestions = [
       {
-        type: "single",
-        question: "关于机器学习基础理论的问题1：以下哪个选项是正确的？",
+        question: "关于机器学习基础理论的问题1：以下哪个选法是正确的？",
         options: [
-          "5√2",
-          "12√3",
-          "1",
-          "以上都不对"
+          "A. 监控A - 这是一个关于机器学习基础理论的正确描述",
+          "B. 监控B - 这是一个关于机器学习基础理论的否正确描述",
+          "C. 监控C - 这是一个关于机器学习基础理论的正确描述",
+          "D. 监控D - 这是一个关于机器学习基础理论的否正确描述"
         ],
         correct: 0
       },
       {
-        type: "single",
         question: "什么是机器学习？",
         options: [
-          "让计算机通过数据学习的技术",
-          "让计算机变得更快的技术",
-          "让计算机存储更多数据的技术",
-          "让计算机变得更便宜的技术"
+          "A. 让计算机通过数据学习的技术",
+          "B. 让计算机变得更快的技术",
+          "C. 让计算机存储更多数据的技术",
+          "D. 让计算机变得更便宜的技术"
         ],
         correct: 0
       },
       {
-        type: "multiple",
-        question: "深度学习中常用的激活函数有哪些？（多选）",
+        question: "深度学习中常用的激活函数是？",
         options: [
-          "ReLU",
-          "Sigmoid",
-          "Tanh",
-          "Softmax",
-          "Linear"
+          "A. ReLU",
+          "B. Sigmoid",
+          "C. Tanh",
+          "D. 以上都是"
         ],
-        correct: [0, 1, 2, 3]
-      },
-      {
-        type: "judge",
-        question: "神经网络中的反向传播算法用于计算梯度。",
-        options: ["正确", "错误"],
-        correct: 0
-      },
-      {
-        type: "single",
-        question: "卷积神经网络（CNN）主要用于处理什么类型的数据？",
-        options: [
-          "A. 图像数据",
-          "B. 文本数据",
-          "C. 时间序列数据",
-          "D. 表格数据"
-        ],
-        correct: 0
-      },
-      {
-        type: "judge",
-        question: "过拟合是指模型在训练集上表现很好，但在测试集上表现很差。",
-        options: ["正确", "错误"],
-        correct: 0
-      },
-      {
-        type: "multiple",
-        question: "以下哪些是常见的机器学习算法？（多选）",
-        options: [
-          "A. 决策树",
-          "B. 随机森林",
-          "C. 支持向量机",
-          "D. K-均值聚类",
-          "E. 线性回归"
-        ],
-        correct: [0, 1, 2, 3, 4]
+        correct: 3
       }
     ];
 
@@ -121,116 +85,32 @@ const FormalExam = () => {
 
   const questions = generateQuestions();
   const currentQuestionData = questions[currentQuestion];
-  
-  // 计算已答题数量和进度 - 修复计算逻辑
-  const answeredCount = React.useMemo(() => {
-    return Object.values(answers).filter(answer => answer !== null && answer !== undefined).length;
-  }, [answers]);
-  
-  const progress = React.useMemo(() => {
-    return (answeredCount / totalQuestions) * 100;
-  }, [answeredCount, totalQuestions]);
 
   const handleAnswerSelect = (answerIndex: number) => {
-    const isMultiple = currentQuestionData.type === "multiple";
-
-    if (isMultiple) {
-      // 多选题：切换选择
-      const newAnswers = selectedAnswers.includes(answerIndex)
-        ? selectedAnswers.filter(a => a !== answerIndex)
-        : [...selectedAnswers, answerIndex];
-      setSelectedAnswers(newAnswers);
-      setAnswers({
-        ...answers,
-        [currentQuestion]: newAnswers
-      });
-    } else {
-      // 单选题和判断题
-      setSelectedAnswer(answerIndex.toString());
-      setAnswers({
-        ...answers,
-        [currentQuestion]: answerIndex
-      });
-      
-      // 自动进入下一题（延迟500ms以便用户看到选择效果）
-      if (currentQuestion < totalQuestions - 1) {
-        setTimeout(() => {
-          handleNext();
-        }, 500);
-      }
-    }
+    setSelectedAnswer(answerIndex.toString());
+    setAnswers({
+      ...answers,
+      [currentQuestion]: answerIndex
+    });
   };
 
   const handleNext = () => {
     if (currentQuestion < totalQuestions - 1) {
       setCurrentQuestion(prev => prev + 1);
-      const nextAnswer = answers[currentQuestion + 1];
-      if (Array.isArray(nextAnswer)) {
-        setSelectedAnswers(nextAnswer);
-        setSelectedAnswer(null);
-      } else {
-        setSelectedAnswer(nextAnswer?.toString() || null);
-        setSelectedAnswers([]);
-      }
-      
-      // 自动滚动到当前题号
-      setTimeout(() => {
-        scrollToCurrentQuestion();
-      }, 100);
+      setSelectedAnswer(answers[currentQuestion + 1]?.toString() || null);
     }
   };
 
   const handlePrevious = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(prev => prev - 1);
-      const prevAnswer = answers[currentQuestion - 1];
-      if (Array.isArray(prevAnswer)) {
-        setSelectedAnswers(prevAnswer);
-        setSelectedAnswer(null);
-      } else {
-        setSelectedAnswer(prevAnswer?.toString() || null);
-        setSelectedAnswers([]);
-      }
-      
-      // 自动滚动到当前题号
-      setTimeout(() => {
-        scrollToCurrentQuestion();
-      }, 100);
+      setSelectedAnswer(answers[currentQuestion - 1]?.toString() || null);
     }
   };
 
   const handleQuestionClick = (index: number) => {
     setCurrentQuestion(index);
-    const answer = answers[index];
-    if (Array.isArray(answer)) {
-      setSelectedAnswers(answer);
-      setSelectedAnswer(null);
-    } else {
-      setSelectedAnswer(answer?.toString() || null);
-      setSelectedAnswers([]);
-    }
-  };
-
-  // 滚动到当前题号
-  const scrollToCurrentQuestion = () => {
-    const questionContainer = document.querySelector('.question-scroll-container');
-    if (questionContainer) {
-      const questionButtons = questionContainer.querySelectorAll('button');
-      const currentButton = questionButtons[currentQuestion];
-      if (currentButton) {
-        currentButton.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
-        });
-      }
-    }
-  };
-
-  const handleSubmit = () => {
-    // 提交考试逻辑
-    alert('考试提交成功！');
-    navigate('/exam');
+    setSelectedAnswer(answers[index]?.toString() || null);
   };
 
   const formatTime = (seconds: number) => {
@@ -241,293 +121,151 @@ const FormalExam = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-[#E6F7FF] relative overflow-hidden p-4">
-      {/* 验证代码是否生效 */}
-      <div style={{ display: 'none' }}>VERSION: 2024-NEW</div>
-      {/* 三个渐变圆形背景 */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-20 -left-60 w-[768px] h-[768px] rounded-full animate-float" style={{
-          background: 'radial-gradient(circle, #A2EBFF 0%, transparent 70%)'
-        }}></div>
-        <div className="absolute bottom-30 -right-50 w-[840px] h-[840px] rounded-full animate-float-slow" style={{
-          background: 'radial-gradient(circle, #79E3DA 0%, transparent 70%)'
-        }}></div>
-        <div className="absolute -top-40 left-1/4 -translate-x-1/2 w-[600px] h-[600px] rounded-full animate-float" style={{
-          background: 'radial-gradient(circle, #97CAFF 0%, transparent 60%)',
-          animationDelay: '1s'
-        }}></div>
-      </div>
-      
-      {/* 顶部区域 */}
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* 返回按钮和倒计时 */}
-        <div className="flex justify-between items-center mb-6">
-          <Button 
-            variant="outline"
-            onClick={() => navigate('/exam')}
-            className="bg-white border transition-all font-medium px-6 rounded-2xl shadow-md text-base flex items-center h-[52px]"
-            style={{
-              borderColor: '#67B3FF',
-              color: '#67B3FF'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#67B3FF';
-              e.currentTarget.style.color = 'white';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'white';
-              e.currentTarget.style.color = '#67B3FF';
-            }}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            返回考试中心
-          </Button>
-          
-          <div 
-            className="px-8 rounded-2xl shadow-md bg-white border transition-all flex items-center justify-center h-[52px]"
-            style={{
-              borderColor: '#67B3FF',
-              color: '#67B3FF'
-            }}
-          >
-            <span className="text-2xl font-bold">{formatTime(timeLeft)}</span>
-          </div>
-        </div>
-
-        {/* 进度条区域 */}
-        <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-3 shadow-lg mb-3">
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-              <div 
-                className="h-full rounded-full transition-all duration-300"
-                style={{
-                  width: `${progress}%`,
-                  background: 'linear-gradient(to right, #A2EBFF, #79E3DA, #97CAFF, #67B3FF)'
-                }}
-              />
+    <div className="min-h-screen bg-gradient-hero">
+      <div className="p-6">
+        <div className="max-w-[1400px] mx-auto">
+          {/* 半透明白色容器 */}
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl">
+            
+            {/* 头部信息 */}
+            <div className="flex items-center justify-between mb-8">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/exam')}
+                className="border-border text-foreground hover:bg-muted/50"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                返回考试中心
+              </Button>
+              
+              <div className="text-center">
+                <h1 className="text-2xl font-bold text-foreground">AI训练师AI证照职考试</h1>
+                <p className="text-muted-foreground">卷第 {currentQuestion + 1}/{totalQuestions} 题</p>
+              </div>
+              
+              <div className="flex items-center gap-2 text-foreground">
+                <Clock className="h-4 w-4" />
+                <span className="font-mono text-lg">{formatTime(timeLeft)}</span>
+              </div>
             </div>
-            <span 
-              className="whitespace-nowrap" 
-              style={{ 
-                fontFamily: 'Arial, sans-serif',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                color: '#374151'
-              }}
-            >
-              已答:{answeredCount} 总数:{totalQuestions} ({Math.round(progress)}%)
-            </span>
-          </div>
-        </div>
 
-        {/* 题号按钮区域 */}
-        <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 shadow-lg mb-4 overflow-hidden">
-          <style dangerouslySetInnerHTML={{ __html: `
-            .question-scroll-container {
-              overflow-x: auto;
-              padding-bottom: 8px;
-              margin-bottom: -8px;
-            }
-            .question-scroll-container::-webkit-scrollbar {
-              height: 8px;
-            }
-            .question-scroll-container::-webkit-scrollbar-track {
-              background: #e5e7eb;
-              border-radius: 4px;
-            }
-            .question-scroll-container::-webkit-scrollbar-thumb {
-              background: #67B3FF;
-              border-radius: 4px;
-            }
-            .question-scroll-container::-webkit-scrollbar-thumb:hover {
-              background: #4A90E2;
-            }
-          `}} />
-          <div className="question-scroll-container flex gap-3" style={{ scrollbarWidth: 'thin', scrollbarColor: '#67B3FF #e5e7eb' }}>
-            {Array.from({ length: totalQuestions }, (_, i) => {
-              return (
-                <button
-                  key={i}
-                  onClick={() => handleQuestionClick(i)}
-                  className={`
-                    w-8 h-8 flex-shrink-0 rounded-full font-semibold text-sm transition-all duration-200
-                    ${currentQuestion === i 
-                      ? 'bg-[#67B3FF] text-white shadow-lg scale-110' 
-                      : answers[i] !== undefined 
-                      ? 'bg-[#A2EBFF] text-gray-700' 
-                      : 'bg-gray-100 text-gray-500'
-                    }
-                  `}
-                  style={{ fontFamily: 'Arial, sans-serif' }}
-                >
-                  {(i + 1).toString()}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+            {/* 主体内容区 - 左右分栏 */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              
+              {/* 左侧答题卡 */}
+              <div className="lg:col-span-1">
+                <Card className="bg-white/10 border-white/20 backdrop-blur-sm sticky top-24">
+                  <CardHeader>
+                    <CardTitle className="text-foreground text-center">答题卡</CardTitle>
+                    <p className="text-sm text-muted-foreground text-center">已答题 {Object.keys(answers).length}/{totalQuestions}</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-5 gap-2 max-h-[500px] overflow-y-auto">
+                      {Array.from({ length: totalQuestions }, (_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => handleQuestionClick(i)}
+                          className={`
+                            h-10 rounded-lg font-medium text-sm transition-all duration-200
+                            ${currentQuestion === i 
+                              ? 'bg-primary text-white ring-2 ring-primary ring-offset-2 ring-offset-white/10' 
+                              : answers[i] !== undefined 
+                              ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+                              : 'bg-white/10 text-foreground hover:bg-white/20'
+                            }
+                          `}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-        {/* 主体内容 - 左右分栏 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 左侧：题目区域 */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <span 
-                    className="text-white px-4 py-1 rounded-full font-medium"
-                    style={{ 
-                      fontFamily: 'Arial, sans-serif',
-                      backgroundColor: currentQuestionData.type === "multiple" ? '#79E3DA' : '#67B3FF'
-                    }}
-                  >
-                    第 {String(currentQuestion + 1)} 题
-                  </span>
-                </div>
-                
-                {/* 上一题和下一题按钮 */}
-                <div className="flex items-center gap-2">
-                  <button
+              {/* 右侧题目区 */}
+              <div className="lg:col-span-3">
+                <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="bg-primary w-12 h-12 rounded-full flex items-center justify-center">
+                        <Target className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-foreground text-xl">题目 {currentQuestion + 1}</CardTitle>
+                        <p className="text-sm text-muted-foreground">选择题</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      {/* 题目 */}
+                      <div className="text-lg text-foreground leading-relaxed font-medium p-4 bg-white/5 rounded-lg">
+                        {currentQuestionData.question}
+                      </div>
+                      
+                      {/* 选项 */}
+                      <div className="space-y-3">
+                        {currentQuestionData.options.map((option, index) => (
+                          <div
+                            key={index}
+                            className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                              selectedAnswer === index.toString()
+                                ? 'bg-primary/20 border-primary shadow-md'
+                                : 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/30'
+                            }`}
+                            onClick={() => handleAnswerSelect(index)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                                selectedAnswer === index.toString()
+                                  ? 'border-primary bg-primary'
+                                  : 'border-white/30'
+                              }`}>
+                                {selectedAnswer === index.toString() && (
+                                  <div className="w-3 h-3 bg-white rounded-full"></div>
+                                )}
+                              </div>
+                              <span className="text-foreground">{option}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 导航按钮 */}
+                <div className="flex justify-between items-center mt-6">
+                  <Button
+                    variant="outline"
                     onClick={handlePrevious}
                     disabled={currentQuestion === 0}
-                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{
-                      backgroundColor: currentQuestion === 0 ? '#e5e7eb' : (currentQuestionData.type === "multiple" ? '#79E3DA' : '#67B3FF'),
-                      color: currentQuestion === 0 ? '#9ca3af' : 'white'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (currentQuestion !== 0) {
-                        e.currentTarget.style.backgroundColor = currentQuestionData.type === "multiple" ? '#6BCFC7' : '#4A90E2';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (currentQuestion !== 0) {
-                        e.currentTarget.style.backgroundColor = currentQuestionData.type === "multiple" ? '#79E3DA' : '#67B3FF';
-                      }
-                    }}
+                    className="border-border text-foreground hover:bg-muted/50 disabled:opacity-50"
                   >
-                    <ArrowLeft className="h-4 w-4" />
-                  </button>
-                  
-                  <button
+                    上一题
+                  </Button>
+
+                  <Button
                     onClick={handleNext}
                     disabled={currentQuestion === totalQuestions - 1}
-                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{
-                      backgroundColor: currentQuestion === totalQuestions - 1 ? '#e5e7eb' : (currentQuestionData.type === "multiple" ? '#79E3DA' : '#67B3FF'),
-                      color: currentQuestion === totalQuestions - 1 ? '#9ca3af' : 'white'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (currentQuestion !== totalQuestions - 1) {
-                        e.currentTarget.style.backgroundColor = currentQuestionData.type === "multiple" ? '#6BCFC7' : '#4A90E2';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (currentQuestion !== totalQuestions - 1) {
-                        e.currentTarget.style.backgroundColor = currentQuestionData.type === "multiple" ? '#79E3DA' : '#67B3FF';
-                      }
-                    }}
+                    className="bg-primary hover:bg-primary-dark text-white disabled:opacity-50"
                   >
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
+                    下一题
+                  </Button>
                 </div>
               </div>
-              <p className="text-gray-800 text-base leading-relaxed">
-                {currentQuestionData.question}
-              </p>
-            </div>
-            
-            {/* 如果有图片可以在这里显示 */}
-            <div className="bg-gray-50 rounded-xl p-6 flex items-center justify-center min-h-[150px]">
-              <span className="text-gray-400 text-sm">题目图片区域</span>
             </div>
           </div>
 
-          {/* 右侧：选项区域 */}
-          <div className="space-y-3">
-            {currentQuestionData.options.map((option, index) => {
-              // 去掉选项文本中的前缀 (如 "A. "、"B. " 等)
-              const cleanOption = option.replace(/^[A-E]\.\s*/, '');
-              
-              const isMultiple = currentQuestionData.type === "multiple";
-              const isSelected = isMultiple 
-                ? selectedAnswers.includes(index)
-                : selectedAnswer === index.toString();
-              
-              // 根据题型选择悬停颜色
-              const hoverColor = isMultiple ? '#79E3DA' : '#67B3FF';
-              const selectedColor = isMultiple ? '#79E3DA' : '#67B3FF';
-              
-              return (
-                <div
-                  key={index}
-                  onClick={() => handleAnswerSelect(index)}
-                  className="rounded-2xl p-4 shadow-lg cursor-pointer transition-all duration-200"
-                  style={{
-                    backgroundColor: isSelected ? selectedColor : 'white',
-                    color: isSelected ? 'white' : '#374151'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isSelected) {
-                      e.currentTarget.style.backgroundColor = hoverColor;
-                      e.currentTarget.style.color = 'white';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isSelected) {
-                      e.currentTarget.style.backgroundColor = 'white';
-                      e.currentTarget.style.color = '#374151';
-                    }
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all flex-shrink-0"
-                      style={{ 
-                        backgroundColor: isSelected ? 'white' : selectedColor,
-                        color: isSelected ? selectedColor : 'white',
-                        borderColor: selectedColor,
-                        fontFamily: 'Arial, sans-serif',
-                        fontSize: '18px',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      {['A', 'B', 'C', 'D', 'E'][index]}
-                    </div>
-                    <span className="text-base font-medium">
-                      {cleanOption}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+          {/* 考试提醒 */}
+          <div className="fixed bottom-8 right-8 bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 shadow-lg max-w-xs">
+            <h4 className="font-semibold text-yellow-800 mb-2">考试提醒</h4>
+            <p className="text-sm text-yellow-700">
+              记住考试题目！请仔细阅读每道题目。
+            </p>
           </div>
         </div>
-
-        {/* 提交按钮 - 只在所有题答完后显示 */}
-        {answeredCount === totalQuestions && (
-          <div className="flex justify-center items-center mt-8">
-            <Button
-              variant="outline"
-              onClick={handleSubmit}
-              className="bg-white border transition-all font-bold px-12 py-6 text-lg rounded-xl shadow-lg"
-              style={{
-                borderColor: '#67B3FF',
-                color: '#67B3FF'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#67B3FF';
-                e.currentTarget.style.color = 'white';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'white';
-                e.currentTarget.style.color = '#67B3FF';
-              }}
-            >
-              提交考试
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
