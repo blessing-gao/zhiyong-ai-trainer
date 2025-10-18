@@ -4,6 +4,15 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction
+} from "@/components/ui/alert-dialog";
+import { 
   BookOpen, 
   Clock, 
   CheckCircle, 
@@ -20,6 +29,10 @@ const CourseLearning = () => {
   const [currentChapter, setCurrentChapter] = useState(3); // 默认显示第3章（当前进行中）
   const [currentLesson, setCurrentLesson] = useState(1);
   const [showExperiment, setShowExperiment] = useState(false);
+  const rightSideRef = React.useRef<HTMLDivElement>(null);
+  const [rightSideHeight, setRightSideHeight] = useState<number>(0);
+  const [showCertificate, setShowCertificate] = useState(false);
+  const [certificateNumber] = useState('2025041523456789'); // 模拟证书编号
 
   // Apply theme based on user role
   useEffect(() => {
@@ -32,6 +45,33 @@ const CourseLearning = () => {
       setCurrentChapter(location.state.chapterId);
     }
   }, [location.state]);
+
+  // 监听右侧Tab区域高度变化
+  useEffect(() => {
+    const updateHeight = () => {
+      if (rightSideRef.current) {
+        setRightSideHeight(rightSideRef.current.offsetHeight);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    
+    // 使用MutationObserver监听内容变化
+    const observer = new MutationObserver(updateHeight);
+    if (rightSideRef.current) {
+      observer.observe(rightSideRef.current, { 
+        childList: true, 
+        subtree: true,
+        attributes: true 
+      });
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateHeight);
+      observer.disconnect();
+    };
+  }, [currentLesson, showExperiment]);
 
   const courseData = {
     id: 'ai-basics',
@@ -94,7 +134,7 @@ const CourseLearning = () => {
       {
         id: 4,
         title: '生成式AI技术',
-        lessons: 12,
+        lessonCount: 12,
         duration: '360分钟',
         completed: false,
         lessons: [
@@ -115,7 +155,7 @@ const CourseLearning = () => {
       {
         id: 5,
         title: '实际应用案例',
-        lessons: 8,
+        lessonCount: 8,
         duration: '240分钟',
         completed: false,
         lessons: [
@@ -132,7 +172,7 @@ const CourseLearning = () => {
       {
         id: 6,
         title: '项目实践',
-        lessons: 6,
+        lessonCount: 6,
         duration: '180分钟',
         completed: false,
         lessons: [
@@ -172,97 +212,198 @@ const CourseLearning = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      <div className="p-6">
+    <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
+      {/* 渐变圆形背景 */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div 
+          className="absolute top-20 -left-60 w-[768px] h-[768px] rounded-full animate-float" 
+          style={{
+            background: 'radial-gradient(circle, rgba(121, 227, 218, 0.6) 0%, transparent 70%)'
+          }}
+        ></div>
+        <div 
+          className="absolute bottom-80 -right-100 w-[640px] h-[640px] rounded-full animate-float-slow" 
+          style={{
+            background: 'radial-gradient(circle, rgba(151, 202, 255, 0.6) 0%, transparent 70%)'
+          }}
+        ></div>
+        <div 
+          className="absolute bottom-100 -right-60 w-[800px] h-[800px] rounded-full animate-float" 
+          style={{
+            background: 'radial-gradient(circle, rgba(103, 179, 255, 0.5) 0%, transparent 70%)',
+            animationDelay: '1s'
+          }}
+        ></div>
+      </div>
+
+      <div className="p-6 relative z-10">
         <div className="max-w-7xl mx-auto">
           {/* 半透明白色容器 */}
           <div className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl">
             
-            {/* 返回按钮和课程信息 */}
-            <div className="mb-6 flex items-center justify-between">
-              <Button 
-                variant="outline" 
-                onClick={handleBackToCourse}
-                className="border-border text-foreground hover:bg-muted/50"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                返回课程中心
-              </Button>
-              <div className="text-right">
-                <h1 className="text-2xl font-bold text-foreground">{courseData.title}</h1>
-                <p className="text-muted-foreground">第{currentChapter}章 {currentChapterData?.title}</p>
-              </div>
+            {/* 课程信息 */}
+            <div className="mb-6 text-right">
+              <h1 className="text-2xl font-bold text-foreground">{courseData.title}</h1>
+              <p className="text-muted-foreground">第{currentChapter}章 {currentChapterData?.title}</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
               {/* 左侧：课程大纲 */}
               <div className="lg:col-span-1">
-                <Card className="bg-white/10 border-white/20 backdrop-blur-sm sticky top-6">
-                  <CardHeader>
-                    <CardTitle className="text-foreground text-lg">
+                <Card 
+                  className="bg-white border-0 overflow-hidden relative flex flex-col"
+                  style={{ height: rightSideHeight > 0 ? `${rightSideHeight}px` : 'auto' }}
+                >
+                  {/* 渐变圆形背景 */}
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    <div 
+                      className="absolute -top-20 -left-20 w-80 h-80 rounded-full opacity-50 animate-float"
+                      style={{
+                        background: 'radial-gradient(circle, #A2EBFF 0%, transparent 70%)'
+                      }}
+                    ></div>
+                    <div 
+                      className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full opacity-50 animate-float-slow"
+                      style={{
+                        background: 'radial-gradient(circle, #79E3DA 0%, transparent 70%)'
+                      }}
+                    ></div>
+                  </div>
+
+                  <CardHeader className="pb-4 relative z-10 flex-shrink-0">
+                    <CardTitle className="text-foreground text-base font-medium">
                       第{currentChapterData?.id}章 {currentChapterData?.title}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-1">
-                    {currentChapterData?.lessons && currentChapterData.lessons.map((lesson) => (
-                      <div 
-                        key={lesson.id}
-                        className={`p-3 rounded-lg cursor-pointer transition-all ${
-                          lesson.id === currentLesson 
-                            ? 'bg-blue-50 border border-blue-200' 
-                            : 'bg-white/5 hover:bg-white/10'
-                        }`}
-                        onClick={() => setCurrentLesson(lesson.id)}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1">
-                            <p className="text-sm text-foreground font-medium">{lesson.title}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Clock className="h-3 w-3 text-muted-foreground" />
-                              <span className="text-xs text-muted-foreground">{lesson.duration}</span>
-                        </div>
+                  <CardContent className="relative z-10 flex flex-col flex-1 overflow-hidden pb-6">
+                    <div className="space-y-2 flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                      {currentChapterData?.lessons && currentChapterData.lessons.map((lesson) => (
+                        <div 
+                          key={lesson.id}
+                          className={`p-3 rounded-lg cursor-pointer transition-all relative ${
+                            lesson.id === currentLesson 
+                              ? 'shadow-md' 
+                              : 'hover:bg-gray-50'
+                          }`}
+                          style={lesson.id === currentLesson ? { backgroundColor: '#67B3FF15' } : {}}
+                          onClick={() => setCurrentLesson(lesson.id)}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2 flex-1">
+                              {lesson.completed && (
+                                <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#79E3DA' }}>
+                                  <CheckCircle className="h-3 w-3 text-white fill-white" />
+                                </div>
+                              )}
+                              {!lesson.completed && (
+                                <div className="flex-shrink-0 w-5 h-5"></div>
+                              )}
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-foreground">
+                                  {lesson.title}
+                                </p>
+                                <div className="flex items-center gap-1 mt-1">
+                                  <Clock className="h-3 w-3 text-muted-foreground" />
+                                  <span className="text-xs text-muted-foreground">
+                                    {lesson.duration}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          {lesson.completed && (
-                            <CheckCircle className="h-4 w-4 text-green-500 fill-green-500 flex-shrink-0" />
-                          )}
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                    
+                    {/* 返回按钮 */}
+                    <div className="pt-4 border-t border-gray-200 mt-4 flex-shrink-0">
+                      <Button 
+                        onClick={handleBackToCourse}
+                        className="w-full bg-white text-foreground border-2 transition-all hover:bg-[#67B3FF] hover:text-white hover:border-white"
+                        style={{ borderColor: '#67B3FF', color: '#67B3FF' }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#67B3FF';
+                          e.currentTarget.style.color = 'white';
+                          e.currentTarget.style.borderColor = 'white';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'white';
+                          e.currentTarget.style.color = '#67B3FF';
+                          e.currentTarget.style.borderColor = '#67B3FF';
+                        }}
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        返回课程中心
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
 
               {/* 右侧：Tab页内容区域 */}
               <div className="lg:col-span-3">
-                <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
+                <Card ref={rightSideRef} className="bg-blue-50/20 border-blue-200/30 backdrop-blur-sm">
                   <CardContent className="p-0">
                     <Tabs defaultValue="ppt" className="w-full">
-                      {/* Tab 标签栏 - 类似浏览器标签页 */}
-                      <div className="border-b-2 border-gray-200 bg-gradient-to-b from-gray-50 to-gray-100">
-                        <TabsList className="h-auto bg-transparent border-0 rounded-none w-full justify-start px-2 pt-2 gap-1">
+                      {/* Tab 标签栏 - 圆角按钮样式 */}
+                      <div className="px-6 pt-6 pb-2 rounded-t-2xl">
+                        <TabsList className="h-auto bg-transparent border-0 rounded-none w-full justify-start gap-2 p-0">
                           <TabsTrigger 
                             value="ppt" 
-                            className="relative h-10 rounded-t-md rounded-b-none px-5 py-2 bg-white/60 border border-gray-300 border-b-0 text-gray-700 hover:bg-white/80 data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border-gray-400 data-[state=active]:border-b-white data-[state=active]:-mb-0.5"
+                            className="h-10 px-6 py-2 bg-white border-2 font-medium transition-all data-[state=active]:shadow-md"
+                            style={{ borderColor: '#67B3FF', color: '#67B3FF' }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#67B3FF';
+                              e.currentTarget.style.color = 'white';
+                              e.currentTarget.style.borderColor = 'white';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'white';
+                              e.currentTarget.style.color = '#67B3FF';
+                              e.currentTarget.style.borderColor = '#67B3FF';
+                            }}
                           >
-                            <span className="mr-1">📊</span> PPT
+                            幻灯片
                           </TabsTrigger>
                           <TabsTrigger 
                             value="video" 
-                            className="relative h-10 rounded-t-md rounded-b-none px-5 py-2 bg-white/60 border border-gray-300 border-b-0 text-gray-700 hover:bg-white/80 data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border-gray-400 data-[state=active]:border-b-white data-[state=active]:-mb-0.5"
+                            className="h-10 px-6 py-2 bg-white border-2 font-medium transition-all data-[state=active]:shadow-md"
+                            style={{ borderColor: '#67B3FF', color: '#67B3FF' }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#67B3FF';
+                              e.currentTarget.style.color = 'white';
+                              e.currentTarget.style.borderColor = 'white';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'white';
+                              e.currentTarget.style.color = '#67B3FF';
+                              e.currentTarget.style.borderColor = '#67B3FF';
+                            }}
                           >
-                            <span className="mr-1">🎥</span> 视频
+                            视频
                           </TabsTrigger>
                           <TabsTrigger 
                             value="experiment" 
-                            className="relative h-10 rounded-t-md rounded-b-none px-5 py-2 bg-white/60 border border-gray-300 border-b-0 text-gray-700 hover:bg-white/80 data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border-gray-400 data-[state=active]:border-b-white data-[state=active]:-mb-0.5"
+                            className="h-10 px-6 py-2 bg-white border-2 font-medium transition-all data-[state=active]:shadow-md"
+                            style={{ borderColor: '#67B3FF', color: '#67B3FF' }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#67B3FF';
+                              e.currentTarget.style.color = 'white';
+                              e.currentTarget.style.borderColor = 'white';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'white';
+                              e.currentTarget.style.color = '#67B3FF';
+                              e.currentTarget.style.borderColor = '#67B3FF';
+                            }}
                           >
-                            <span className="mr-1">🧪</span> 实验
+                            实验
                           </TabsTrigger>
                       </TabsList>
                       </div>
                       
                       {/* PPT Tab */}
-                      <TabsContent value="ppt" className="mt-0 p-6">
+                      <TabsContent value="ppt" className="mt-0 p-6 bg-white/50 backdrop-blur-sm rounded-b-2xl">
                         <div className="space-y-6">
                           <div>
                             <h2 className="text-2xl font-bold text-foreground mb-4">
@@ -312,7 +453,7 @@ const CourseLearning = () => {
                       </TabsContent>
                       
                       {/* 视频 Tab */}
-                      <TabsContent value="video" className="mt-0 p-6">
+                      <TabsContent value="video" className="mt-0 p-6 bg-white/50 backdrop-blur-sm rounded-b-2xl">
                         <div className="space-y-4">
                           <h2 className="text-2xl font-bold text-foreground">课程视频</h2>
                           <div className="bg-black rounded-lg aspect-video flex items-center justify-center">
@@ -327,7 +468,7 @@ const CourseLearning = () => {
                       </TabsContent>
                       
                       {/* 实验 Tab */}
-                      <TabsContent value="experiment" className="mt-0 p-0">
+                      <TabsContent value="experiment" className="mt-0 p-0 bg-white/50 backdrop-blur-sm rounded-b-2xl overflow-hidden">
                         {!showExperiment ? (
                           <div className="p-6 space-y-4">
                             <h2 className="text-2xl font-bold text-foreground">实验环境</h2>
@@ -353,7 +494,7 @@ const CourseLearning = () => {
                                 <div className="flex items-center gap-2">
                                   <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                                   <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#79E3DA' }}></div>
                                 </div>
                                 <span className="text-sm">
                                   {getExperimentType() === 'knowledge-graph' && '网页创作区'}
@@ -362,7 +503,7 @@ const CourseLearning = () => {
                                   {getExperimentType() === 'notebook' && 'Jupyter Notebook'}
                                   {getExperimentType() === 'interactive' && '交互式实验'}
                                 </span>
-                                <span className="text-xs text-green-400">● deepseek-v3-250324</span>
+                                <span className="text-xs" style={{ color: '#79E3DA' }}>● deepseek-v3-250324</span>
                         </div>
                               <div className="flex items-center gap-2">
                                 <button className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm">
@@ -382,7 +523,7 @@ const CourseLearning = () => {
                               {getExperimentType() === 'knowledge-graph' && (
                                 <div className="h-full flex flex-col p-6">
                                   <div className="text-center mb-6">
-                                    <h1 className="text-3xl font-bold text-blue-700 mb-2">人工智能知识图谱</h1>
+                                    <h1 className="text-3xl font-bold mb-2" style={{ color: '#67B3FF' }}>人工智能知识图谱</h1>
                                     <p className="text-gray-600">可视化展示人工智能领域的核心概念、技术、应用和关键人物之间的关系网络</p>
                                   </div>
                                   
@@ -406,7 +547,12 @@ const CourseLearning = () => {
                                     <button className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg self-end">
                                       重置视图
                                     </button>
-                                    <button className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg self-end">
+                                    <button 
+                                      className="px-6 py-2 text-white rounded-lg self-end transition-all"
+                                      style={{ backgroundColor: '#67B3FF' }}
+                                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#97CAFF'}
+                                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#67B3FF'}
+                                    >
                                       搜索节点
                                     </button>
               </div>
@@ -447,7 +593,12 @@ const CourseLearning = () => {
                                       <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
                                         💾 保存
                                       </button>
-                                      <button className="px-4 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+                                      <button 
+                                        className="px-4 py-1 text-sm text-white rounded transition-all"
+                                        style={{ backgroundColor: '#67B3FF' }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#97CAFF'}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#67B3FF'}
+                                      >
                                         发布
                                       </button>
                                     </div>
@@ -498,7 +649,12 @@ const CourseLearning = () => {
                                         <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
                                           + Cell
                                         </button>
-                                        <button className="px-3 py-1 text-sm bg-orange-500 text-white rounded hover:bg-orange-600">
+                                        <button 
+                                          className="px-3 py-1 text-sm text-white rounded transition-all"
+                                          style={{ backgroundColor: '#97CAFF' }}
+                                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#67B3FF'}
+                                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#97CAFF'}
+                                        >
                                           ▶ Run All
                                         </button>
                             </div>
@@ -548,8 +704,8 @@ const CourseLearning = () => {
                                     <div className="max-w-2xl w-full text-center">
                                       <h2 className="text-2xl font-bold text-gray-800 mb-4">交互式学习环境</h2>
                                       <p className="text-gray-600 mb-6">通过可视化交互界面深入理解AI概念</p>
-                                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-8">
-                                        <svg className="h-24 w-24 mx-auto mb-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <div className="rounded-lg p-8" style={{ background: 'linear-gradient(135deg, rgba(162, 235, 255, 0.2) 0%, rgba(121, 227, 218, 0.2) 100%)' }}>
+                                        <svg className="h-24 w-24 mx-auto mb-4" style={{ color: '#67B3FF' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                                         </svg>
                                         <p className="text-gray-700">互动实验即将启动...</p>
@@ -574,7 +730,12 @@ const CourseLearning = () => {
                                 </button>
                               </div>
                               <div className="flex items-center gap-2">
-                                <button className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700">
+                                <button 
+                                  className="p-2 text-white rounded-full transition-all"
+                                  style={{ backgroundColor: '#79E3DA' }}
+                                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#67B3FF'}
+                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#79E3DA'}
+                                >
                                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                   </svg>
@@ -605,7 +766,15 @@ const CourseLearning = () => {
                       <span className="text-sm text-muted-foreground">整体进度</span>
                       <span className="text-sm font-semibold text-foreground">{courseData.progress}%</span>
                     </div>
-                    <Progress value={courseData.progress} className="h-2 bg-white/20" />
+                    <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/20">
+                      <div 
+                        className="h-full transition-all" 
+                        style={{ 
+                          width: `${courseData.progress}%`,
+                          backgroundColor: '#67B3FF'
+                        }}
+                      />
+                    </div>
                     </div>
                     
                     <div className="flex items-center justify-center gap-8">
@@ -620,10 +789,24 @@ const CourseLearning = () => {
                     </div>
 
                     <div className="flex items-center justify-end gap-2">
-                      <Button variant="outline" className="border-border text-foreground hover:bg-muted/50">
-                    <Award className="h-4 w-4 mr-2" />
-                    查看证书
-                  </Button>
+                      <Button 
+                        className="bg-white border-2 transition-all"
+                        style={{ borderColor: '#67B3FF', color: '#67B3FF' }}
+                        onClick={() => setShowCertificate(true)}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#67B3FF';
+                          e.currentTarget.style.color = 'white';
+                          e.currentTarget.style.borderColor = 'white';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'white';
+                          e.currentTarget.style.color = '#67B3FF';
+                          e.currentTarget.style.borderColor = '#67B3FF';
+                        }}
+                      >
+                        <Award className="h-4 w-4 mr-2" />
+                        查看证书
+                      </Button>
                 </div>
               </div>
                 </CardContent>
@@ -633,6 +816,25 @@ const CourseLearning = () => {
         </div>
       </div>
 
+      {/* 证书编号弹窗 */}
+      <AlertDialog open={showCertificate} onOpenChange={setShowCertificate}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>证书编号</AlertDialogTitle>
+            <AlertDialogDescription>
+              您的课程证书编号为：
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4 text-center">
+            <div className="text-2xl font-bold text-primary tracking-wider">
+              {certificateNumber}
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogAction>确定</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

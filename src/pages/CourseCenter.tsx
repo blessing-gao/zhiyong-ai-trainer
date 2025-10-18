@@ -3,6 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { 
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction
+} from "@/components/ui/alert-dialog";
 import { Calendar, Clock, BookOpen, Trophy, TrendingUp, User, MessageSquare, Play, Users, Award } from "lucide-react";
 import Header from "@/components/Header";
 import BackgroundCircles from "@/components/BackgroundCircles";
@@ -18,6 +27,8 @@ const CourseCenter = () => {
     return saved === "vertical";
   });
   const [enrolledCourses] = useState(['ai-basics']); // 模拟已报名课程
+  const [showCertificate, setShowCertificate] = useState(false);
+  const [certificateNumber] = useState('2025041523456789'); // 模拟证书编号
 
   // Apply theme based on user role
   useEffect(() => {
@@ -111,7 +122,11 @@ const CourseCenter = () => {
   const recentActivities = [
     { course: "人工智能概述", time: "10:42:23 AM", score: "95分", status: "已完成" },
     { course: "机器学习基础", time: "09:21:45 AM", score: "88分", status: "已完成" },
-    { course: "深度学习原理", time: "08:15:30 AM", score: "92分", status: "进行中" }
+    { course: "深度学习原理", time: "08:15:30 AM", score: "92分", status: "进行中" },
+    { course: "神经网络架构", time: "昨天 16:30", score: "90分", status: "已完成" },
+    { course: "自然语言处理", time: "昨天 14:20", score: "87分", status: "已完成" },
+    { course: "计算机视觉基础", time: "2天前", score: "93分", status: "已完成" },
+    { course: "强化学习入门", time: "3天前", score: "85分", status: "已完成" }
   ];
 
   return (
@@ -138,25 +153,40 @@ const CourseCenter = () => {
             <div className="bg-blue-50/20 backdrop-blur-xl rounded-3xl border border-blue-200/30 p-8 shadow-2xl">
             
             {/* 顶部标题和按钮区域 */}
-            <div className="flex justify-between items-center mb-8">
-              <div>
+            <div className="mb-8">
               <h1 className="text-3xl font-bold text-foreground mb-2">{courseData.title}</h1>
-              <p className="text-muted-foreground">{courseData.description}</p>
-            </div>
-              <div className="flex gap-3">
-                <Button variant="outline" className="border-border text-foreground hover:bg-muted/50">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  查看证书 nber
-                </Button>
-                <Button 
-                  className="text-white border-0"
-                  style={{ 
-                    background: 'linear-gradient(135deg, #67B3FF 0%, #4A90E2 100%)'
-                  }}
-                >
-                  <Play className="h-4 w-4 mr-2" />
-                  继续学习
-                </Button>
+              
+              {/* 使用与下方内容区域相同的网格布局 */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1 flex items-end">
+                  <p className="text-muted-foreground whitespace-nowrap">{courseData.description}</p>
+                </div>
+                <div className="lg:col-span-2">
+                  {/* 使用与下方"学习讨论"和"最近活动"相同的二列布局 */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div></div>
+                    <div className="flex justify-between gap-3 items-center">
+                      <Button 
+                        variant="outline" 
+                        className="border-border text-foreground hover:bg-muted/50 whitespace-nowrap"
+                        onClick={() => setShowCertificate(true)}
+                      >
+                        <Calendar className="h-4 w-4 mr-2" />
+                        查看证书编号
+                      </Button>
+                      <Button 
+                        className="text-white border-0 whitespace-nowrap"
+                        style={{ 
+                          background: 'linear-gradient(135deg, #67B3FF 0%, #4A90E2 100%)'
+                        }}
+                        onClick={() => handleStartLearning()}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        继续学习
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -206,15 +236,20 @@ const CourseCenter = () => {
                         <div className="flex justify-end">
                           <Button 
                             size="sm" 
-                            variant={chapter.current ? "default" : "outline"}
+                            variant="outline"
                             onClick={() => handleStartLearning(chapter.id)}
-                            className="text-xs"
-                            style={chapter.current ? { 
-                              backgroundColor: '#67B3FF',
-                              borderColor: '#67B3FF'
-                            } : {
+                            className="text-xs bg-white border transition-all"
+                            style={{
                               borderColor: '#67B3FF',
                               color: '#67B3FF'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#67B3FF';
+                              e.currentTarget.style.color = 'white';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'white';
+                              e.currentTarget.style.color = '#67B3FF';
                             }}
                           >
                             <Play className="h-3 w-3 mr-1" />
@@ -327,8 +362,8 @@ const CourseCenter = () => {
                     }}
                   >
                     {/* 背景渐变圆圈 */}
-                    <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30" style={{ background: '#97CAFF' }}></div>
-                    <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full blur-3xl opacity-30" style={{ background: '#67B3FF' }}></div>
+                    <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-50" style={{ background: '#97CAFF' }}></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full blur-3xl opacity-50" style={{ background: '#67B3FF' }}></div>
                     
                     <CardHeader className="relative z-10">
                       <CardTitle className="text-foreground text-lg">最近活动</CardTitle>
@@ -371,6 +406,14 @@ const CourseCenter = () => {
                         <div className="relative w-32 h-32">
                           {/* 环形进度条 */}
                           <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+                            {/* 定义渐变色 */}
+                            <defs>
+                              <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style={{ stopColor: '#79E3DA', stopOpacity: 1 }} />
+                                <stop offset="50%" style={{ stopColor: '#97CAFF', stopOpacity: 1 }} />
+                                <stop offset="100%" style={{ stopColor: '#67B3FF', stopOpacity: 1 }} />
+                              </linearGradient>
+                            </defs>
                             <circle
                               cx="50"
                               cy="50"
@@ -384,12 +427,13 @@ const CourseCenter = () => {
                               cx="50"
                               cy="50"
                               r="40"
-                              stroke="currentColor"
-                              strokeWidth="8"
+                              stroke="url(#progressGradient)"
+                              strokeWidth="12"
                               fill="none"
                               strokeDasharray={`${2 * Math.PI * 40}`}
                               strokeDashoffset={`${2 * Math.PI * 40 * (1 - courseData.progress / 100)}`}
-                              style={{ stroke: '#67B3FF' }}
+                              className="transition-all duration-1000 ease-out"
+                              strokeLinecap="round"
                             />
                           </svg>
                           <div className="absolute inset-0 flex items-center justify-center">
@@ -476,6 +520,26 @@ const CourseCenter = () => {
           </div>
         </div>
       </div>
+
+      {/* 证书编号弹窗 */}
+      <AlertDialog open={showCertificate} onOpenChange={setShowCertificate}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>证书编号</AlertDialogTitle>
+            <AlertDialogDescription>
+              您的课程证书编号为：
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4 text-center">
+            <div className="text-2xl font-bold text-primary tracking-wider">
+              {certificateNumber}
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogAction>确定</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
