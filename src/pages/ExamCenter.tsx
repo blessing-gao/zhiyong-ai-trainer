@@ -18,6 +18,8 @@ const ExamCenter = () => {
     const saved = localStorage.getItem("navPosition");
     return saved === "vertical";
   });
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   // Apply theme based on user role
   useEffect(() => {
@@ -39,6 +41,84 @@ const ExamCenter = () => {
   const handleExamSystem = () => {
     navigate('/exam/start');
   };
+
+  // 获取卡片宽度
+  const getCardWidth = (card: any) => {
+    if (card.type === "exam") {
+      return card.id === "practical" ? 400 : 320;
+    } else if (card.type === "info") {
+      return 320;
+    } else if (card.type === "security") {
+      return 480;
+    }
+    return 320;
+  };
+
+  // 滚动到指定卡片
+  const scrollToCard = (index: number) => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const containerWidth = container.clientWidth;
+      const gap = 16; // gap-4 = 16px
+      
+      // 计算到目标卡片为止的累计宽度
+      let cardLeft = 0;
+      for (let i = 0; i < index; i++) {
+        const cardWidth = getCardWidth(allCards[i]);
+        cardLeft += cardWidth + gap;
+      }
+      
+      // 获取目标卡片的宽度
+      const targetCardWidth = getCardWidth(allCards[index]);
+      const cardCenter = cardLeft + (targetCardWidth / 2);
+      const containerCenter = containerWidth / 2;
+      const scrollLeft = cardCenter - containerCenter;
+      
+      container.scrollTo({
+        left: Math.max(0, scrollLeft),
+        behavior: 'smooth'
+      });
+      setActiveCardIndex(index);
+    }
+  };
+
+  // 监听滚动事件，更新活动卡片索引
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const containerWidth = container.clientWidth;
+      const scrollLeft = container.scrollLeft;
+      const containerCenter = containerWidth / 2;
+      const gap = 16;
+      
+      // 计算当前滚动位置对应的卡片索引
+      const targetPosition = scrollLeft + containerCenter;
+      let currentPosition = 0;
+      let newIndex = 0;
+      
+      for (let i = 0; i < allCards.length; i++) {
+        const cardWidth = getCardWidth(allCards[i]);
+        const cardCenter = currentPosition + (cardWidth / 2);
+        
+        if (targetPosition >= currentPosition && targetPosition < currentPosition + cardWidth) {
+          newIndex = i;
+          break;
+        }
+        
+        currentPosition += cardWidth + gap;
+        newIndex = i; // 如果到达最后一张卡片
+      }
+      
+      if (newIndex !== activeCardIndex && newIndex >= 0 && newIndex < allCards.length) {
+        setActiveCardIndex(newIndex);
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [activeCardIndex]);
 
   // 考试信息数据
   const examInfo = {
@@ -202,8 +282,8 @@ const ExamCenter = () => {
           {/* 主要内容区域 - 卡片 */}
           <div className="relative">
             {/* 横向滚动卡片容器 */}
-            <div className="relative overflow-hidden max-w-4xl mt-16 ml-48">
-              <div className="overflow-x-auto pb-4 scrollbar-hide" style={{
+            <div className="relative overflow-hidden max-w-4xl mt-4 ml-48">
+              <div ref={scrollContainerRef} className="overflow-x-auto pb-4 scrollbar-hide" style={{
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none'
               }}>
@@ -214,17 +294,19 @@ const ExamCenter = () => {
                 `}</style>
                 <div className="flex gap-4 min-w-max">
                   {/* 第一组卡片 */}
-                  {allCards.map((card) => {
+                  {allCards.map((card, index) => {
                     const IconComponent = card.icon;
+                    const isActive = activeCardIndex === index;
                     
                     if (card.type === "exam") {
                       return (
                         <div 
                           key={card.id}
-                          className={`${card.id === "practical" ? "w-[400px]" : "w-[320px]"} rounded-2xl p-6 flex-shrink-0 backdrop-blur-sm border border-white/20 relative`}
+                          className={`${card.id === "practical" ? "w-[400px]" : "w-[320px]"} rounded-2xl p-6 flex-shrink-0 backdrop-blur-sm border border-white/20 relative transition-all duration-300 cursor-pointer hover:scale-105`}
                           style={{
-                            background: 'rgba(255, 255, 255, 0.1)'
+                            background: isActive ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.1)'
                           }}
+                          onClick={() => scrollToCard(index)}
                         >
                           <div className="text-center mb-4">
                             <h3 className="text-2xl font-bold text-gray-700 mb-2">{card.title}</h3>
@@ -249,10 +331,11 @@ const ExamCenter = () => {
                       return (
                         <div 
                           key={card.id}
-                          className="w-[320px] rounded-2xl p-6 flex-shrink-0 backdrop-blur-sm border border-white/20 relative"
+                          className="w-[320px] rounded-2xl p-6 flex-shrink-0 backdrop-blur-sm border border-white/20 relative transition-all duration-300 cursor-pointer hover:scale-105"
                           style={{
-                            background: 'rgba(255, 255, 255, 0.1)'
+                            background: isActive ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.1)'
                           }}
+                          onClick={() => scrollToCard(index)}
                         >
                           <div className="flex items-center gap-3 mb-6">
                             <div className="p-2 rounded-lg bg-gray-200">
@@ -276,10 +359,11 @@ const ExamCenter = () => {
                       return (
                         <div 
                           key={card.id}
-                          className="w-[480px] rounded-2xl p-6 flex-shrink-0 backdrop-blur-sm border border-white/20 relative"
+                          className="w-[480px] rounded-2xl p-6 flex-shrink-0 backdrop-blur-sm border border-white/20 relative transition-all duration-300 cursor-pointer hover:scale-105"
                           style={{
-                            background: 'rgba(255, 255, 255, 0.1)'
+                            background: isActive ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.1)'
                           }}
+                          onClick={() => scrollToCard(index)}
                         >
                           <div className="flex items-center gap-3 mb-6">
                             <div className="p-2 rounded-lg bg-gray-200">
@@ -308,42 +392,24 @@ const ExamCenter = () => {
                     return null;
                   })}
                   
-                  {/* 添加第一张卡片用于无限循环效果 */}
-                  {(() => {
-                    const firstCard = allCards[0];
-                    const IconComponent = firstCard.icon;
-                    
-                    if (firstCard.type === "exam") {
-                      return (
-                        <div 
-                          key={`${firstCard.id}-cycle`}
-                          className={`${firstCard.id === "practical" ? "w-[400px]" : "w-[320px]"} rounded-2xl p-6 flex-shrink-0 backdrop-blur-sm border border-white/20 relative`}
-                          style={{
-                            background: 'rgba(255, 255, 255, 0.1)'
-                          }}
-                        >
-                          <div className="text-center mb-4">
-                            <h3 className="text-2xl font-bold text-gray-700 mb-2">{firstCard.title}</h3>
-                            <p className="text-sm text-gray-600">{firstCard.subtitle}</p>
-                          </div>
-                          <div className="flex justify-center gap-8 py-4">
-                            <div className="text-center">
-                              <div className="text-3xl font-bold text-gray-700 mb-1">{firstCard.duration}</div>
-                              <div className="text-sm text-gray-500">考试时长</div>
-                            </div>
-                            <div className="w-px bg-gray-300"></div>
-                            <div className="text-center">
-                              <div className="text-3xl font-bold text-gray-700 mb-1">{firstCard.questions}</div>
-                              <div className="text-sm text-gray-500">题目数量</div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })()}
-                  
                 </div>
+              </div>
+              
+              {/* 导航点 */}
+              <div className="flex justify-center gap-3 mt-6">
+                {allCards.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => scrollToCard(index)}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 hover:scale-125 cursor-pointer ${
+                      activeCardIndex === index 
+                        ? 'scale-110' 
+                        : 'bg-white/40 hover:bg-white/60'
+                    }`}
+                    style={activeCardIndex === index ? { backgroundColor: '#67B3FF' } : undefined}
+                    aria-label={`跳转到卡片 ${index + 1}`}
+                  />
+                ))}
               </div>
               
             </div>
