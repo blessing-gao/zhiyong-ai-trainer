@@ -7,10 +7,14 @@ async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
+  // 获取认证令牌
+  const accessToken = localStorage.getItem('access_token');
+
   const defaultOptions: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
+      ...(accessToken && { 'Authorization': `Bearer ${accessToken}` }),
       ...options.headers,
     },
   };
@@ -175,6 +179,16 @@ export const paperApi = {
     return apiRequest(`/api/papers/${paperId}`);
   },
 
+  // 获取试卷详情（别名）
+  getPaper: async (paperId: number) => {
+    return apiRequest(`/api/papers/${paperId}`);
+  },
+
+  // 获取试卷的题目列表（用于恢复答题进度）
+  getPaperQuestions: async (paperId: number) => {
+    return apiRequest(`/api/papers/${paperId}/questions`);
+  },
+
   // 创建试卷
   createPaper: async (data: any) => {
     return apiRequest('/api/papers', {
@@ -227,6 +241,14 @@ export const paperApi = {
   // 生成试卷并返回题目（用于试题训练）
   generatePaperForTraining: async (data: any) => {
     return apiRequest('/api/papers/generate-for-training', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // 生成试题训练试卷并保存到数据库
+  generateTrainingPaper: async (data: any) => {
+    return apiRequest('/api/papers/generate-training-paper', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -534,5 +556,64 @@ export const questionTagApi = {
     return apiRequest(`/api/question-tag-mappings/question/${questionId}`, {
       method: 'DELETE',
     });
+  },
+};
+
+// 试题训练答题记录相关 API
+export const examAnswerApi = {
+  // 开始答题
+  startAnswering: async (userId: number, paperId: number) => {
+    return apiRequest('/api/exam-answer/start', {
+      method: 'POST',
+      body: JSON.stringify({
+        userId,
+        paperId,
+      }),
+    });
+  },
+
+  // 保存答题进度
+  saveAnswerProgress: async (userId: number, paperId: number, answers: Record<string, any>) => {
+    return apiRequest('/api/exam-answer/save-progress', {
+      method: 'POST',
+      body: JSON.stringify({
+        userId,
+        paperId,
+        answers,
+      }),
+    });
+  },
+
+  // 提交答题
+  submitAnswers: async (userId: number, paperId: number) => {
+    return apiRequest('/api/exam-answer/submit', {
+      method: 'POST',
+      body: JSON.stringify({
+        userId,
+        paperId,
+      }),
+    });
+  },
+
+  // 放弃答题
+  abandonAnswering: async (userId: number) => {
+    return apiRequest(`/api/exam-answer/abandon?userId=${userId}`, {
+      method: 'POST',
+    });
+  },
+
+  // 获取答题记录
+  getAnswerRecord: async (userId: number, paperId: number) => {
+    return apiRequest(`/api/exam-answer/record?userId=${userId}&paperId=${paperId}`);
+  },
+
+  // 获取用户进行中的答题记录
+  getInProgressAnswers: async (userId: number) => {
+    return apiRequest(`/api/exam-answer/in-progress?userId=${userId}`);
+  },
+
+  // 获取用户已提交的答题记录
+  getSubmittedAnswers: async (userId: number) => {
+    return apiRequest(`/api/exam-answer/submitted?userId=${userId}`);
   },
 };

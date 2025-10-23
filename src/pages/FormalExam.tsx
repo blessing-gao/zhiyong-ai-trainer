@@ -12,12 +12,14 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import { examApi } from "@/services/api";
+import { examApi, examAnswerApi } from "@/services/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const FormalExam = () => {
   const { applyRoleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number[] }>({});
   const [questions, setQuestions] = useState<any[]>([]);
@@ -28,6 +30,8 @@ const FormalExam = () => {
   const [examResult, setExamResult] = useState<any>(null);
   const [resultTab, setResultTab] = useState<'correct' | 'wrong'>('correct');
   const [resultCurrentQuestion, setResultCurrentQuestion] = useState(0);
+  const [paperId, setPaperId] = useState<number | null>(null);
+  const [saveProgressInterval, setSaveProgressInterval] = useState<NodeJS.Timeout | null>(null);
 
   // Apply theme based on user role
   useEffect(() => {
@@ -41,12 +45,21 @@ const FormalExam = () => {
 
     let questionsData: any[] = [];
     let examInfoData: any = null;
+    let paperIdData: number | null = null;
+    let resumeAnswers: any = {};
 
     // 优先从路由状态获取数据
     if (location.state && location.state.questions && location.state.questions.length > 0) {
       console.log("✅ 从路由状态获取题目数据");
       questionsData = location.state.questions;
       examInfoData = location.state.examInfo;
+      paperIdData = location.state.examInfo?.paperId;
+
+      // 检查是否有恢复的答题进度
+      if (location.state.resumeAnswers) {
+        console.log("✅ 恢复答题进度");
+        resumeAnswers = location.state.resumeAnswers;
+      }
     } else if (location.state && location.state.fromExamSystem) {
       // 从考试系统进入，使用假数据
       console.log("✅ 从考试系统进入，使用假数据");
@@ -75,11 +88,18 @@ const FormalExam = () => {
       // 其次从 localStorage 获取数据
       const storedQuestions = localStorage.getItem('exam_questions');
       const storedExamInfo = localStorage.getItem('exam_info');
+      const storedAnswers = localStorage.getItem('exam_answers');
 
       if (storedQuestions) {
         console.log("✅ 从localStorage获取题目数据");
         questionsData = JSON.parse(storedQuestions);
         examInfoData = storedExamInfo ? JSON.parse(storedExamInfo) : null;
+        paperIdData = examInfoData?.paperId;
+
+        if (storedAnswers) {
+          console.log("✅ 恢复localStorage中的答题进度");
+          resumeAnswers = JSON.parse(storedAnswers);
+        }
       } else {
         console.warn("⚠️ 未找到题目数据，使用默认数据");
         // 使用默认数据
@@ -96,6 +116,21 @@ const FormalExam = () => {
 
     setQuestions(questionsData);
     setExamInfo(examInfoData);
+    setPaperId(paperIdData);
+
+    // 恢复答题进度
+    if (Object.keys(resumeAnswers).length > 0) {
+      const convertedAnswers: { [key: number]: number[] } = {};
+      Object.entries(resumeAnswers).forEach(([key, value]: [string, any]) => {
+        const questionIndex = parseInt(key);
+        if (typeof value === 'string') {
+          convertedAnswers[questionIndex] = value.split(',').map(Number);
+        } else if (Array.isArray(value)) {
+          convertedAnswers[questionIndex] = value;
+        }
+      });
+      setSelectedAnswers(convertedAnswers);
+    }
 
     // 设置倒计时时间
     if (examInfoData && examInfoData.duration) {
@@ -119,6 +154,44 @@ const FormalExam = () => {
 
     return () => clearInterval(timer);
   }, []);
+
+  // 定时保存答题进度（每30秒保存一次）
+  useEffect(() => {
+    if (!user || !paperId || Object.keys(selectedAnswers).length === 0) {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        console.log("💾 自动保存答题进度...");
+
+        // 构建答题内容
+        const answers: { [key: string]: any } = {};
+        Object.entries(selectedAnswers).forEach(([index, answerIndexes]) => {
+          answers[index] = answerIndexes.join(',');
+        });
+
+        // 调用保存答题进度接口
+        const response: any = await examAnswerApi.saveAnswerProgress(user.id, paperId, answers);
+
+        if (response.code === 0) {
+          console.log("✅ 答题进度保存成功");
+        } else {
+          console.warn("⚠️ 答题进度保存失败:", response.msg);
+        }
+      } catch (error) {
+        console.error("❌ 保存答题进度出错:", error);
+      }
+    }, 30000); // 每30秒保存一次
+
+    setSaveProgressInterval(interval);
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [user, paperId, selectedAnswers]);
 
   // 生成默认题目（备用）
   const generateDefaultQuestions = () => {
@@ -224,6 +297,19 @@ const FormalExam = () => {
     if (window.confirm(confirmMessage)) {
       setIsSubmitting(true);
       try {
+        // 如果有paperId，先调用提交答题接口
+        if (user && paperId) {
+          console.log("📤 调用提交答题接口...");
+          const submitAnswerResponse: any = await examAnswerApi.submitAnswers(user.id, paperId);
+
+          if (submitAnswerResponse.code !== 0) {
+            console.warn("⚠️ 提交答题记录失败:", submitAnswerResponse.msg);
+            // 继续提交，不中断流程
+          } else {
+            console.log("✅ 答题记录已提交");
+          }
+        }
+
         // 构建提交数据
         const answers = questions.map((question, index) => {
           const selectedIndexes = selectedAnswers[index] || [];
@@ -248,6 +334,12 @@ const FormalExam = () => {
         if (response.code === 0 && response.data) {
           console.log("✅ 答卷提交成功，结果:", response.data);
           setExamResult(response.data);
+
+          // 清空localStorage
+          localStorage.removeItem('exam_questions');
+          localStorage.removeItem('exam_info');
+          localStorage.removeItem('exam_answers');
+          localStorage.removeItem('exam_start_time');
         } else {
           alert("提交失败：" + (response.msg || "未知错误"));
         }

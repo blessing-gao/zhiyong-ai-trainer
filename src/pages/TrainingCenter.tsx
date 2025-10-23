@@ -13,11 +13,13 @@ import Header from "@/components/Header";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import trainingCenterBg from "@/assets/training-center-bg.png";
-import { questionApi, tagApi, paperApi } from "@/services/api";
+import { questionApi, tagApi, paperApi, examAnswerApi } from "@/services/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const TrainingCenter = () => {
   const { applyRoleTheme } = useTheme();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isVertical, setIsVertical] = useState(() => {
     const saved = localStorage.getItem("navPosition");
     return saved === "vertical";
@@ -26,6 +28,8 @@ const TrainingCenter = () => {
   const [knowledgePointsCount, setKnowledgePointsCount] = useState<number>(0);
   const [questionsCount, setQuestionsCount] = useState<number>(0);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [showResumeDialog, setShowResumeDialog] = useState(false);
+  const [inProgressAnswer, setInProgressAnswer] = useState<any>(null);
 
   // Apply theme based on user role
   useEffect(() => {
@@ -71,13 +75,215 @@ const TrainingCenter = () => {
     navigate('/training/knowledge-explore');
   };
 
-  // 试题训练模式 - 调用后端API生成试卷
+  // 恢复答题进度
+  const handleResumeAnswering = async () => {
+    if (!inProgressAnswer || !user) return;
+
+    try {
+      console.log("🔄 恢复答题进度...");
+      setShowResumeDialog(false);
+
+      // 获取答题记录
+      const answerRecord: any = await examAnswerApi.getAnswerRecord(user.id, inProgressAnswer.paperId);
+      console.log("📦 答题记录:", answerRecord);
+
+      if (answerRecord.code === 0 && answerRecord.data) {
+        const examAnswer = answerRecord.data;
+
+        // 解析答题内容
+        let answers = {};
+        if (examAnswer.answer) {
+          try {
+            answers = JSON.parse(examAnswer.answer);
+          } catch (e) {
+            console.warn("解析答题内容失败，使用空对象");
+          }
+        }
+
+        // 直接从数据库获取试卷的题目列表（不需要重新组卷）
+        console.log("🔄 从数据库获取试卷题目...");
+        const paperResponse: any = await paperApi.getPaper(inProgressAnswer.paperId);
+
+        if (paperResponse.code === 0 && paperResponse.data) {
+          const paper = paperResponse.data;
+
+          // 获取试卷的题目列表
+          const questionsResponse: any = await paperApi.getPaperQuestions(inProgressAnswer.paperId);
+
+          if (questionsResponse.code === 0 && questionsResponse.data && questionsResponse.data.questions) {
+            console.log("✅ 成功获取题目，恢复答题进度");
+
+            // 存储到 localStorage
+            localStorage.setItem('exam_questions', JSON.stringify(questionsResponse.data.questions));
+            localStorage.setItem('exam_info', JSON.stringify({
+              paperId: inProgressAnswer.paperId,
+              name: questionsResponse.data.paperName,
+              duration: questionsResponse.data.duration,
+              totalScore: questionsResponse.data.totalScore,
+              passScore: questionsResponse.data.passScore,
+              questionCount: questionsResponse.data.questionCount
+            }));
+            localStorage.setItem('exam_answers', JSON.stringify(answers));
+            localStorage.setItem('exam_start_time', inProgressAnswer.startTime);
+
+            console.log("💾 答题进度已恢复到localStorage");
+
+            // 导航到答题卡页面
+            navigate('/exam/start', {
+              state: {
+                paperId: inProgressAnswer.paperId,
+                questions: questionsResponse.data.questions,
+                examInfo: {
+                  paperId: inProgressAnswer.paperId,
+                  name: questionsResponse.data.paperName,
+                  duration: questionsResponse.data.duration,
+                  totalScore: questionsResponse.data.totalScore,
+                  passScore: questionsResponse.data.passScore,
+                  questionCount: questionsResponse.data.questionCount
+                },
+                resumeAnswers: answers,
+                resumeStartTime: inProgressAnswer.startTime
+              }
+            });
+          } else {
+            alert("获取题目详情失败，请稍后重试");
+          }
+        } else {
+          alert("获取试卷信息失败，请稍后重试");
+        }
+      } else {
+        alert("获取答题记录失败，请稍后重试");
+      }
+    } catch (error) {
+      console.error("❌ 恢复答题进度出错:", error);
+      alert("恢复答题进度出错，请稍后重试");
+    }
+  };
+
+  // 放弃恢复，开始新答题
+  const handleStartNewAnswering = async () => {
+    if (!user) return;
+
+    try {
+      console.log("🚀 放弃恢复，开始新答题...");
+      setShowResumeDialog(false);
+      setInProgressAnswer(null);
+      setIsGenerating(true);
+
+      // 第一步：放弃当前的答题记录（如果有的话）
+      console.log("🔄 放弃当前的答题记录...");
+      const abandonResponse: any = await examAnswerApi.abandonAnswering(user.id);
+      if (abandonResponse.code === 0) {
+        console.log("✅ 已放弃当前答题记录");
+      } else {
+        console.warn("⚠️ 放弃答题记录失败或没有进行中的记录");
+      }
+
+      // 第二步：获取所有一级标签
+      console.log("📚 获取一级标签...");
+      const tagsResponse: any = await tagApi.getFirstLevelTags();
+
+      if (!tagsResponse.data || tagsResponse.data.length === 0) {
+        console.error("❌ 未找到一级标签");
+        alert("获取知识点失败，请稍后重试");
+        setIsGenerating(false);
+        return;
+      }
+
+      // 构建知识点比例（均匀分配）
+      const knowledgeRatio: { [key: string]: number } = {};
+      const ratio = Math.floor(100 / tagsResponse.data.length);
+      let totalRatio = 0;
+
+      tagsResponse.data.forEach((tag: any, index: number) => {
+        if (index === tagsResponse.data.length - 1) {
+          knowledgeRatio[tag.id.toString()] = 100 - totalRatio;
+        } else {
+          knowledgeRatio[tag.id.toString()] = ratio;
+          totalRatio += ratio;
+        }
+      });
+
+      // 构建组卷请求
+      const paperRequest = {
+        name: "AI训练师认证考试",
+        description: "自动组卷试题训练",
+        type: "practice",
+        totalScore: 100,
+        passScore: 60,
+        duration: 120,
+        questionCount: 100,
+        typeRatio: {
+          judge: 20,
+          single: 70,
+          multiple: 10
+        },
+        knowledgeRatio: knowledgeRatio
+      };
+
+      // 第三步：生成新试卷
+      console.log("🔄 生成新试卷...");
+      const paperResponse: any = await paperApi.generateTrainingPaper(paperRequest);
+
+      if (paperResponse.code === 0 && paperResponse.data) {
+        const paperId = paperResponse.data.id;
+        console.log("✅ 新试卷已生成，试卷ID:", paperId);
+
+        // 第四步：为新试卷创建答题记录
+        console.log("🔄 为新试卷创建答题记录...");
+        const newAnswerResponse: any = await examAnswerApi.startAnswering(user.id, paperId);
+
+        if (newAnswerResponse.code === 0 && newAnswerResponse.data) {
+          console.log("✅ 新建答题记录，开始答题");
+          await proceedToAnswering(paperId, paperRequest);
+        } else {
+          console.error("❌ 创建答题记录失败:", newAnswerResponse);
+          alert("创建答题记录失败，请稍后重试");
+        }
+      } else {
+        console.error("❌ 生成试卷失败:", paperResponse);
+        alert("生成试卷失败，请稍后重试");
+      }
+    } catch (error) {
+      console.error("❌ 开始新答题出错:", error);
+      alert("开始新答题出错，请稍后重试");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // 试题训练模式 - 先检查是否有进行中的答题记录
   const handleQuestionTraining = async () => {
     try {
       setIsGenerating(true);
       console.log("🚀 开始试题训练...");
 
-      // 获取所有一级标签
+      if (!user) {
+        alert("请先登录");
+        setIsGenerating(false);
+        return;
+      }
+
+      // 第一步：先调用开始答题接口检查是否有进行中的答题记录
+      console.log("🔄 检查是否有进行中的答题记录...");
+      const startAnswerResponse: any = await examAnswerApi.startAnswering(user.id, 0);
+      console.log("📦 开始答题响应:", startAnswerResponse);
+
+      if (startAnswerResponse.code === 0 && startAnswerResponse.data) {
+        const examAnswer = startAnswerResponse.data;
+
+        // 检查是否有进行中的答题记录
+        if (examAnswer.status === 0 && examAnswer.answer && examAnswer.answer !== '{}') {
+          // 有进行中的答题记录，询问用户是否恢复
+          console.log("⚠️ 发现进行中的答题记录，询问用户是否恢复");
+          setInProgressAnswer(examAnswer);
+          setShowResumeDialog(true);
+          setIsGenerating(false);
+          return;
+        }
+      }
+
+      // 第二步：没有进行中的答题记录，生成新试卷
       console.log("📚 获取一级标签...");
       const tagsResponse: any = await tagApi.getFirstLevelTags();
       console.log("📚 标签响应:", tagsResponse);
@@ -127,43 +333,30 @@ const TrainingCenter = () => {
 
       console.log("📝 组卷请求:", paperRequest);
 
-      // 调用后端API生成试卷并获取题目
-      console.log("🔄 调用后端API生成试卷...");
-      const response: any = await paperApi.generatePaperForTraining(paperRequest);
+      // 调用后端API生成试卷并保存到数据库
+      console.log("🔄 调用后端API生成试卷并保存到数据库...");
+      const paperResponse: any = await paperApi.generateTrainingPaper(paperRequest);
 
-      console.log("📦 后端响应:", response);
+      console.log("📦 后端响应:", paperResponse);
 
-      if (response.code === 0 && response.data && response.data.questions) {
-        console.log("✅ 成功生成", response.data.questions.length, "道题目");
+      if (paperResponse.code === 0 && paperResponse.data) {
+        const paperId = paperResponse.data.id;
+        console.log("✅ 试卷已保存到数据库，试卷ID:", paperId);
 
-        // 存储到 localStorage
-        localStorage.setItem('exam_questions', JSON.stringify(response.data.questions));
-        localStorage.setItem('exam_info', JSON.stringify({
-          name: response.data.paperName,
-          duration: response.data.duration,
-          totalScore: response.data.totalScore,
-          passScore: response.data.passScore,
-          questionCount: response.data.questionCount
-        }));
+        // 第三步：生成新试卷后，创建新的答题记录
+        console.log("🔄 为新试卷创建答题记录...");
+        const newAnswerResponse: any = await examAnswerApi.startAnswering(user.id, paperId);
+        console.log("📦 新答题记录响应:", newAnswerResponse);
 
-        console.log("💾 题目已保存到localStorage");
-
-        // 导航到答题卡页面
-        console.log("🚀 导航到答题卡页面...");
-        navigate('/exam/start', {
-          state: {
-            questions: response.data.questions,
-            examInfo: {
-              name: response.data.paperName,
-              duration: response.data.duration,
-              totalScore: response.data.totalScore,
-              passScore: response.data.passScore,
-              questionCount: response.data.questionCount
-            }
-          }
-        });
+        if (newAnswerResponse.code === 0 && newAnswerResponse.data) {
+          console.log("✅ 新建答题记录，开始答题");
+          await proceedToAnswering(paperId, paperRequest);
+        } else {
+          console.error("❌ 创建答题记录失败:", newAnswerResponse);
+          alert("创建答题记录失败，请稍后重试");
+        }
       } else {
-        console.error("❌ 生成试卷失败:", response);
+        console.error("❌ 生成试卷失败:", paperResponse);
         alert("生成试卷失败，请稍后重试");
       }
     } catch (error) {
@@ -174,9 +367,93 @@ const TrainingCenter = () => {
     }
   };
 
+  // 继续答题的辅助函数
+  const proceedToAnswering = async (paperId: number, paperRequest: any) => {
+    try {
+      // 再次调用API获取题目详情
+      console.log("🔄 获取试卷题目详情...");
+      const questionsResponse: any = await paperApi.generatePaperForTraining(paperRequest);
+
+      if (questionsResponse.code === 0 && questionsResponse.data && questionsResponse.data.questions) {
+        console.log("✅ 成功获取", questionsResponse.data.questions.length, "道题目");
+
+        // 存储到 localStorage
+        localStorage.setItem('exam_questions', JSON.stringify(questionsResponse.data.questions));
+        localStorage.setItem('exam_info', JSON.stringify({
+          paperId: paperId,
+          name: questionsResponse.data.paperName,
+          duration: questionsResponse.data.duration,
+          totalScore: questionsResponse.data.totalScore,
+          passScore: questionsResponse.data.passScore,
+          questionCount: questionsResponse.data.questionCount
+        }));
+
+        console.log("💾 题目已保存到localStorage");
+
+        // 导航到答题卡页面
+        console.log("🚀 导航到答题卡页面...");
+        navigate('/exam/start', {
+          state: {
+            paperId: paperId,
+            questions: questionsResponse.data.questions,
+            examInfo: {
+              paperId: paperId,
+              name: questionsResponse.data.paperName,
+              duration: questionsResponse.data.duration,
+              totalScore: questionsResponse.data.totalScore,
+              passScore: questionsResponse.data.passScore,
+              questionCount: questionsResponse.data.questionCount
+            }
+          }
+        });
+      } else {
+        console.error("❌ 获取题目详情失败:", questionsResponse);
+        alert("获取题目详情失败，请稍后重试");
+      }
+    } catch (error) {
+      console.error("❌ 获取题目详情出错:", error);
+      alert("获取题目详情出错，请稍后重试");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
       <Header />
+
+      {/* 恢复答题进度对话框 */}
+      {showResumeDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold mb-4 text-gray-800">恢复答题进度</h2>
+            <p className="text-gray-600 mb-6">
+              检测到您有一份进行中的答题记录。是否恢复上一次的答题进度？
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowResumeDialog(false);
+                  setInProgressAnswer(null);
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 transition"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleStartNewAnswering}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 transition"
+              >
+                开始新答题
+              </button>
+              <button
+                onClick={handleResumeAnswering}
+                className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 transition"
+              >
+                恢复答题
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 蓝色渐变圆形背景元素 - 模仿首页设计 */}
       <div className="absolute inset-0 pointer-events-none z-0">
