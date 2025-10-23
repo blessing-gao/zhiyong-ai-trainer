@@ -10,26 +10,28 @@ import {
   CheckCircle,
   Lock,
   Lightbulb,
-  Target
+  Target,
+  Loader2
 } from "lucide-react";
 import Header from "@/components/Header";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
+import { tagApi, questionApi } from "@/services/api";
 
-interface KnowledgePoint {
-  id: number;
-  name: string;
+interface FirstLevelTag {
+  id: string | number;
+  tagName: string;
+  tagCode: string;
   description: string;
-  questions: number;
-  completed: number;
-  locked: boolean;
+  sortOrder?: number;
 }
 
-interface Chapter {
-  id: number;
-  name: string;
-  progress: number;
-  points: KnowledgePoint[];
+interface SecondLevelTag {
+  id: string | number;
+  tagName: string;
+  tagCode: string;
+  description: string;
+  sortOrder?: number;
 }
 
 const KnowledgeExplore = () => {
@@ -39,8 +41,11 @@ const KnowledgeExplore = () => {
     const saved = localStorage.getItem("navPosition");
     return saved === "vertical";
   });
-  const [selectedChapter, setSelectedChapter] = useState(0);
-  const [selectedPoint, setSelectedPoint] = useState<KnowledgePoint | null>(null);
+  const [firstLevelTags, setFirstLevelTags] = useState<FirstLevelTag[]>([]);
+  const [secondLevelTags, setSecondLevelTags] = useState<SecondLevelTag[]>([]);
+  const [selectedFirstLevelId, setSelectedFirstLevelId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingSecondLevel, setLoadingSecondLevel] = useState(false);
 
   // Apply theme based on user role
   useEffect(() => {
@@ -58,52 +63,89 @@ const KnowledgeExplore = () => {
     };
   }, []);
 
-  // 知识体系数据
-  const chapters: Chapter[] = [
-    {
-      id: 1,
-      name: "AI基础理论",
-      progress: 65,
-      points: [
-        { id: 1, name: "机器学习基础", description: "了解机器学习的基本概念和原理", questions: 15, completed: 10, locked: false },
-        { id: 2, name: "深度学习入门", description: "神经网络和深度学习的基础知识", questions: 20, completed: 12, locked: false },
-        { id: 3, name: "数据预处理", description: "数据清洗和特征工程", questions: 12, completed: 8, locked: false },
-        { id: 4, name: "模型评估", description: "模型性能评估方法", questions: 18, completed: 0, locked: true }
-      ]
-    },
-    {
-      id: 2,
-      name: "自然语言处理",
-      progress: 40,
-      points: [
-        { id: 5, name: "文本处理基础", description: "分词、词性标注等基础技术", questions: 16, completed: 6, locked: false },
-        { id: 6, name: "词向量表示", description: "Word2Vec、GloVe等词向量方法", questions: 14, completed: 0, locked: false },
-        { id: 7, name: "序列模型", description: "RNN、LSTM、Transformer等", questions: 22, completed: 0, locked: true },
-        { id: 8, name: "应用实践", description: "情感分析、机器翻译等应用", questions: 20, completed: 0, locked: true }
-      ]
-    },
-    {
-      id: 3,
-      name: "计算机视觉",
-      progress: 25,
-      points: [
-        { id: 9, name: "图像基础", description: "图像处理和特征提取", questions: 18, completed: 4, locked: false },
-        { id: 10, name: "卷积神经网络", description: "CNN架构和应用", questions: 20, completed: 0, locked: false },
-        { id: 11, name: "目标检测", description: "YOLO、R-CNN等检测方法", questions: 16, completed: 0, locked: true },
-        { id: 12, name: "图像分割", description: "语义分割和实例分割", questions: 14, completed: 0, locked: true }
-      ]
-    }
-  ];
+  // 加载一级标签
+  useEffect(() => {
+    const loadFirstLevelTags = async () => {
+      try {
+        setLoading(true);
+        const response: any = await tagApi.getFirstLevelTags();
+        if (response.code === 0 && response.data) {
+          setFirstLevelTags(response.data);
+          // 默认选中第一个一级标签
+          if (response.data.length > 0) {
+            setSelectedFirstLevelId(response.data[0].id);
+            loadSecondLevelTags(response.data[0].id);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load first level tags:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const currentChapter = chapters[selectedChapter];
+    loadFirstLevelTags();
+  }, []);
 
-  const handlePracticeTopic = (point: KnowledgePoint) => {
-    if (!point.locked) {
-      setSelectedPoint(point);
-      // 可以在这里导航到练习页面
-      navigate(`/training/chapter/${point.name}`);
+  // 加载二级标签
+  const loadSecondLevelTags = async (firstLevelId: number) => {
+    try {
+      setLoadingSecondLevel(true);
+      const response: any = await tagApi.getSecondLevelTags(firstLevelId);
+      if (response.code === 0 && response.data) {
+        setSecondLevelTags(response.data);
+      } else {
+        setSecondLevelTags([]);
+      }
+    } catch (error) {
+      console.error("Failed to load second level tags:", error);
+      setSecondLevelTags([]);
+    } finally {
+      setLoadingSecondLevel(false);
     }
   };
+
+  // 处理一级标签点击
+  const handleFirstLevelClick = (firstLevelId: number) => {
+    setSelectedFirstLevelId(firstLevelId);
+    loadSecondLevelTags(firstLevelId);
+  };
+
+  // 处理学习按钮点击
+  const handleLearnClick = async (secondLevelTagId: number, tagName: string) => {
+    try {
+      setLoadingSecondLevel(true);
+      // 调用 API 获取该二级标签下的所有题目
+      const response: any = await questionApi.getQuestionsBySecondLevelTag(secondLevelTagId);
+      if (response.code === 0 && response.data) {
+        // 将题目数据存储到 localStorage，供 ChapterPractice 页面使用
+        localStorage.setItem(`questions_${secondLevelTagId}`, JSON.stringify(response.data));
+        // 导航到答题页面
+        navigate(`/training/chapter/${tagName}`, {
+          state: {
+            secondLevelTagId,
+            questions: response.data
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Failed to load questions:", error);
+    } finally {
+      setLoadingSecondLevel(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-hero relative overflow-hidden flex items-center justify-center">
+        <Header />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-foreground">加载知识体系中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
@@ -141,96 +183,88 @@ const KnowledgeExplore = () => {
 
           {/* 主体内容 - 左右分栏 */}
           <div className="grid md:grid-cols-4 gap-6">
-            {/* 左侧：知识体系导航 */}
+            {/* 左侧：一级标签导航 */}
             <div className="md:col-span-1">
               <Card className="bg-white/10 border-white/20 backdrop-blur-sm sticky top-24">
                 <CardHeader>
                   <CardTitle className="text-foreground">知识体系</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {chapters.map((chapter, index) => (
+                  {firstLevelTags.map((tag) => (
                     <button
-                      key={chapter.id}
-                      onClick={() => setSelectedChapter(index)}
+                      key={tag.id}
+                      onClick={() => handleFirstLevelClick(Number(tag.id))}
                       className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
-                        selectedChapter === index
+                        selectedFirstLevelId === Number(tag.id)
                           ? 'bg-primary text-white'
                           : 'bg-white/5 text-foreground hover:bg-white/10'
                       }`}
                     >
-                      <div className="font-medium text-sm">{chapter.name}</div>
-                      <div className="text-xs mt-1 opacity-75">
-                        {chapter.points.filter(p => !p.locked).length}/{chapter.points.length} 知识点
-                      </div>
+                      <div className="font-medium text-sm">{tag.tagName}</div>
+                      <div className="text-xs mt-1 opacity-75">{tag.description}</div>
                     </button>
                   ))}
                 </CardContent>
               </Card>
             </div>
 
-            {/* 右侧：知识点详情 */}
+            {/* 右侧：二级标签详情 */}
             <div className="md:col-span-3">
               <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-2xl text-foreground">{currentChapter.name}</CardTitle>
-                      <CardDescription className="text-base mt-2">
-                        学习进度：{currentChapter.progress}%
-                      </CardDescription>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-3xl font-bold text-primary">{currentChapter.progress}%</div>
-                      <div className="text-sm text-muted-foreground">完成度</div>
-                    </div>
+                  <div>
+                    <CardTitle className="text-2xl text-foreground">
+                      {firstLevelTags.find(t => Number(t.id) === selectedFirstLevelId)?.tagName || '选择知识体系'}
+                    </CardTitle>
+                    <CardDescription className="text-base mt-2">
+                      {firstLevelTags.find(t => Number(t.id) === selectedFirstLevelId)?.description || ''}
+                    </CardDescription>
                   </div>
-                  <Progress value={currentChapter.progress} className="mt-4" />
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {currentChapter.points.map((point) => (
-                      <div
-                        key={point.id}
-                        className="p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h3 className="text-lg font-semibold text-foreground">{point.name}</h3>
-                              {point.locked ? (
-                                <Lock className="h-4 w-4 text-yellow-500" />
+                  {loadingSecondLevel ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary mr-2" />
+                      <span className="text-muted-foreground">加载中...</span>
+                    </div>
+                  ) : secondLevelTags.length > 0 ? (
+                    <div className="space-y-4">
+                      {secondLevelTags.map((tag) => (
+                        <div
+                          key={tag.id}
+                          className="p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold text-foreground">{tag.tagName}</h3>
+                              <p className="text-sm text-muted-foreground mt-2">{tag.description}</p>
+                            </div>
+                            <Button
+                              onClick={() => handleLearnClick(Number(tag.id), tag.tagName)}
+                              disabled={loadingSecondLevel}
+                              className="ml-4 bg-primary hover:bg-primary-dark"
+                            >
+                              {loadingSecondLevel ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                  加载中...
+                                </>
                               ) : (
-                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <>
+                                  学习
+                                  <ChevronRight className="h-4 w-4 ml-1" />
+                                </>
                               )}
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-3">{point.description}</p>
-                            <div className="flex items-center gap-4 text-sm">
-                              <span className="text-muted-foreground">
-                                <Target className="h-4 w-4 inline mr-1" />
-                                {point.questions} 道题目
-                              </span>
-                              <span className="text-muted-foreground">
-                                <CheckCircle className="h-4 w-4 inline mr-1" />
-                                已完成 {point.completed} 道
-                              </span>
-                            </div>
+                            </Button>
                           </div>
-                          <Button
-                            onClick={() => handlePracticeTopic(point)}
-                            disabled={point.locked}
-                            className={`ml-4 ${
-                              point.locked
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-primary hover:bg-primary-dark'
-                            }`}
-                          >
-                            {point.locked ? '已锁定' : '练习'}
-                            <ChevronRight className="h-4 w-4 ml-1" />
-                          </Button>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">暂无二级标签数据</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -243,7 +277,7 @@ const KnowledgeExplore = () => {
               <div>
                 <h3 className="font-semibold text-foreground mb-1">学习建议</h3>
                 <p className="text-sm text-muted-foreground">
-                  建议按照章节顺序学习，每个知识点都包含详细的讲解和练习题。完成当前章节后，下一章节将自动解锁。
+                  点击左侧知识体系中的一级标签，查看对应的二级标签。选择感兴趣的二级标签进行学习。
                 </p>
               </div>
             </div>

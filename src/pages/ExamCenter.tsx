@@ -37,9 +37,11 @@ const ExamCenter = () => {
     };
   }, []);
 
-  // 跳转到独立考试系统
+  // 打开新窗口进入考试登录系统
   const handleExamSystem = () => {
-    navigate('/exam/start');
+    // 在新窗口中打开考试登录页面
+    const examLoginUrl = `${window.location.origin}/exam/login`;
+    window.open(examLoginUrl, 'examWindow', 'width=800,height=900,resizable=yes,scrollbars=yes');
   };
 
   // 获取卡片宽度

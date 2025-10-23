@@ -3,34 +3,82 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft, 
-  ArrowRight, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle,
+  XCircle,
+  Clock,
   Target,
   BookOpen,
   Trophy,
-  RotateCcw
+  RotateCcw,
+  Loader2
 } from "lucide-react";
+import Header from "@/components/Header";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+
+interface Question {
+  id: string | number;
+  type: string;
+  stem: string;
+  options: string | null;
+  answer: string;
+  difficulty: string;
+  level: string;
+  analysis: string | null;
+  status: number;
+  create_time: string | null;
+  update_time: string | null;
+  create_by: string | null;
+  update_by: string | null;
+}
 
 const ChapterPractice = () => {
   const { applyRoleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const { chapterName } = useParams();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<{ [key: number]: number | null }>({});
+  const [answers, setAnswers] = useState<{ [key: number]: string | null }>({});
   const [timeLeft, setTimeLeft] = useState(100 * 60); // 100分钟倒计时
-  const totalQuestions = 100; // 总题数
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [secondLevelTagId, setSecondLevelTagId] = useState<number | null>(null);
 
   // Apply theme based on user role
   useEffect(() => {
     applyRoleTheme();
   }, [applyRoleTheme]);
+
+  // 加载题目数据
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        setLoading(true);
+
+        // 优先从路由状态获取题目数据
+        if (location.state?.questions && location.state?.secondLevelTagId) {
+          setQuestions(location.state.questions);
+          setSecondLevelTagId(location.state.secondLevelTagId);
+        } else if (secondLevelTagId) {
+          // 从 localStorage 获取缓存的题目数据
+          const cachedQuestions = localStorage.getItem(`questions_${secondLevelTagId}`);
+          if (cachedQuestions) {
+            setQuestions(JSON.parse(cachedQuestions));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load questions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadQuestions();
+  }, [location.state, secondLevelTagId]);
 
   // 倒计时
   useEffect(() => {
@@ -46,80 +94,58 @@ const ChapterPractice = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // 生成100道题目
-  const generateQuestions = () => {
-    const baseQuestions = [
-      {
-        question: "关于机器学习基础理论的问题1：以下哪个选法是正确的？",
-        options: [
-          "A. 监控A - 这是一个关于机器学习基础理论的正确描述",
-          "B. 监控B - 这是一个关于机器学习基础理论的否正确描述",
-          "C. 监控C - 这是一个关于机器学习基础理论的正确描述",
-          "D. 监控D - 这是一个关于机器学习基础理论的否正确描述"
-        ],
-        correct: 0
-      },
-      {
-        question: "什么是机器学习？",
-        options: [
-          "A. 让计算机通过数据学习的技术",
-          "B. 让计算机变得更快的技术",
-          "C. 让计算机存储更多数据的技术",
-          "D. 让计算机变得更便宜的技术"
-        ],
-        correct: 0
-      },
-      {
-        question: "深度学习中常用的激活函数是？",
-        options: [
-          "A. ReLU",
-          "B. Sigmoid",
-          "C. Tanh",
-          "D. 以上都是"
-        ],
-        correct: 3
-      }
-    ];
-
-    const allQuestions = [];
-    for (let i = 0; i < totalQuestions; i++) {
-      const base = baseQuestions[i % baseQuestions.length];
-      allQuestions.push({
-        id: i + 1,
-        ...base
-      });
+  // 解析题目选项
+  const parseOptions = (question: Question): string[] => {
+    if (question.type === 'judge') {
+      // 判断题只有两个选项
+      return ['正确', '错误'];
     }
-    return allQuestions;
+
+    // 对于其他题型，尝试解析 options 字段
+    if (question.options) {
+      try {
+        const parsed = JSON.parse(question.options);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      } catch (e) {
+        console.error('Failed to parse options:', e);
+      }
+    }
+
+    // 默认返回空数组
+    return [];
   };
 
-  const questions = generateQuestions();
+  const totalQuestions = questions.length;
   const currentQuestionData = questions[currentQuestion];
 
   const handleAnswerSelect = (answerIndex: number) => {
-    setSelectedAnswer(answerIndex.toString());
+    const answerValue = String.fromCharCode(65 + answerIndex); // A, B, C, D...
+    setSelectedAnswer(answerValue);
     setAnswers({
       ...answers,
-      [currentQuestion]: answerIndex
+      [currentQuestion]: answerValue
     });
   };
 
   const handleNext = () => {
     if (currentQuestion < totalQuestions - 1) {
       setCurrentQuestion(prev => prev + 1);
-      setSelectedAnswer(answers[currentQuestion + 1]?.toString() || null);
+      setSelectedAnswer(answers[currentQuestion + 1] || null);
     }
   };
 
   const handlePrevious = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(prev => prev - 1);
-      setSelectedAnswer(answers[currentQuestion - 1]?.toString() || null);
+      setSelectedAnswer(answers[currentQuestion - 1] || null);
     }
   };
 
   const handleQuestionClick = (index: number) => {
     setCurrentQuestion(index);
-    setSelectedAnswer(answers[index]?.toString() || null);
+    setSelectedAnswer(answers[index] || null);
   };
 
   const formatTime = (seconds: number) => {
@@ -129,8 +155,35 @@ const ChapterPractice = () => {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
+        <Header />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-foreground">加载题目中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
+        <Header />
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-foreground text-lg">暂无题目数据</p>
+          <Button onClick={() => navigate('/training/knowledge-explore')}>
+            返回知识探索
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-hero">
+      <Header />
       <div className="p-6">
         <div className="max-w-[1400px] mx-auto">
           {/* 半透明白色容器 */}
@@ -138,13 +191,13 @@ const ChapterPractice = () => {
             
             {/* 头部信息 */}
             <div className="flex items-center justify-between mb-8">
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/training')}
+              <Button
+                variant="outline"
+                onClick={() => navigate('/training/knowledge-explore')}
                 className="border-border text-foreground hover:bg-muted/50"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                返回训练中心
+                返回
               </Button>
               
               <div className="text-center">
@@ -196,13 +249,25 @@ const ChapterPractice = () => {
               <div className="lg:col-span-3">
                 <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
                   <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="bg-primary w-12 h-12 rounded-full flex items-center justify-center">
-                        <Target className="h-6 w-6 text-white" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-primary w-12 h-12 rounded-full flex items-center justify-center">
+                          <Target className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-foreground text-xl">题目 {currentQuestion + 1}</CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            {currentQuestionData.type === 'judge' ? '判断题' : '选择题'}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <CardTitle className="text-foreground text-xl">题目 {currentQuestion + 1}</CardTitle>
-                        <p className="text-sm text-muted-foreground">选择题</p>
+                      <div className="flex gap-2">
+                        <Badge variant="outline" className="text-foreground">
+                          难度: {currentQuestionData.difficulty}
+                        </Badge>
+                        <Badge variant="outline" className="text-foreground">
+                          {currentQuestionData.level}
+                        </Badge>
                       </div>
                     </div>
                   </CardHeader>
@@ -210,35 +275,40 @@ const ChapterPractice = () => {
                     <div className="space-y-6">
                       {/* 题目 */}
                       <div className="text-lg text-foreground leading-relaxed font-medium p-4 bg-white/5 rounded-lg">
-                        {currentQuestionData.question}
+                        {currentQuestionData.stem}
                       </div>
-                      
+
                       {/* 选项 */}
                       <div className="space-y-3">
-                        {currentQuestionData.options.map((option, index) => (
-                          <div
-                            key={index}
-                            className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                              selectedAnswer === index.toString()
-                                ? 'bg-primary/20 border-primary shadow-md'
-                                : 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/30'
-                            }`}
-                            onClick={() => handleAnswerSelect(index)}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                                selectedAnswer === index.toString()
-                                  ? 'border-primary bg-primary'
-                                  : 'border-white/30'
-                              }`}>
-                                {selectedAnswer === index.toString() && (
-                                  <div className="w-3 h-3 bg-white rounded-full"></div>
-                                )}
+                        {parseOptions(currentQuestionData).map((option, index) => {
+                          const answerLetter = String.fromCharCode(65 + index); // A, B, C, D...
+                          return (
+                            <div
+                              key={index}
+                              className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                                selectedAnswer === answerLetter
+                                  ? 'bg-primary/20 border-primary shadow-md'
+                                  : 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/30'
+                              }`}
+                              onClick={() => handleAnswerSelect(index)}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                                  selectedAnswer === answerLetter
+                                    ? 'border-primary bg-primary'
+                                    : 'border-white/30'
+                                }`}>
+                                  {selectedAnswer === answerLetter && (
+                                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                                  )}
+                                </div>
+                                <span className="text-foreground">
+                                  <span className="font-semibold">{answerLetter}.</span> {option}
+                                </span>
                               </div>
-                              <span className="text-foreground">{option}</span>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   </CardContent>

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminProtectedRoute from "@/components/AdminProtectedRoute";
 import Index from "./pages/Index";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -19,6 +20,8 @@ import ChapterPractice from "./pages/ChapterPractice";
 import SimulationExam from "./pages/SimulationExam";
 import WrongQuestionsPractice from "./pages/WrongQuestionsPractice";
 import ExamCenter from "./pages/ExamCenter";
+import ExamLogin from "./pages/ExamLogin";
+import ExamSystem from "./pages/ExamSystem";
 import FormalExam from "./pages/FormalExam";
 import PersonalCenter from "./pages/PersonalCenter";
 import NotFound from "./pages/NotFound";
@@ -36,7 +39,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/admin-login" element={<AdminLogin />} />
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
               <Route path="/student-login" element={<StudentLogin />} />
               <Route path="/courses" element={<ProtectedRoute><CourseCenter /></ProtectedRoute>} />
               <Route path="/courses/:courseId/learn" element={<ProtectedRoute><CourseLearning /></ProtectedRoute>} />
@@ -47,6 +50,9 @@ const App = () => (
               <Route path="/training/simulation/:examId" element={<ProtectedRoute><SimulationExam /></ProtectedRoute>} />
               <Route path="/training/wrong-questions" element={<ProtectedRoute><WrongQuestionsPractice /></ProtectedRoute>} />
               <Route path="/exam" element={<ProtectedRoute><ExamCenter /></ProtectedRoute>} />
+              <Route path="/exam/login" element={<ExamLogin />} />
+              <Route path="/exam/system" element={<ExamSystem />} />
+              <Route path="/exam/formal" element={<FormalExam />} />
               <Route path="/exam/start" element={<ProtectedRoute><FormalExam /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><PersonalCenter /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

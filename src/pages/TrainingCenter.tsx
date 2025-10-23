@@ -13,6 +13,7 @@ import Header from "@/components/Header";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import trainingCenterBg from "@/assets/training-center-bg.png";
+import { questionApi, tagApi, paperApi } from "@/services/api";
 
 const TrainingCenter = () => {
   const { applyRoleTheme } = useTheme();
@@ -22,6 +23,9 @@ const TrainingCenter = () => {
     return saved === "vertical";
   });
   const [isGenerating, setIsGenerating] = useState(false);
+  const [knowledgePointsCount, setKnowledgePointsCount] = useState<number>(0);
+  const [questionsCount, setQuestionsCount] = useState<number>(0);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   // Apply theme based on user role
   useEffect(() => {
@@ -39,19 +43,135 @@ const TrainingCenter = () => {
     };
   }, []);
 
+  // 加载训练中心统计数据
+  useEffect(() => {
+    const loadTrainingCenterStats = async () => {
+      try {
+        setStatsLoading(true);
+        const response: any = await questionApi.getTrainingCenterStats();
+        if (response.code === 0 && response.data) {
+          setKnowledgePointsCount(parseInt(response.data.knowledge_points_count));
+          setQuestionsCount(parseInt(response.data.questions_count));
+        }
+      } catch (error) {
+        console.error("Failed to load training center stats:", error);
+        // 如果加载失败，使用默认值
+        setKnowledgePointsCount(0);
+        setQuestionsCount(0);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    loadTrainingCenterStats();
+  }, []);
+
   // 知识探索模式
   const handleKnowledgeExplore = () => {
     navigate('/training/knowledge-explore');
   };
 
-  // 试题训练模式 - 直接进入答题卡
+  // 试题训练模式 - 调用后端API生成试卷
   const handleQuestionTraining = async () => {
-    setIsGenerating(true);
-    // 模拟组卷过程（2-3秒）
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    setIsGenerating(false);
-    // 直接进入答题卡
-    navigate('/exam/start');
+    try {
+      setIsGenerating(true);
+      console.log("🚀 开始试题训练...");
+
+      // 获取所有一级标签
+      console.log("📚 获取一级标签...");
+      const tagsResponse: any = await tagApi.getFirstLevelTags();
+      console.log("📚 标签响应:", tagsResponse);
+
+      if (!tagsResponse.data || tagsResponse.data.length === 0) {
+        console.error("❌ 未找到一级标签");
+        alert("获取知识点失败，请稍后重试");
+        setIsGenerating(false);
+        return;
+      }
+
+      console.log("✅ 找到", tagsResponse.data.length, "个一级标签");
+
+      // 构建知识点比例（均匀分配）
+      const knowledgeRatio: { [key: string]: number } = {};
+      const ratio = Math.floor(100 / tagsResponse.data.length);
+      let totalRatio = 0;
+
+      tagsResponse.data.forEach((tag: any, index: number) => {
+        if (index === tagsResponse.data.length - 1) {
+          // 最后一个标签补齐剩余比例
+          knowledgeRatio[tag.id.toString()] = 100 - totalRatio;
+        } else {
+          knowledgeRatio[tag.id.toString()] = ratio;
+          totalRatio += ratio;
+        }
+      });
+
+      console.log("📊 知识点比例:", knowledgeRatio);
+
+      // 构建组卷请求
+      const paperRequest = {
+        name: "AI训练师认证考试",
+        description: "自动组卷试题训练",
+        type: "practice",
+        totalScore: 100,
+        passScore: 60,
+        duration: 120,
+        questionCount: 100,
+        typeRatio: {
+          judge: 20,
+          single: 70,
+          multiple: 10
+        },
+        knowledgeRatio: knowledgeRatio
+      };
+
+      console.log("📝 组卷请求:", paperRequest);
+
+      // 调用后端API生成试卷并获取题目
+      console.log("🔄 调用后端API生成试卷...");
+      const response: any = await paperApi.generatePaperForTraining(paperRequest);
+
+      console.log("📦 后端响应:", response);
+
+      if (response.code === 0 && response.data && response.data.questions) {
+        console.log("✅ 成功生成", response.data.questions.length, "道题目");
+
+        // 存储到 localStorage
+        localStorage.setItem('exam_questions', JSON.stringify(response.data.questions));
+        localStorage.setItem('exam_info', JSON.stringify({
+          name: response.data.paperName,
+          duration: response.data.duration,
+          totalScore: response.data.totalScore,
+          passScore: response.data.passScore,
+          questionCount: response.data.questionCount
+        }));
+
+        console.log("💾 题目已保存到localStorage");
+
+        // 导航到答题卡页面
+        console.log("🚀 导航到答题卡页面...");
+        navigate('/exam/start', {
+          state: {
+            questions: response.data.questions,
+            examInfo: {
+              name: response.data.paperName,
+              duration: response.data.duration,
+              totalScore: response.data.totalScore,
+              passScore: response.data.passScore,
+              questionCount: response.data.questionCount
+            }
+          }
+        });
+      } else {
+        console.error("❌ 生成试卷失败:", response);
+        alert("生成试卷失败，请稍后重试");
+      }
+    } catch (error) {
+      console.error("❌ 试题训练出错:", error);
+      alert("试题训练出错，请稍后重试");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -126,11 +246,15 @@ const TrainingCenter = () => {
                   <div className="flex justify-between items-end" style={{ marginTop: 'auto', paddingBottom: '6%' }}>
                     <div className="flex" style={{ gap: '24%', marginLeft: '8%' }}>
                       <div className="text-center">
-                        <div className="font-bold text-[#97CAFF]" style={{ fontSize: '3.5vw' }}>68</div>
+                        <div className="font-bold text-[#97CAFF]" style={{ fontSize: '3.5vw' }}>
+                          {statsLoading ? '-' : knowledgePointsCount}
+                        </div>
                         <div className="text-gray-700" style={{ fontSize: '1.2vw', marginTop: '0.5%' }}>知识点</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-bold text-[#A2EBFF]" style={{ fontSize: '3.5vw' }}>450</div>
+                        <div className="font-bold text-[#A2EBFF]" style={{ fontSize: '3.5vw' }}>
+                          {statsLoading ? '-' : questionsCount}
+                        </div>
                         <div className="text-gray-700" style={{ fontSize: '1.2vw', marginTop: '0.5%' }}>练习题</div>
                       </div>
                     </div>

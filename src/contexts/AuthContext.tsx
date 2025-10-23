@@ -1,34 +1,28 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authApi } from '@/services/api';
 
-type UserRole = 'student' | 'teacher';
+type UserRole = 'user' | 'admin';
 
 interface LocalUser {
-  id: string;
+  id: number;
   username: string;
-  role: UserRole;
+  userType: UserRole;
+  realName?: string;
+  accessToken?: string;
 }
 
 interface AuthContextType {
   user: LocalUser | null;
   userRole: UserRole | null;
   login: (username: string, password: string) => Promise<{ error: Error | null }>;
-  signup: (username: string, password: string, fullName: string, role: UserRole) => Promise<{ error: Error | null }>;
+  signup: (username: string, password: string, email: string, fullName?: string, phone?: string) => Promise<{ error: Error | null }>;
+  adminLogin: (username: string, password: string) => Promise<{ error: Error | null }>;
   logout: () => Promise<void>;
   isLoggedIn: boolean;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// 简单的本地用户存储（实际应用中应使用真实数据库）
-const getStoredUsers = (): LocalUser[] => {
-  const stored = localStorage.getItem('app_users');
-  return stored ? JSON.parse(stored) : [];
-};
-
-const saveUsers = (users: LocalUser[]) => {
-  localStorage.setItem('app_users', JSON.stringify(users));
-};
 
 const getCurrentUser = (): LocalUser | null => {
   const stored = localStorage.getItem('current_user');
@@ -38,8 +32,12 @@ const getCurrentUser = (): LocalUser | null => {
 const setCurrentUser = (user: LocalUser | null) => {
   if (user) {
     localStorage.setItem('current_user', JSON.stringify(user));
+    if (user.accessToken) {
+      localStorage.setItem('access_token', user.accessToken);
+    }
   } else {
     localStorage.removeItem('current_user');
+    localStorage.removeItem('access_token');
   }
 };
 
@@ -53,39 +51,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const currentUser = getCurrentUser();
     if (currentUser) {
       setUser(currentUser);
-      setUserRole(currentUser.role);
+      setUserRole(currentUser.userType);
     }
     setLoading(false);
   }, []);
 
   const login = async (username: string, password: string) => {
     try {
-      // 验证用户名和密码长度
-      if (!username || username.length < 3) {
-        return { error: new Error('用户名至少需要3个字符') };
-      }
-      if (!password || password.length < 6) {
-        return { error: new Error('密码至少需要6个字符') };
-      }
+      // 调用后端登录接口
+      const response: any = await authApi.login({ username, password });
 
-      // 从本地存储中查找用户
-      const users = getStoredUsers();
-      const foundUser = users.find(u => u.username === username);
-
-      if (!foundUser) {
-        return { error: new Error('用户不存在') };
+      if (response.code !== 0) {
+        return { error: new Error(response.msg || '登录失败') };
       }
 
-      // 简单的密码验证（实际应用中应使用加密）
-      const storedPassword = localStorage.getItem(`pwd_${username}`);
-      if (storedPassword !== password) {
-        return { error: new Error('密码错误') };
-      }
+      const userData: LocalUser = {
+        id: response.data.id,
+        username: response.data.username,
+        userType: response.data.user_type as UserRole,
+        realName: response.data.real_name,
+        accessToken: response.data.access_token,
+      };
 
-      // 登录成功
-      setUser(foundUser);
-      setUserRole(foundUser.role);
-      setCurrentUser(foundUser);
+      // 保存用户信息
+      setUser(userData);
+      setUserRole(userData.userType);
+      setCurrentUser(userData);
 
       return { error: null };
     } catch (error) {
@@ -93,44 +84,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signup = async (username: string, password: string, fullName: string, role: UserRole) => {
+  const signup = async (username: string, password: string, email: string, fullName?: string, phone?: string) => {
     try {
-      // 验证用户名和密码长度
-      if (!username || username.length < 3) {
-        return { error: new Error('用户名至少需要3个字符') };
-      }
-      if (!password || password.length < 6) {
-        return { error: new Error('密码至少需要6个字符') };
-      }
-      if (!fullName || fullName.length < 2) {
-        return { error: new Error('姓名至少需要2个字符') };
-      }
-
-      // 检查用户名是否已存在
-      const users = getStoredUsers();
-      if (users.some(u => u.username === username)) {
-        return { error: new Error('用户名已存在') };
-      }
-
-      // 创建新用户
-      const newUser: LocalUser = {
-        id: Date.now().toString(),
+      // 调用后端注册接口
+      const response: any = await authApi.register({
         username,
-        role,
+        password,
+        confirmPassword: password,
+        email,
+        phone,
+        realName: fullName,
+      });
+
+      if (response.code !== 0) {
+        return { error: new Error(response.msg || '注册失败') };
+      }
+
+      // 注册成功后自动登录
+      return await login(username, password);
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
+  const adminLogin = async (username: string, password: string) => {
+    try {
+      // 调用后端管理员登录接口
+      const response: any = await authApi.adminLogin({ username, password });
+
+      if (response.code !== 0) {
+        return { error: new Error(response.msg || '登录失败') };
+      }
+
+      const userData: LocalUser = {
+        id: response.data.id,
+        username: response.data.username,
+        userType: response.data.user_type as UserRole,
+        realName: response.data.real_name,
+        accessToken: response.data.access_token,
       };
 
       // 保存用户信息
-      users.push(newUser);
-      saveUsers(users);
-
-      // 保存密码（实际应用中应使用加密）
-      localStorage.setItem(`pwd_${username}`, password);
-      localStorage.setItem(`fullname_${username}`, fullName);
-
-      // 自动登录
-      setUser(newUser);
-      setUserRole(role);
-      setCurrentUser(newUser);
+      setUser(userData);
+      setUserRole(userData.userType);
+      setCurrentUser(userData);
 
       return { error: null };
     } catch (error) {
@@ -150,6 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       userRole,
       login,
       signup,
+      adminLogin,
       logout,
       isLoggedIn: !!user,
       loading

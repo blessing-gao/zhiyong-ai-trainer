@@ -31,6 +31,9 @@ const validateFullName = (fullName: string): string | null => {
 const StudentLogin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [fullName, setFullName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
@@ -55,6 +58,16 @@ const StudentLogin = () => {
           return;
         }
 
+        if (password !== confirmPassword) {
+          toast.error("两次输入的密码不一致");
+          return;
+        }
+
+        if (!email || !email.includes('@')) {
+          toast.error("请输入有效的邮箱地址");
+          return;
+        }
+
         const fullNameError = validateFullName(fullName);
         if (fullNameError) {
           toast.error(fullNameError);
@@ -62,8 +75,8 @@ const StudentLogin = () => {
         }
 
         setIsLoading(true);
-        // 默认所有用户都是学生身份
-        const { error } = await signup(username, password, fullName, 'student');
+        // 调用后端注册接口
+        const { error } = await signup(username, password, email, fullName, phone);
 
         if (error) {
           toast.error(error.message || "注册失败，请重试");
@@ -145,22 +158,52 @@ const StudentLogin = () => {
 
 
             {/* Login/Signup Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {isSignup && (
-                <div className="space-y-2">
-                  <label htmlFor="fullName" className="text-sm font-medium text-foreground">
-                    姓名
-                  </label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="请输入您的姓名"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="h-12 bg-background/50 border-input/50 focus:border-primary focus:bg-background/80 transition-smooth"
-                    disabled={isLoading}
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <label htmlFor="fullName" className="text-sm font-medium text-foreground">
+                      姓名
+                    </label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      placeholder="请输入您的姓名"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="h-12 bg-background/50 border-input/50 focus:border-primary focus:bg-background/80 transition-smooth"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="text-sm font-medium text-foreground">
+                      邮箱
+                    </label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="请输入您的邮箱"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-12 bg-background/50 border-input/50 focus:border-primary focus:bg-background/80 transition-smooth"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="phone" className="text-sm font-medium text-foreground">
+                      手机号（可选）
+                    </label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="请输入您的手机号"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="h-12 bg-background/50 border-input/50 focus:border-primary focus:bg-background/80 transition-smooth"
+                      disabled={isLoading}
+                    />
+                  </div>
+                </>
               )}
               <div className="space-y-2">
                 <label htmlFor="username" className="text-sm font-medium text-foreground">
@@ -182,12 +225,14 @@ const StudentLogin = () => {
                   <label htmlFor="password" className="text-sm font-medium text-foreground">
                     密码
                   </label>
-                  <button 
-                    type="button"
-                    className="text-sm text-primary hover:text-primary-dark transition-smooth"
-                  >
-                    忘记密码？
-                  </button>
+                  {!isSignup && (
+                    <button
+                      type="button"
+                      className="text-sm text-primary hover:text-primary-dark transition-smooth"
+                    >
+                      忘记密码？
+                    </button>
+                  )}
                 </div>
                 <Input
                   id="password"
@@ -199,6 +244,23 @@ const StudentLogin = () => {
                   disabled={isLoading}
                 />
               </div>
+
+              {isSignup && (
+                <div className="space-y-2">
+                  <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
+                    确认密码
+                  </label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="h-12 bg-background/50 border-input/50 focus:border-primary focus:bg-background/80 transition-smooth"
+                    disabled={isLoading}
+                  />
+                </div>
+              )}
 
               <Button 
                 type="submit" 

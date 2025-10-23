@@ -82,11 +82,43 @@ export const questionApi = {
     });
   },
 
+  // 更新题目及其标签
+  updateQuestionWithTags: async (data: any) => {
+    return apiRequest('/api/questions/with-tags', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // 禁用题目
+  disableQuestion: async (questionId: number) => {
+    return apiRequest(`/api/questions/${questionId}/disable`, {
+      method: 'PATCH',
+    });
+  },
+
+  // 启用题目
+  enableQuestion: async (questionId: number) => {
+    return apiRequest(`/api/questions/${questionId}/enable`, {
+      method: 'PATCH',
+    });
+  },
+
   // 删除题目
   deleteQuestion: async (questionId: number) => {
     return apiRequest(`/api/questions/${questionId}`, {
       method: 'DELETE',
     });
+  },
+
+  // 获取训练中心统计数据（知识点个数和练习题个数）
+  getTrainingCenterStats: async () => {
+    return apiRequest('/api/questions/training-center/stats');
+  },
+
+  // 根据二级标签查询题目
+  getQuestionsBySecondLevelTag: async (secondLevelTagId: number) => {
+    return apiRequest(`/api/questions/by-second-level-tag/${secondLevelTagId}`);
   },
 };
 
@@ -95,6 +127,16 @@ export const questionTypeApi = {
   // 获取所有题型
   getAllTypes: async () => {
     return apiRequest('/api/question-types');
+  },
+
+  // 获取所有启用的题型
+  getEnabledTypes: async () => {
+    return apiRequest('/api/question-types/enabled');
+  },
+
+  // 获取单个题型详情
+  getQuestionType: async (id: number) => {
+    return apiRequest(`/api/question-types/${id}`);
   },
 };
 
@@ -105,14 +147,19 @@ export const tagApi = {
     return apiRequest('/api/tags/first-level');
   },
 
-  // 获取二级标签
-  getSecondLevelTags: async (firstLevelTagId: number) => {
-    return apiRequest(`/api/tags/second-level?firstLevelTagId=${firstLevelTagId}`);
+  // 根据一级标签ID获取二级标签
+  getSecondLevelTags: async (firstLevelId: number) => {
+    return apiRequest(`/api/tags/second-level/${firstLevelId}`);
   },
 
   // 获取三级标签
   getThirdLevelTags: async (secondLevelTagId: number) => {
     return apiRequest(`/api/tags/third-level?secondLevelTagId=${secondLevelTagId}`);
+  },
+
+  // 获取完整的知识点标签树形结构
+  getTagTree: async () => {
+    return apiRequest('/api/tags/tree');
   },
 };
 
@@ -175,6 +222,30 @@ export const paperApi = {
   // 获取题目详情
   getQuestionDetail: async (questionId: number) => {
     return apiRequest(`/api/questions/${questionId}`);
+  },
+
+  // 生成试卷并返回题目（用于试题训练）
+  generatePaperForTraining: async (data: any) => {
+    return apiRequest('/api/papers/generate-for-training', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // 生成试卷预览（不保存到数据库）
+  generatePaperPreview: async (data: any) => {
+    return apiRequest('/api/papers/preview', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // 保存试卷（从预览中确认保存）
+  savePaper: async (data: any) => {
+    return apiRequest('/api/papers/save', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   },
 };
 
@@ -285,5 +356,183 @@ export const examApi = {
   findByStatus: async (status: number) => {
     return apiRequest(`/api/exams/status/${status}`);
   },
+
+  // 批量创建考试（包含考场和考生）
+  batchCreateExam: async (data: any) => {
+    return apiRequest('/api/exams/batch-create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // 查询用户列表（用于选择考生）
+  getUsers: async (page: number = 1, size: number = 100, username?: string, realName?: string) => {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('size', size.toString());
+    if (username) params.append('username', username);
+    if (realName) params.append('realName', realName);
+    return apiRequest(`/api/exams/users?${params.toString()}`);
+  },
+
+  // 查询试卷列表（用于绑定试卷）
+  getPapers: async (page: number = 1, size: number = 100) => {
+    return apiRequest(`/api/exams/papers?page=${page}&size=${size}`);
+  },
+
+  // 获取考试预览信息
+  getExamPreview: async (examId: number) => {
+    return apiRequest(`/api/exams/${examId}/preview`);
+  },
+
+  // 导出考生信息为CSV
+  exportParticipants: async (examId: number) => {
+    return apiRequest(`/api/exams/${examId}/export-participants`);
+  },
+
+  // 提交考试答卷
+  submitExamAnswers: async (data: any) => {
+    return apiRequest('/api/exams/submit-answers', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  // 考生登录
+  examLogin: async (data: any) => {
+    return apiRequest('/api/exams/login', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
 };
 
+// 用户认证相关 API
+export const authApi = {
+  // 用户注册
+  register: async (data: {
+    username: string;
+    password: string;
+    confirmPassword: string;
+    email: string;
+    phone?: string;
+    realName?: string;
+  }) => {
+    return apiRequest('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // 用户登录
+  login: async (data: { username: string; password: string }) => {
+    return apiRequest('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // 管理员登录
+  adminLogin: async (data: { username: string; password: string }) => {
+    return apiRequest('/api/auth/admin-login', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+// 用户管理相关 API
+export const userApi = {
+  // 分页查询用户
+  pageUsers: async (data: {
+    page?: number;
+    pageSize?: number;
+    username?: string;
+    realName?: string;
+    email?: string;
+    phone?: string;
+    status?: number;
+    sortBy?: string;
+    sortOrder?: string;
+  }) => {
+    return apiRequest('/api/auth/users/page', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // 添加用户
+  addUser: async (data: {
+    username: string;
+    password: string;
+    email?: string;
+    phone?: string;
+    realName?: string;
+    userType: string;
+    status?: number;
+  }) => {
+    return apiRequest('/api/auth/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // 获取用户详情
+  getUserDetail: async (userId: number) => {
+    return apiRequest(`/api/auth/users/${userId}`);
+  },
+
+  // 禁用用户
+  disableUser: async (userId: number) => {
+    return apiRequest(`/api/auth/users/${userId}/disable`, {
+      method: 'PATCH',
+    });
+  },
+
+  // 启用用户
+  enableUser: async (userId: number) => {
+    return apiRequest(`/api/auth/users/${userId}/enable`, {
+      method: 'PATCH',
+    });
+  },
+};
+
+// 题目标签映射相关 API
+export const questionTagApi = {
+  // 获取题目的完整标签信息（包括一级、二级、三级标签）
+  getQuestionTagsWithDetails: async (questionId: number) => {
+    return apiRequest(`/api/question-tag-mappings/question/${questionId}/details`);
+  },
+
+  // 查询题目的所有标签映射
+  getQuestionTags: async (questionId: number) => {
+    return apiRequest(`/api/question-tag-mappings/question/${questionId}`);
+  },
+
+  // 绑定题目与标签
+  bindTagToQuestion: async (data: {
+    questionId: number;
+    firstLevelTagId: number;
+    secondLevelTagId: number;
+    thirdLevelTagId: number;
+  }) => {
+    return apiRequest('/api/question-tag-mappings', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // 删除题目的标签映射
+  deleteMapping: async (mappingId: number) => {
+    return apiRequest(`/api/question-tag-mappings/${mappingId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // 删除题目的所有标签映射
+  deleteByQuestionId: async (questionId: number) => {
+    return apiRequest(`/api/question-tag-mappings/question/${questionId}`, {
+      method: 'DELETE',
+    });
+  },
+};

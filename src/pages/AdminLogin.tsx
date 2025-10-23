@@ -26,7 +26,7 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { adminLogin } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +47,7 @@ const AdminLogin = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await login(username, password);
+      const { error } = await adminLogin(username, password);
 
       if (error) {
         toast.error(error.message || "登录失败，请检查用户名和密码");

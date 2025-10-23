@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,8 +41,15 @@ import {
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState("Dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const { logout } = useAuth();
+  const { logout, userRole } = useAuth();
   const navigate = useNavigate();
+
+  // 验证管理员权限
+  useEffect(() => {
+    if (userRole && userRole !== 'admin') {
+      navigate("/admin-login", { replace: true });
+    }
+  }, [userRole, navigate]);
 
   const handleLogout = async () => {
     await logout();
