@@ -272,8 +272,8 @@ const TrainingCenter = () => {
       if (startAnswerResponse.code === 0 && startAnswerResponse.data) {
         const examAnswer = startAnswerResponse.data;
 
-        // 检查是否有进行中的答题记录
-        if (examAnswer.status === 0 && examAnswer.answer && examAnswer.answer !== '{}') {
+        // 检查是否有进行中的答题记录（status=1表示进行中）
+        if (examAnswer.status === 1 && examAnswer.answer && examAnswer.answer !== '{}') {
           // 有进行中的答题记录，询问用户是否恢复
           console.log("⚠️ 发现进行中的答题记录，询问用户是否恢复");
           setInProgressAnswer(examAnswer);
