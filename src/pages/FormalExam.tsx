@@ -47,6 +47,7 @@ const FormalExam = () => {
     let examInfoData: any = null;
     let paperIdData: number | null = null;
     let resumeAnswers: any = {};
+    let resumeStartTime: string | null = null;
 
     // 优先从路由状态获取数据
     if (location.state && location.state.questions && location.state.questions.length > 0) {
@@ -59,6 +60,12 @@ const FormalExam = () => {
       if (location.state.resumeAnswers) {
         console.log("✅ 恢复答题进度");
         resumeAnswers = location.state.resumeAnswers;
+      }
+
+      // 检查是否有恢复的开始时间
+      if (location.state.resumeStartTime) {
+        console.log("✅ 恢复答题开始时间:", location.state.resumeStartTime);
+        resumeStartTime = location.state.resumeStartTime;
       }
     } else if (location.state && location.state.fromExamSystem) {
       // 从考试系统进入，使用假数据
@@ -89,6 +96,7 @@ const FormalExam = () => {
       const storedQuestions = localStorage.getItem('exam_questions');
       const storedExamInfo = localStorage.getItem('exam_info');
       const storedAnswers = localStorage.getItem('exam_answers');
+      const storedStartTime = localStorage.getItem('exam_start_time');
 
       if (storedQuestions) {
         console.log("✅ 从localStorage获取题目数据");
@@ -99,6 +107,11 @@ const FormalExam = () => {
         if (storedAnswers) {
           console.log("✅ 恢复localStorage中的答题进度");
           resumeAnswers = JSON.parse(storedAnswers);
+        }
+
+        if (storedStartTime) {
+          console.log("✅ 恢复localStorage中的答题开始时间:", storedStartTime);
+          resumeStartTime = storedStartTime;
         }
       } else {
         console.warn("⚠️ 未找到题目数据，使用默认数据");
@@ -134,7 +147,23 @@ const FormalExam = () => {
 
     // 设置倒计时时间
     if (examInfoData && examInfoData.duration) {
-      setTimeLeft(examInfoData.duration * 60);
+      let remainingTime = examInfoData.duration * 60;
+
+      // 如果有恢复的开始时间，计算已经花费的时间
+      if (resumeStartTime) {
+        try {
+          const startTime = new Date(resumeStartTime).getTime();
+          const currentTime = new Date().getTime();
+          const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
+          const totalSeconds = examInfoData.duration * 60;
+          remainingTime = Math.max(0, totalSeconds - elapsedSeconds);
+          console.log(`⏱️ 已花费时间: ${elapsedSeconds}秒，剩余时间: ${remainingTime}秒`);
+        } catch (e) {
+          console.warn("⚠️ 计算剩余时间失败，使用默认时间");
+        }
+      }
+
+      setTimeLeft(remainingTime);
     }
 
     setIsLoading(false);
