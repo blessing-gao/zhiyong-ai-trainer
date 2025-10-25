@@ -306,10 +306,18 @@ const FormalExam = () => {
         if (response.code === 0 && response.data) {
           const examAnswer = response.data;
           console.log("✅ 正式考试已开始，答题记录ID:", examAnswer.id);
+          console.log("📋 答题记录详情:", {
+            id: examAnswer.id,
+            examId: examAnswer.examId,
+            paperId: examAnswer.paperId,
+            status: examAnswer.status,
+            startTime: examAnswer.startTime
+          });
 
           // 检查是否是恢复进行中的考试
-          if (examAnswer.status === 1) {
-            console.log("📋 检测到进行中的考试记录，准备恢复...");
+          // 注意：正式考试的记录应该有 examId，模拟考试的记录 examId 为 NULL
+          if (examAnswer.status === 1 && examAnswer.examId) {
+            console.log("📋 检测到进行中的正式考试记录，准备恢复...");
 
             // 恢复答题进度
             if (examAnswer.answer && examAnswer.answer !== '{}') {

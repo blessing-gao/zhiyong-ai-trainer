@@ -275,12 +275,14 @@ const TrainingCenter = () => {
         // 检查是否有进行中的答题记录（status=1表示进行中）
         // 注意：只要status=1，就应该询问用户是否恢复，不需要检查answer字段是否有内容
         // 因为即使answer为空，用户也消耗了时间，应该恢复该试卷
-        if (examAnswer.status === 1) {
+        // 重要：只恢复模拟考试的记录（exam_id 为 NULL），不恢复正式考试的记录
+        if (examAnswer.status === 1 && !examAnswer.examId) {
           // 有进行中的答题记录，询问用户是否恢复
-          console.log("⚠️ 发现进行中的答题记录，询问用户是否恢复");
+          console.log("⚠️ 发现进行中的模拟考试记录，询问用户是否恢复");
           console.log("📋 答题记录详情:", {
             id: examAnswer.id,
             paperId: examAnswer.paperId,
+            examId: examAnswer.examId,
             status: examAnswer.status,
             answer: examAnswer.answer,
             startTime: examAnswer.startTime
