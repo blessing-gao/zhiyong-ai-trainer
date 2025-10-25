@@ -617,3 +617,43 @@ export const examAnswerApi = {
     return apiRequest(`/api/exam-answer/submitted?userId=${userId}`);
   },
 };
+
+// 正式考试答题记录相关 API
+export const formalExamAnswerApi = {
+  // 开始正式考试
+  startFormalExam: async (userId: number, examId: number, paperId: number) => {
+    return apiRequest('/api/formal-exam-answer/start', {
+      method: 'POST',
+      body: JSON.stringify({
+        userId,
+        examId,
+        paperId,
+      }),
+    });
+  },
+
+  // 保存正式考试答题进度
+  saveFormalExamProgress: async (userId: number, examId: number, paperId: number, answers: Record<string, any>) => {
+    return apiRequest('/api/formal-exam-answer/save-progress', {
+      method: 'POST',
+      body: JSON.stringify({
+        userId,
+        examId,
+        paperId,
+        answers,
+      }),
+    });
+  },
+
+  // 提交正式考试
+  submitFormalExam: async (userId: number, examId: number, paperId: number) => {
+    return apiRequest('/api/formal-exam-answer/submit', {
+      method: 'POST',
+      body: JSON.stringify({
+        userId,
+        examId,
+        paperId,
+      }),
+    });
+  },
+};

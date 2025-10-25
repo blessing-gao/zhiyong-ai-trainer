@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import { examApi, examAnswerApi } from "@/services/api";
+import { examApi, examAnswerApi, formalExamAnswerApi, paperApi } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 
 const FormalExam = () => {
@@ -31,7 +31,9 @@ const FormalExam = () => {
   const [resultTab, setResultTab] = useState<'correct' | 'wrong'>('correct');
   const [resultCurrentQuestion, setResultCurrentQuestion] = useState(0);
   const [paperId, setPaperId] = useState<number | null>(null);
+  const [examId, setExamId] = useState<number | null>(null);
   const [saveProgressInterval, setSaveProgressInterval] = useState<NodeJS.Timeout | null>(null);
+  const [isFormalExam, setIsFormalExam] = useState(false);
 
   // Apply theme based on user role
   useEffect(() => {
@@ -68,27 +70,133 @@ const FormalExam = () => {
         resumeStartTime = location.state.resumeStartTime;
       }
     } else if (location.state && location.state.fromExamSystem) {
-      // 从考试系统进入，使用假数据
-      console.log("✅ 从考试系统进入，使用假数据");
+      // 从考试系统进入，根据 paperId 获取真实的试卷数据
+      console.log("✅ 从考试系统进入，根据 paperId 获取真实试卷数据");
       const currentExamInfo = sessionStorage.getItem("currentExamInfo");
       if (currentExamInfo) {
         const examInfo = JSON.parse(currentExamInfo);
-        questionsData = generateDefaultQuestions();
-        examInfoData = {
-          name: examInfo.examName || "考试试卷",
-          duration: examInfo.duration || 120,
-          totalScore: examInfo.totalScore || 100,
-          passScore: examInfo.passScore || 60,
-          questionCount: questionsData.length
-        };
+        paperIdData = examInfo.paperId || location.state.paperId;
+
+        // 如果有 paperId，从后端获取真实的试卷数据
+        if (paperIdData) {
+          // 异步获取试卷数据
+          (async () => {
+            try {
+              console.log("📡 从后端获取试卷数据，paperId:", paperIdData);
+              const response: any = await paperApi.getPaperQuestions(paperIdData);
+
+              if (response.code === 0 && response.data) {
+                const paperData = response.data;
+                console.log("✅ 成功获取试卷数据，题目数:", paperData.questions?.length);
+
+                // 转换后端返回的题目格式为前端需要的格式
+                const convertedQuestions = (paperData.questions || []).map((q: any, index: number) => ({
+                  id: q.id,
+                  index: index,
+                  type: q.type,
+                  stem: q.stem,
+                  options: q.options ? JSON.parse(q.options) : [],
+                  answer: q.answer,
+                  difficulty: q.difficulty,
+                  level: q.level,
+                  analysis: q.analysis
+                }));
+
+                const convertedExamInfo = {
+                  name: paperData.paperName || examInfo.examName || "考试试卷",
+                  duration: paperData.duration || examInfo.duration || 120,
+                  totalScore: paperData.totalScore || examInfo.totalScore || 100,
+                  passScore: paperData.passScore || examInfo.passScore || 60,
+                  questionCount: convertedQuestions.length,
+                  paperId: paperIdData,
+                  description: paperData.description
+                };
+
+                // 检查是否是正式考试
+                const isFormalExamFlag = location.state?.isFormalExam || false;
+                const examIdData = location.state?.examId || null;
+                console.log("📝 正式考试标志:", isFormalExamFlag, "考试ID:", examIdData);
+
+                setQuestions(convertedQuestions);
+                setExamInfo(convertedExamInfo);
+                setPaperId(paperIdData);
+                setIsFormalExam(isFormalExamFlag);
+                if (examIdData) {
+                  setExamId(examIdData);
+                }
+                setTimeLeft((convertedExamInfo.duration || 120) * 60);
+              } else {
+                console.warn("⚠️ 获取试卷数据失败，使用默认数据");
+                questionsData = generateDefaultQuestions();
+                examInfoData = {
+                  name: examInfo.examName || "考试试卷",
+                  duration: examInfo.duration || 120,
+                  totalScore: examInfo.totalScore || 100,
+                  passScore: examInfo.passScore || 60,
+                  questionCount: questionsData.length,
+                  paperId: paperIdData
+                };
+
+                const isFormalExamFlag = location.state?.isFormalExam || false;
+                const examIdData = location.state?.examId || null;
+
+                setQuestions(questionsData);
+                setExamInfo(examInfoData);
+                setPaperId(paperIdData);
+                setIsFormalExam(isFormalExamFlag);
+                if (examIdData) {
+                  setExamId(examIdData);
+                }
+                setTimeLeft((examInfoData.duration || 120) * 60);
+              }
+            } catch (error) {
+              console.error("❌ 获取试卷数据出错:", error);
+              questionsData = generateDefaultQuestions();
+              examInfoData = {
+                name: examInfo.examName || "考试试卷",
+                duration: examInfo.duration || 120,
+                totalScore: examInfo.totalScore || 100,
+                passScore: examInfo.passScore || 60,
+                questionCount: questionsData.length,
+                paperId: paperIdData
+              };
+
+              const isFormalExamFlag = location.state?.isFormalExam || false;
+              const examIdData = location.state?.examId || null;
+
+              setQuestions(questionsData);
+              setExamInfo(examInfoData);
+              setPaperId(paperIdData);
+              setIsFormalExam(isFormalExamFlag);
+              if (examIdData) {
+                setExamId(examIdData);
+              }
+              setTimeLeft((examInfoData.duration || 120) * 60);
+            }
+            setIsLoading(false);
+          })();
+          return;
+        } else {
+          questionsData = generateDefaultQuestions();
+          examInfoData = {
+            name: examInfo.examName || "考试试卷",
+            duration: examInfo.duration || 120,
+            totalScore: examInfo.totalScore || 100,
+            passScore: examInfo.passScore || 60,
+            questionCount: questionsData.length,
+            paperId: paperIdData
+          };
+        }
       } else {
         questionsData = generateDefaultQuestions();
+        paperIdData = location.state.paperId;
         examInfoData = {
           name: "考试试卷",
           duration: 120,
           totalScore: 100,
           passScore: 60,
-          questionCount: questionsData.length
+          questionCount: questionsData.length,
+          paperId: paperIdData
         };
       }
     } else {
@@ -125,6 +233,20 @@ const FormalExam = () => {
           questionCount: questionsData.length
         };
       }
+    }
+
+    // 如果是从考试系统进入且有 paperId，则已经在异步函数中处理了，直接返回
+    if (location.state && location.state.fromExamSystem && paperIdData) {
+      return;
+    }
+
+    // 检查是否是正式考试
+    const isFormalExamFlag = location.state?.isFormalExam || false;
+    const examIdData = location.state?.examId || null;
+    console.log("📝 正式考试标志:", isFormalExamFlag, "考试ID:", examIdData);
+    setIsFormalExam(isFormalExamFlag);
+    if (examIdData) {
+      setExamId(examIdData);
     }
 
     setQuestions(questionsData);
@@ -170,6 +292,72 @@ const FormalExam = () => {
     console.log("✅ 题目数据初始化完成，共", questionsData.length, "道题目");
   }, [location.state]);
 
+  // 正式考试开始逻辑
+  useEffect(() => {
+    if (!isFormalExam || !user || !examId || !paperId) {
+      return;
+    }
+
+    const startFormalExam = async () => {
+      try {
+        console.log("🚀 开始正式考试...");
+        const response: any = await formalExamAnswerApi.startFormalExam(user.id, examId, paperId);
+
+        if (response.code === 0 && response.data) {
+          const examAnswer = response.data;
+          console.log("✅ 正式考试已开始，答题记录ID:", examAnswer.id);
+
+          // 检查是否是恢复进行中的考试
+          if (examAnswer.status === 1) {
+            console.log("📋 检测到进行中的考试记录，准备恢复...");
+
+            // 恢复答题进度
+            if (examAnswer.answer && examAnswer.answer !== '{}') {
+              try {
+                const resumedAnswers = JSON.parse(examAnswer.answer);
+                console.log("✅ 恢复答题进度:", Object.keys(resumedAnswers).length, "道题目");
+                setSelectedAnswers(resumedAnswers);
+              } catch (e) {
+                console.warn("⚠️ 解析答题进度失败:", e);
+              }
+            }
+
+            // 恢复开始时间，计算已用时间
+            if (examAnswer.startTime) {
+              console.log("✅ 恢复开始时间:", examAnswer.startTime);
+              localStorage.setItem('formal_exam_start_time', examAnswer.startTime);
+
+              // 计算已用时间（秒）
+              const startTime = new Date(examAnswer.startTime).getTime();
+              const now = new Date().getTime();
+              const elapsedSeconds = Math.floor((now - startTime) / 1000);
+
+              // 获取试卷时长（分钟）
+              const durationMinutes = examInfo?.duration || 120;
+              const totalSeconds = durationMinutes * 60;
+              const remainingSeconds = Math.max(0, totalSeconds - elapsedSeconds);
+
+              console.log("⏱️ 已用时间:", Math.floor(elapsedSeconds / 60), "分钟，剩余时间:", Math.floor(remainingSeconds / 60), "分钟");
+              setTimeLeft(remainingSeconds);
+            }
+          } else {
+            // 新开始的考试
+            console.log("🆕 新开始的考试");
+            if (examAnswer.startTime) {
+              localStorage.setItem('formal_exam_start_time', examAnswer.startTime);
+            }
+          }
+        } else {
+          console.warn("⚠️ 开始正式考试失败:", response.msg);
+        }
+      } catch (error) {
+        console.error("❌ 开始正式考试出错:", error);
+      }
+    };
+
+    startFormalExam();
+  }, [isFormalExam, user, examId, paperId, examInfo]);
+
   // 倒计时
   useEffect(() => {
     const timer = setInterval(() => {
@@ -186,9 +374,19 @@ const FormalExam = () => {
 
   // 定时保存答题进度（每30秒保存一次）
   useEffect(() => {
-    if (!user || !paperId || Object.keys(selectedAnswers).length === 0) {
+    // 正式考试时，总是启动定时保存（即使没有答题也要保存）
+    // 试题训练时，只有有答题时才启动定时保存
+    if (!user || !paperId) {
       return;
     }
+
+    // 如果是正式考试，总是启动定时保存
+    // 如果是试题训练，只有有答题时才启动定时保存
+    if (!isFormalExam && Object.keys(selectedAnswers).length === 0) {
+      return;
+    }
+
+    console.log("⏰ 启动定时保存答题进度（每30秒保存一次）");
 
     const interval = setInterval(async () => {
       try {
@@ -200,8 +398,17 @@ const FormalExam = () => {
           answers[index] = answerIndexes.join(',');
         });
 
-        // 调用保存答题进度接口
-        const response: any = await examAnswerApi.saveAnswerProgress(user.id, paperId, answers);
+        // 根据是否是正式考试调用不同的接口
+        let response: any;
+        if (isFormalExam && examId) {
+          // 正式考试
+          console.log("📡 调用正式考试保存接口，userId:", user.id, "examId:", examId, "paperId:", paperId);
+          response = await formalExamAnswerApi.saveFormalExamProgress(user.id, examId, paperId, answers);
+        } else {
+          // 试题训练
+          console.log("📡 调用试题训练保存接口，userId:", user.id, "paperId:", paperId);
+          response = await examAnswerApi.saveAnswerProgress(user.id, paperId, answers);
+        }
 
         if (response.code === 0) {
           console.log("✅ 答题进度保存成功");
@@ -220,7 +427,7 @@ const FormalExam = () => {
         clearInterval(interval);
       }
     };
-  }, [user, paperId, selectedAnswers]);
+  }, [user, paperId, selectedAnswers, isFormalExam, examId]);
 
   // 生成默认题目（备用）
   const generateDefaultQuestions = () => {
@@ -326,54 +533,118 @@ const FormalExam = () => {
     if (window.confirm(confirmMessage)) {
       setIsSubmitting(true);
       try {
-        // 如果有paperId，先调用提交答题接口
-        if (user && paperId) {
-          console.log("📤 调用提交答题接口...");
-          const submitAnswerResponse: any = await examAnswerApi.submitAnswers(user.id, paperId);
+        if (isFormalExam && user && examId && paperId) {
+          // 正式考试流程
+          console.log("📤 提交正式考试...");
 
-          if (submitAnswerResponse.code !== 0) {
-            console.warn("⚠️ 提交答题记录失败:", submitAnswerResponse.msg);
-            // 继续提交，不中断流程
+          // 先保存最后的答题进度
+          const answers: { [key: string]: any } = {};
+          Object.entries(selectedAnswers).forEach(([index, answerIndexes]) => {
+            answers[index] = answerIndexes.join(',');
+          });
+
+          const saveResponse: any = await formalExamAnswerApi.saveFormalExamProgress(user.id, examId, paperId, answers);
+          if (saveResponse.code === 0) {
+            console.log("✅ 最后的答题进度已保存");
           } else {
-            console.log("✅ 答题记录已提交");
+            console.warn("⚠️ 最后的答题进度保存失败:", saveResponse.msg);
+          }
+
+          // 提交正式考试
+          console.log("📤 准备提交正式考试，参数:", {
+            userId: user.id,
+            examId: examId,
+            paperId: paperId,
+            userIdType: typeof user.id,
+            examIdType: typeof examId,
+            paperIdType: typeof paperId
+          });
+
+          const submitResponse: any = await formalExamAnswerApi.submitFormalExam(user.id, examId, paperId);
+
+          console.log("📥 收到提交响应:", {
+            code: submitResponse.code,
+            msg: submitResponse.msg,
+            data: submitResponse.data
+          });
+
+          if (submitResponse.code === 0) {
+            console.log("✅ 正式考试已交卷，系统正在判卷...");
+
+            // 清空localStorage
+            localStorage.removeItem('exam_questions');
+            localStorage.removeItem('exam_info');
+            localStorage.removeItem('exam_answers');
+            localStorage.removeItem('exam_start_time');
+            localStorage.removeItem('formal_exam_start_time');
+
+            // 跳转到交卷成功页面
+            navigate('/exam/formal/success', {
+              state: {
+                examInfo: examInfo
+              }
+            });
+          } else {
+            console.error("❌ 交卷失败，错误信息:", submitResponse.msg);
+            alert("交卷失败：" + (submitResponse.msg || "未知错误"));
+          }
+        } else {
+          // 试题训练流程（保持原有逻辑）
+          // 如果有paperId，先调用提交答题接口
+          if (user && paperId) {
+            console.log("📤 调用提交答题接口...");
+            const submitAnswerResponse: any = await examAnswerApi.submitAnswers(user.id, paperId);
+
+            if (submitAnswerResponse.code !== 0) {
+              console.warn("⚠️ 提交答题记录失败:", submitAnswerResponse.msg);
+              // 继续提交，不中断流程
+            } else {
+              console.log("✅ 答题记录已提交");
+            }
+          }
+
+          // 构建提交数据
+          const answers = questions.map((question, index) => {
+            const selectedIndexes = selectedAnswers[index] || [];
+            return {
+              questionId: question.id,
+              questionType: question.type,
+              answer: selectedIndexes.join(',') // 多选用逗号分隔
+            };
+          });
+
+          const submitData = {
+            examId: 1, // TODO: 从路由参数或考试信息获取
+            participantId: 1, // TODO: 从用户信息获取
+            answers: answers
+          };
+
+          console.log("📤 提交答卷数据:", submitData);
+
+          // 调用后端API
+          const response: any = await examApi.submitExamAnswers(submitData);
+
+          if (response.code === 0 && response.data) {
+            console.log("✅ 答卷提交成功，结果:", response.data);
+            setExamResult(response.data);
+
+            // 清空localStorage
+            localStorage.removeItem('exam_questions');
+            localStorage.removeItem('exam_info');
+            localStorage.removeItem('exam_answers');
+            localStorage.removeItem('exam_start_time');
+          } else {
+            alert("提交失败：" + (response.msg || "未知错误"));
           }
         }
-
-        // 构建提交数据
-        const answers = questions.map((question, index) => {
-          const selectedIndexes = selectedAnswers[index] || [];
-          return {
-            questionId: question.id,
-            questionType: question.type,
-            answer: selectedIndexes.join(',') // 多选用逗号分隔
-          };
-        });
-
-        const submitData = {
-          examId: 1, // TODO: 从路由参数或考试信息获取
-          participantId: 1, // TODO: 从用户信息获取
-          answers: answers
-        };
-
-        console.log("📤 提交答卷数据:", submitData);
-
-        // 调用后端API
-        const response: any = await examApi.submitExamAnswers(submitData);
-
-        if (response.code === 0 && response.data) {
-          console.log("✅ 答卷提交成功，结果:", response.data);
-          setExamResult(response.data);
-
-          // 清空localStorage
-          localStorage.removeItem('exam_questions');
-          localStorage.removeItem('exam_info');
-          localStorage.removeItem('exam_answers');
-          localStorage.removeItem('exam_start_time');
-        } else {
-          alert("提交失败：" + (response.msg || "未知错误"));
-        }
       } catch (error) {
-        console.error("提交答卷失败:", error);
+        console.error("❌ 提交答卷异常:", error);
+        if (error instanceof Error) {
+          console.error("错误详情:", {
+            message: error.message,
+            stack: error.stack
+          });
+        }
         alert("提交失败，请重试");
       } finally {
         setIsSubmitting(false);
@@ -388,6 +659,46 @@ const FormalExam = () => {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // 将答案序号转换为字母（0->A, 1->B, 2->C, 3->D）
+  const convertAnswerToLetters = (answer: string) => {
+    if (!answer) return "";
+
+    // 检查是否是序号形式（全是数字和逗号）
+    if (/^[0-9,]+$/.test(answer)) {
+      // 是序号形式，转换为字母
+      const indexes = answer.split(",");
+      return indexes.map(idx => {
+        const index = parseInt(idx.trim());
+        return String.fromCharCode(65 + index); // 65 是 'A' 的 ASCII 码
+      }).join(",");
+    }
+    // 已经是字母形式，直接返回
+    return answer;
+  };
+
+  // 解析选项（支持 JSON 数组格式和换行符分隔格式）
+  const parseOptions = (optionsStr: string): string[] => {
+    if (!optionsStr) return [];
+
+    try {
+      // 尝试解析为 JSON 数组
+      const parsed = JSON.parse(optionsStr);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch (e) {
+      // 不是 JSON 格式，继续尝试其他格式
+    }
+
+    // 尝试按换行符分割
+    if (optionsStr.includes('\n')) {
+      return optionsStr.split('\n').filter(opt => opt.trim());
+    }
+
+    // 如果都不是，返回单个选项
+    return [optionsStr];
+  };
+
   return (
     <div className="min-h-screen bg-gradient-hero">
       <div className="p-6">
@@ -397,13 +708,13 @@ const FormalExam = () => {
             
             {/* 头部信息 */}
             <div className="flex items-center justify-between mb-8">
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/exam')}
+              <Button
+                variant="outline"
+                onClick={() => navigate(isFormalExam ? '/exam' : '/training')}
                 className="border-border text-foreground hover:bg-muted/50"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                返回考试中心
+                {isFormalExam ? '返回考试中心' : '返回训练中心'}
               </Button>
               
               <div className="text-center">
@@ -546,7 +857,7 @@ const FormalExam = () => {
                               <div>
                                 <p className="text-sm text-muted-foreground mb-3">选项</p>
                                 <div className="space-y-2">
-                                  {currentQuestion.options.split('\n').map((option: string, idx: number) => {
+                                  {parseOptions(currentQuestion.options).map((option: string, idx: number) => {
                                     const optionLetter = String.fromCharCode(65 + idx); // A, B, C, D...
                                     const isUserAnswer = currentQuestion.userAnswer.includes(String(idx));
                                     const isCorrectAnswer = currentQuestion.answer.includes(String(idx));
@@ -572,7 +883,7 @@ const FormalExam = () => {
                                           }`}>
                                             {optionLetter}.
                                           </span>
-                                          <span className="text-foreground">{option}</span>
+                                          <span className="text-foreground">{option.trim()}</span>
                                           {isCorrectAnswer && <span className="ml-auto text-green-600 font-semibold">✓ 正确</span>}
                                           {isUserAnswer && resultTab === 'wrong' && <span className="ml-auto text-red-600 font-semibold">✗ 你选</span>}
                                         </div>
@@ -587,7 +898,7 @@ const FormalExam = () => {
                             <div className="grid grid-cols-2 gap-4">
                               <div className="p-3 bg-white/5 rounded-lg border border-white/10">
                                 <p className="text-xs text-muted-foreground mb-1">您的答案</p>
-                                <p className="text-sm font-semibold text-foreground">{currentQuestion.userAnswer}</p>
+                                <p className="text-sm font-semibold text-foreground">{convertAnswerToLetters(currentQuestion.userAnswer)}</p>
                               </div>
                               <div className={`p-3 rounded-lg border ${
                                 resultTab === 'correct'
@@ -595,7 +906,7 @@ const FormalExam = () => {
                                   : 'bg-green-500/10 border-green-500/20'
                               }`}>
                                 <p className="text-xs text-green-600 mb-1">正确答案</p>
-                                <p className="text-sm font-semibold text-green-600">{currentQuestion.answer}</p>
+                                <p className="text-sm font-semibold text-green-600">{convertAnswerToLetters(currentQuestion.answer)}</p>
                               </div>
                             </div>
 
@@ -616,10 +927,10 @@ const FormalExam = () => {
                 {/* 返回按钮 */}
                 <div className="flex justify-center gap-4">
                   <Button
-                    onClick={() => navigate('/exam')}
+                    onClick={() => navigate(isFormalExam ? '/exam' : '/training')}
                     className="bg-primary hover:bg-primary-dark text-white"
                   >
-                    返回考试中心
+                    {isFormalExam ? '返回考试中心' : '返回训练中心'}
                   </Button>
                 </div>
               </div>
@@ -733,6 +1044,7 @@ const FormalExam = () => {
                             ).map((option: string, index: number) => {
                               const isSelected = (selectedAnswers[currentQuestion] || []).includes(index);
                               const isMultiple = currentQuestionData.type === 'multiple';
+                              const optionLetter = String.fromCharCode(65 + index); // A, B, C, D...
                               return (
                                 <div
                                   key={index}
@@ -769,7 +1081,7 @@ const FormalExam = () => {
                                         )}
                                       </div>
                                     )}
-                                    <span className="text-foreground">{option}</span>
+                                    <span className="text-foreground font-medium">{optionLetter}. {option}</span>
                                   </div>
                                 </div>
                               );

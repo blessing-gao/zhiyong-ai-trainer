@@ -23,6 +23,7 @@ import ExamCenter from "./pages/ExamCenter";
 import ExamLogin from "./pages/ExamLogin";
 import ExamSystem from "./pages/ExamSystem";
 import FormalExam from "./pages/FormalExam";
+import FormalExamSuccess from "./pages/FormalExamSuccess";
 import PersonalCenter from "./pages/PersonalCenter";
 import NotFound from "./pages/NotFound";
 
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="/exam/login" element={<ExamLogin />} />
               <Route path="/exam/system" element={<ExamSystem />} />
               <Route path="/exam/formal" element={<FormalExam />} />
+              <Route path="/exam/formal/success" element={<FormalExamSuccess />} />
               <Route path="/exam/start" element={<ProtectedRoute><FormalExam /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><PersonalCenter /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

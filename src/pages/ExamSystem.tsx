@@ -83,6 +83,8 @@ const ExamSystem = () => {
       state: {
         fromExamSystem: true,
         paperId: paperId,
+        isFormalExam: true,  // ✅ 标记为正式考试
+        examId: loginInfo.examId,  // ✅ 传递考试ID
       },
     });
   };
