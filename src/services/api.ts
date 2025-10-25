@@ -527,6 +527,24 @@ export const userApi = {
     });
   },
 
+  // 批量导入用户
+  importUsers: async (data: {
+    users: Array<{
+      username: string;
+      password: string;
+      email?: string;
+      phone?: string;
+      realName?: string;
+      userType?: string;
+      status?: number;
+    }>;
+  }) => {
+    return apiRequest('/api/auth/users/import', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
   // 获取用户详情
   getUserDetail: async (userId: number) => {
     return apiRequest(`/api/auth/users/${userId}`);
@@ -683,5 +701,13 @@ export const formalExamAnswerApi = {
         paperId,
       }),
     });
+  },
+};
+
+// 管理员相关 API
+export const adminApi = {
+  // 获取仪表盘统计数据
+  getDashboardStats: async () => {
+    return apiRequest('/api/admin/dashboard/stats');
   },
 };

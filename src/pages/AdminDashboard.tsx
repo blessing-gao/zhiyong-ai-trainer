@@ -10,6 +10,7 @@ import UserManagement from "@/components/UserManagement";
 import QuestionBankManagement from "@/components/QuestionBankManagement";
 import PaperManagement from "@/components/PaperManagement";
 import ExamManagement from "@/components/ExamManagement";
+import { adminApi } from "@/services/api";
 import { 
   LayoutDashboard, 
   GraduationCap, 
@@ -41,6 +42,15 @@ import {
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState("Dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [dashboardStats, setDashboardStats] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    totalQuestions: 0,
+    totalExams: 0,
+    todayExams: 0,
+    passRate: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
   const { logout, userRole } = useAuth();
   const navigate = useNavigate();
 
@@ -50,6 +60,37 @@ const AdminDashboard = () => {
       navigate("/admin-login", { replace: true });
     }
   }, [userRole, navigate]);
+
+  // 获取仪表盘统计数据
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        setIsLoading(true);
+        console.log("📊 开始获取仪表盘统计数据...");
+        const response: any = await adminApi.getDashboardStats();
+
+        if (response.code === 0 && response.data) {
+          console.log("✅ 仪表盘统计数据获取成功:", response.data);
+          setDashboardStats({
+            totalUsers: response.data.totalUsers || 0,
+            activeUsers: response.data.activeUsers || 0,
+            totalQuestions: response.data.totalQuestions || 0,
+            totalExams: response.data.totalExams || 0,
+            todayExams: response.data.todayExams || 0,
+            passRate: response.data.passRate || 0
+          });
+        } else {
+          console.warn("⚠️ 获取仪表盘统计数据失败:", response.message);
+        }
+      } catch (error) {
+        console.error("❌ 获取仪表盘统计数据出错:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -69,16 +110,6 @@ const AdminDashboard = () => {
     { id: "Logs", label: "日志管理", icon: FileText },
     { id: "Settings", label: "系统设置", icon: Settings },
   ];
-
-  // 仪表盘统计数据
-  const dashboardStats = {
-    totalUsers: 1250,
-    activeUsers: 892,
-    totalQuestions: 3500,
-    totalExams: 156,
-    todayExams: 12,
-    passRate: 87.5
-  };
 
   const courseItems = [
     { title: "生成式人工智能基础与应用", price: "¥299", students: 1250, growth: "+78%", color: "from-blue-400 to-cyan-300" },

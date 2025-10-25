@@ -14,10 +14,13 @@ import {
   FileText,
   Lock,
   Unlock,
-  Loader2
+  Loader2,
+  Upload
 } from "lucide-react";
 import { userApi } from "@/services/api";
 import { useToast } from "@/components/ui/use-toast";
+import AddUserDialog from "./AddUserDialog";
+import BatchImportUsersDialog from "./BatchImportUsersDialog";
 
 interface User {
   id: number;
@@ -49,6 +52,8 @@ const UserManagement = () => {
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const [showAddUserDialog, setShowAddUserDialog] = useState(false);
+  const [showBatchImportDialog, setShowBatchImportDialog] = useState(false);
 
   // 加载用户列表
   const loadUsers = async (page: number = 1) => {
@@ -149,29 +154,6 @@ const UserManagement = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-cyan-300 rounded-lg flex items-center justify-center">
-            <div className="w-4 h-4 bg-white rounded-sm"></div>
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-700">用户管理</h1>
-            <p className="text-sm text-gray-500">学生和管理员账户管理</p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span className="text-sm text-gray-600">系统正常</span>
-          </div>
-          <Button variant="ghost" size="sm" className="text-gray-500">
-            <Bell className="h-4 w-4 mr-2" />
-            通知
-          </Button>
-        </div>
-      </div>
-
       {/* Search and Actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -212,7 +194,18 @@ const UserManagement = () => {
             <Download className="h-4 w-4 mr-2" />
             导出数据
           </Button>
-          <Button className="bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl">
+          <Button
+            variant="outline"
+            className="border-gray-200 rounded-xl"
+            onClick={() => setShowBatchImportDialog(true)}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            批量导入
+          </Button>
+          <Button
+            className="bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl"
+            onClick={() => setShowAddUserDialog(true)}
+          >
             <Plus className="h-4 w-4 mr-2" />
             + 添加用户
           </Button>
@@ -338,6 +331,20 @@ const UserManagement = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* 添加用户对话框 */}
+      <AddUserDialog
+        isOpen={showAddUserDialog}
+        onClose={() => setShowAddUserDialog(false)}
+        onSuccess={() => loadUsers(1)}
+      />
+
+      {/* 批量导入用户对话框 */}
+      <BatchImportUsersDialog
+        isOpen={showBatchImportDialog}
+        onClose={() => setShowBatchImportDialog(false)}
+        onSuccess={() => loadUsers(1)}
+      />
     </div>
   );
 };
