@@ -16,6 +16,7 @@ import {
   ChevronDown,
   Lock,
   Unlock,
+  Upload,
 } from 'lucide-react';
 import { questionApi, tagApi, questionTagApi, questionTypeApi } from '@/services/api';
 import {
@@ -24,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import QuestionBatchImport from './QuestionBatchImport';
 
 interface Question {
   id: string;
@@ -106,6 +108,9 @@ const QuestionBankManagement = () => {
   const [questionTypes, setQuestionTypes] = useState<any[]>([]);
   const [loadingQuestionTypes, setLoadingQuestionTypes] = useState(false);
   const [createAddMethod, setCreateAddMethod] = useState<'single' | 'batch' | 'smart'>('single');
+
+  // 批量导入对话框状态
+  const [showBatchImportDialog, setShowBatchImportDialog] = useState(false);
 
   // 查询条件
   const [searchKeyword, setSearchKeyword] = useState<string>('');
@@ -921,6 +926,10 @@ const QuestionBankManagement = () => {
             <Button variant="outline" size="sm">
               <Download className="h-4 w-4 mr-2" />
               导出题库
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowBatchImportDialog(true)}>
+              <Upload className="h-4 w-4 mr-2" />
+              批量导入
             </Button>
             <Button size="sm" onClick={handleOpenCreateDialog}>
               <Plus className="h-4 w-4 mr-2" />
@@ -1830,6 +1839,21 @@ const QuestionBankManagement = () => {
               暂无知识点数据
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 批量导入对话框 */}
+      <Dialog open={showBatchImportDialog} onOpenChange={setShowBatchImportDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>批量导入题目</DialogTitle>
+          </DialogHeader>
+          <QuestionBatchImport
+            onImportSuccess={() => {
+              setShowBatchImportDialog(false);
+              fetchQuestions(1, pageSize);
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>

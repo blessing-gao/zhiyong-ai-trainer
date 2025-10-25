@@ -115,6 +115,34 @@ export const questionApi = {
     });
   },
 
+  // 批量导入题目
+  batchImportQuestions: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const accessToken = localStorage.getItem('access_token');
+    const url = `${API_BASE_URL}/api/questions/batch-import`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          ...(accessToken && { 'Authorization': `Bearer ${accessToken}` }),
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Batch import error:', error);
+      throw error;
+    }
+  },
+
   // 获取训练中心统计数据（知识点个数和练习题个数）
   getTrainingCenterStats: async () => {
     return apiRequest('/api/questions/training-center/stats');
