@@ -1,0 +1,10 @@
+$:
+  vscode:
+    - services:
+        - vscode
+        - docker
+      docker:
+        image: docker.cnb.cool/arsrna/dev-env/node22
+      stages:
+        - name: 启动
+          script: echo hello
