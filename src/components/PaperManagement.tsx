@@ -15,9 +15,12 @@ import {
   BookMarked,
   X,
   Eye,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 import { paperApi, tagApi } from '@/services/api';
 import PaperPreviewDialog from './PaperPreviewDialog';
+import FlexiblePaperDialog from './FlexiblePaperDialog';
 
 interface Paper {
   id: string;
@@ -56,6 +59,11 @@ interface CreatePaperFormData {
   duration: number;
   questionCount: number;
   typeRatio: {
+    judge: number;
+    single: number;
+    multiple: number;
+  };
+  typeScore: {
     judge: number;
     single: number;
     multiple: number;
@@ -116,6 +124,11 @@ const PaperManagement = () => {
       single: 70,
       multiple: 10,
     },
+    typeScore: {
+      judge: 20,
+      single: 70,
+      multiple: 10,
+    },
     knowledgeRatio: {},
   });
 
@@ -128,6 +141,12 @@ const PaperManagement = () => {
 
   // 组卷预览对话框状态
   const [showPaperPreviewDialog, setShowPaperPreviewDialog] = useState(false);
+
+  // 灵活组卷对话框状态
+  const [showFlexiblePaperDialog, setShowFlexiblePaperDialog] = useState(false);
+
+  // 禁用/启用试卷状态
+  const [togglingPaperId, setTogglingPaperId] = useState<string | null>(null);
 
   // 获取试卷列表
   const fetchPapers = async (page: number, size: number) => {
@@ -209,6 +228,11 @@ const PaperManagement = () => {
         single: 70,
         multiple: 10,
       },
+      typeScore: {
+        judge: 20,
+        single: 70,
+        multiple: 10,
+      },
       knowledgeRatio: {},
     });
   };
@@ -247,7 +271,7 @@ const PaperManagement = () => {
     return null;
   };
 
-  // 创建试卷 - 先显示预览
+  // 创建试卷 - 直接生成并保存
   const handleCreatePaper = async () => {
     const validationError = validateForm();
     if (validationError) {
@@ -255,9 +279,37 @@ const PaperManagement = () => {
       return;
     }
 
-    // 关闭创建对话框，打开预览对话框
-    setShowCreateDialog(false);
-    setShowPaperPreviewDialog(true);
+    setCreating(true);
+    setCreateError(null);
+    try {
+      const response = await paperApi.createPaper({
+        name: formData.name,
+        description: formData.description,
+        type: formData.type,
+        totalScore: formData.totalScore,
+        passScore: formData.passScore,
+        duration: formData.duration,
+        questionCount: formData.questionCount,
+        typeRatio: formData.typeRatio,
+        typeScore: formData.typeScore,
+        knowledgeRatio: formData.knowledgeRatio,
+      }) as any;
+
+      if (response.code === 0) {
+        // 关闭对话框并刷新列表
+        setShowCreateDialog(false);
+        fetchPapers(1, pageSize);
+        // 重置表单
+        handleCloseCreateDialog();
+      } else {
+        setCreateError(response.message || '创建试卷失败');
+      }
+    } catch (err) {
+      setCreateError('创建试卷出错: ' + (err instanceof Error ? err.message : '未知错误'));
+      console.error('Error creating paper:', err);
+    } finally {
+      setCreating(false);
+    }
   };
 
   // 保存试卷成功后的回调
@@ -363,6 +415,29 @@ const PaperManagement = () => {
     }
   };
 
+  // 禁用/启用试卷
+  const handleTogglePaperStatus = async (paperId: string, currentStatus: number) => {
+    setTogglingPaperId(paperId);
+    try {
+      const newStatus = currentStatus === 1 ? 0 : 1;
+      const response = await paperApi.changePaperStatus(parseInt(paperId), newStatus) as any;
+
+      if (response.code === 0) {
+        // 更新本地状态
+        setPapers(papers.map(p =>
+          p.id === paperId ? { ...p, status: newStatus } : p
+        ));
+      } else {
+        setError(response.message || '更改试卷状态失败');
+      }
+    } catch (err) {
+      setError('更改试卷状态出错: ' + (err instanceof Error ? err.message : '未知错误'));
+      console.error('Error toggling paper status:', err);
+    } finally {
+      setTogglingPaperId(null);
+    }
+  };
+
   // 获取试卷类型标签
   const getTypeLabel = (type: string) => {
     switch (type) {
@@ -401,6 +476,25 @@ const PaperManagement = () => {
     return status === 1 ? 'text-green-600 border-green-200' : 'text-red-600 border-red-200';
   };
 
+  // 安全解析JSON（支持标准JSON和非标准格式）
+  const safeParseJSON = (jsonString: string) => {
+    if (!jsonString) return null;
+    try {
+      // 首先尝试标准JSON解析
+      return JSON.parse(jsonString);
+    } catch (e) {
+      try {
+        // 如果标准JSON解析失败，尝试将非标准格式转换为标准JSON
+        // 例如：{1:20,2:20} -> {"1":20,"2":20}
+        const standardJson = jsonString.replace(/([{,]\s*)(\d+)(\s*:)/g, '$1"$2"$3');
+        return JSON.parse(standardJson);
+      } catch (e2) {
+        console.error('Failed to parse JSON:', jsonString, e2);
+        return null;
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* 搜索和操作栏 */}
@@ -415,9 +509,13 @@ const PaperManagement = () => {
           </select>
         </div>
         <div className="flex gap-2">
+          <Button onClick={() => setShowFlexiblePaperDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            灵活随机组卷
+          </Button>
           <Button onClick={handleOpenCreateDialog}>
             <Plus className="h-4 w-4 mr-2" />
-            随机组卷
+            快速随机组卷
           </Button>
         </div>
       </div>
@@ -520,8 +618,21 @@ const PaperManagement = () => {
                           <Button size="sm" variant="outline">
                             <Edit className="h-3 w-3" />
                           </Button>
-                          <Button size="sm" variant="outline" className="text-red-600">
-                            <Trash2 className="h-3 w-3" />
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleTogglePaperStatus(paper.id, paper.status)}
+                            disabled={togglingPaperId === paper.id}
+                            title={paper.status === 1 ? '禁用试卷' : '启用试卷'}
+                            className={paper.status === 1 ? 'text-green-600' : 'text-gray-400'}
+                          >
+                            {togglingPaperId === paper.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : paper.status === 1 ? (
+                              <Unlock className="h-3 w-3" />
+                            ) : (
+                              <Lock className="h-3 w-3" />
+                            )}
                           </Button>
                         </div>
                       </td>
@@ -664,27 +775,26 @@ const PaperManagement = () => {
 
                       <div className="grid grid-cols-3 gap-4">
                         {(() => {
-                          try {
-                            const typeRatio = JSON.parse(previewPaper.typeRatio);
-                            return (
-                              <>
-                                <div className="p-3 bg-blue-50 rounded-lg">
-                                  <p className="text-xs text-gray-600">判断题</p>
-                                  <p className="text-lg font-bold text-blue-600">{typeRatio.judge}%</p>
-                                </div>
-                                <div className="p-3 bg-green-50 rounded-lg">
-                                  <p className="text-xs text-gray-600">单选题</p>
-                                  <p className="text-lg font-bold text-green-600">{typeRatio.single}%</p>
-                                </div>
-                                <div className="p-3 bg-purple-50 rounded-lg">
-                                  <p className="text-xs text-gray-600">多选题</p>
-                                  <p className="text-lg font-bold text-purple-600">{typeRatio.multiple}%</p>
-                                </div>
-                              </>
-                            );
-                          } catch (e) {
+                          const typeRatio = safeParseJSON(previewPaper.typeRatio);
+                          if (!typeRatio) {
                             return <p className="text-sm text-gray-500">无法解析题型比例</p>;
                           }
+                          return (
+                            <>
+                              <div className="p-3 bg-blue-50 rounded-lg">
+                                <p className="text-xs text-gray-600">判断题</p>
+                                <p className="text-lg font-bold text-blue-600">{typeRatio.judge}%</p>
+                              </div>
+                              <div className="p-3 bg-green-50 rounded-lg">
+                                <p className="text-xs text-gray-600">单选题</p>
+                                <p className="text-lg font-bold text-green-600">{typeRatio.single}%</p>
+                              </div>
+                              <div className="p-3 bg-purple-50 rounded-lg">
+                                <p className="text-xs text-gray-600">多选题</p>
+                                <p className="text-lg font-bold text-purple-600">{typeRatio.multiple}%</p>
+                              </div>
+                            </>
+                          );
                         })()}
                       </div>
                     </div>
@@ -697,27 +807,26 @@ const PaperManagement = () => {
 
                       <div className="grid grid-cols-3 gap-4">
                         {(() => {
-                          try {
-                            const typeScore = JSON.parse(previewPaper.typeScore);
-                            return (
-                              <>
-                                <div className="p-3 bg-blue-50 rounded-lg">
-                                  <p className="text-xs text-gray-600">判断题</p>
-                                  <p className="text-lg font-bold text-blue-600">{typeScore.judge}分</p>
-                                </div>
-                                <div className="p-3 bg-green-50 rounded-lg">
-                                  <p className="text-xs text-gray-600">单选题</p>
-                                  <p className="text-lg font-bold text-green-600">{typeScore.single}分</p>
-                                </div>
-                                <div className="p-3 bg-purple-50 rounded-lg">
-                                  <p className="text-xs text-gray-600">多选题</p>
-                                  <p className="text-lg font-bold text-purple-600">{typeScore.multiple}分</p>
-                                </div>
-                              </>
-                            );
-                          } catch (e) {
+                          const typeScore = safeParseJSON(previewPaper.typeScore);
+                          if (!typeScore) {
                             return <p className="text-sm text-gray-500">无法解析题型分值</p>;
                           }
+                          return (
+                            <>
+                              <div className="p-3 bg-blue-50 rounded-lg">
+                                <p className="text-xs text-gray-600">判断题</p>
+                                <p className="text-lg font-bold text-blue-600">{typeScore.judge}分</p>
+                              </div>
+                              <div className="p-3 bg-green-50 rounded-lg">
+                                <p className="text-xs text-gray-600">单选题</p>
+                                <p className="text-lg font-bold text-green-600">{typeScore.single}分</p>
+                              </div>
+                              <div className="p-3 bg-purple-50 rounded-lg">
+                                <p className="text-xs text-gray-600">多选题</p>
+                                <p className="text-lg font-bold text-purple-600">{typeScore.multiple}分</p>
+                              </div>
+                            </>
+                          );
                         })()}
                       </div>
                     </div>
@@ -730,17 +839,16 @@ const PaperManagement = () => {
 
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                         {(() => {
-                          try {
-                            const knowledgeRatio = JSON.parse(previewPaper.knowledgeRatio);
-                            return Object.entries(knowledgeRatio).map(([tagId, ratio]: [string, any]) => (
-                              <div key={tagId} className="p-3 bg-gray-50 rounded-lg">
-                                <p className="text-xs text-gray-600">知识点 {tagId}</p>
-                                <p className="text-lg font-bold text-gray-700">{ratio}%</p>
-                              </div>
-                            ));
-                          } catch (e) {
+                          const knowledgeRatio = safeParseJSON(previewPaper.knowledgeRatio);
+                          if (!knowledgeRatio) {
                             return <p className="text-sm text-gray-500">无法解析知识点比例</p>;
                           }
+                          return Object.entries(knowledgeRatio).map(([tagId, ratio]: [string, any]) => (
+                            <div key={tagId} className="p-3 bg-gray-50 rounded-lg">
+                              <p className="text-xs text-gray-600">知识点 {tagId}</p>
+                              <p className="text-lg font-bold text-gray-700">{ratio}%</p>
+                            </div>
+                          ));
                         })()}
                       </div>
                     </div>
@@ -996,6 +1104,57 @@ const PaperManagement = () => {
                 </div>
               </div>
 
+              {/* 题型分值配置 */}
+              <div className="space-y-4 border-t pt-4">
+                <h3 className="font-medium text-sm">题型分值配置</h3>
+                <p className="text-xs text-gray-500">配置每个题型的分值</p>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">判断题 (分)</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={formData.typeScore.judge}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        typeScore: { ...formData.typeScore, judge: parseInt(e.target.value) || 0 }
+                      })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">单选题 (分)</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={formData.typeScore.single}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        typeScore: { ...formData.typeScore, single: parseInt(e.target.value) || 0 }
+                      })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">多选题 (分)</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={formData.typeScore.multiple}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        typeScore: { ...formData.typeScore, multiple: parseInt(e.target.value) || 0 }
+                      })}
+                    />
+                  </div>
+                </div>
+
+                <div className="text-sm text-gray-600">
+                  总分值: {formData.typeScore.judge + formData.typeScore.single + formData.typeScore.multiple}分
+                </div>
+              </div>
+
               {/* 知识点比例配置 */}
               <div className="space-y-4 border-t pt-4">
                 <h3 className="font-medium text-sm">知识点比例配置</h3>
@@ -1068,6 +1227,15 @@ const PaperManagement = () => {
         onOpenChange={setShowPaperPreviewDialog}
         onSave={handlePaperSaved}
         formData={formData}
+      />
+
+      {/* 灵活组卷对话框 */}
+      <FlexiblePaperDialog
+        open={showFlexiblePaperDialog}
+        onOpenChange={setShowFlexiblePaperDialog}
+        onPaperSaved={() => {
+          fetchPapers(1, pageSize);
+        }}
       />
     </div>
   );

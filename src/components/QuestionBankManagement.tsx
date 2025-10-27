@@ -18,7 +18,7 @@ import {
   Unlock,
   Upload,
 } from 'lucide-react';
-import { questionApi, tagApi, questionTagApi, questionTypeApi } from '@/services/api';
+import { questionApi, tagApi, questionTagApi, questionTypeApi, questionBankApi } from '@/services/api';
 import {
   Dialog,
   DialogContent,
@@ -32,7 +32,7 @@ interface Question {
   type: string;
   stem: string;
   difficulty: string;
-  level: string;
+  bank_id: number;
   answer: string;
   status: number;
   options?: string;
@@ -96,7 +96,7 @@ const QuestionBankManagement = () => {
     options: '[]',
     answer: '',
     difficulty: '',
-    level: '',
+    bank_id: '',
     analysis: '',
     status: 1,
   });
@@ -107,7 +107,9 @@ const QuestionBankManagement = () => {
   const [loadingCreateTagTree, setLoadingCreateTagTree] = useState(false);
   const [questionTypes, setQuestionTypes] = useState<any[]>([]);
   const [loadingQuestionTypes, setLoadingQuestionTypes] = useState(false);
-  const [createAddMethod, setCreateAddMethod] = useState<'single' | 'batch' | 'smart'>('single');
+  const [questionBanks, setQuestionBanks] = useState<any[]>([]);
+  const [loadingQuestionBanks, setLoadingQuestionBanks] = useState(false);
+
 
   // 批量导入对话框状态
   const [showBatchImportDialog, setShowBatchImportDialog] = useState(false);
@@ -116,7 +118,16 @@ const QuestionBankManagement = () => {
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [selectedType, setSelectedType] = useState<string>('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('');
-  const [selectedLevel, setSelectedLevel] = useState<string>('');
+  const [selectedBankId, setSelectedBankId] = useState<number | undefined>();
+  const [selectedFirstLevelTag, setSelectedFirstLevelTag] = useState<number | undefined>();
+  const [selectedSecondLevelTag, setSelectedSecondLevelTag] = useState<number | undefined>();
+  const [selectedThirdLevelTag, setSelectedThirdLevelTag] = useState<number | undefined>();
+  const [firstLevelTags, setFirstLevelTags] = useState<TagTreeNode[]>([]);
+  const [secondLevelTags, setSecondLevelTags] = useState<TagTreeNode[]>([]);
+  const [thirdLevelTags, setThirdLevelTags] = useState<TagTreeNode[]>([]);
+  const [loadingFirstLevelTags, setLoadingFirstLevelTags] = useState(false);
+  const [loadingSecondLevelTags, setLoadingSecondLevelTags] = useState(false);
+  const [loadingThirdLevelTags, setLoadingThirdLevelTags] = useState(false);
 
   // 获取题目列表（统一接口，支持无条件或条件查询）
   const fetchQuestions = async (page: number, size: number) => {
@@ -129,8 +140,14 @@ const QuestionBankManagement = () => {
         size,
         selectedType || undefined,
         selectedDifficulty || undefined,
-        selectedLevel || undefined,
-        searchKeyword || undefined
+        selectedBankId || undefined,
+        searchKeyword || undefined,
+        undefined,
+        undefined,
+        undefined,
+        selectedFirstLevelTag || undefined,
+        selectedSecondLevelTag || undefined,
+        selectedThirdLevelTag || undefined
       ) as PageResponse;
 
       if (response.code === 0 && response.data) {
@@ -149,9 +166,87 @@ const QuestionBankManagement = () => {
     }
   };
 
+  // 获取题型列表
+  const fetchQuestionTypes = async () => {
+    setLoadingQuestionTypes(true);
+    try {
+      const response = await questionTypeApi.getAllTypes();
+      if (response.code === 0 && response.data) {
+        setQuestionTypes(response.data);
+      }
+    } catch (err) {
+      console.error('Error fetching question types:', err);
+    } finally {
+      setLoadingQuestionTypes(false);
+    }
+  };
+
+  // 获取题库列表
+  const fetchQuestionBanks = async () => {
+    setLoadingQuestionBanks(true);
+    try {
+      const response = await questionBankApi.getAllBanks();
+      if (response.code === 0 && response.data) {
+        setQuestionBanks(response.data);
+      }
+    } catch (err) {
+      console.error('Error fetching question banks:', err);
+    } finally {
+      setLoadingQuestionBanks(false);
+    }
+  };
+
+  // 获取一级标签列表
+  const fetchFirstLevelTags = async () => {
+    setLoadingFirstLevelTags(true);
+    try {
+      const response = await tagApi.getFirstLevelTags();
+      if (response.code === 0 && response.data) {
+        setFirstLevelTags(response.data);
+      }
+    } catch (err) {
+      console.error('Error fetching first level tags:', err);
+    } finally {
+      setLoadingFirstLevelTags(false);
+    }
+  };
+
+  // 获取二级标签列表
+  const fetchSecondLevelTags = async (firstLevelTagId: number) => {
+    setLoadingSecondLevelTags(true);
+    try {
+      const response = await tagApi.getSecondLevelTags(firstLevelTagId);
+      if (response.code === 0 && response.data) {
+        setSecondLevelTags(response.data);
+      }
+    } catch (err) {
+      console.error('Error fetching second level tags:', err);
+    } finally {
+      setLoadingSecondLevelTags(false);
+    }
+  };
+
+  // 获取三级标签列表
+  const fetchThirdLevelTags = async (secondLevelTagId: number) => {
+    setLoadingThirdLevelTags(true);
+    try {
+      const response = await tagApi.getThirdLevelTags(secondLevelTagId);
+      if (response.code === 0 && response.data) {
+        setThirdLevelTags(response.data);
+      }
+    } catch (err) {
+      console.error('Error fetching third level tags:', err);
+    } finally {
+      setLoadingThirdLevelTags(false);
+    }
+  };
+
   // 初始化加载
   useEffect(() => {
     fetchQuestions(1, pageSize);
+    fetchQuestionTypes();
+    fetchQuestionBanks();
+    fetchFirstLevelTags();
   }, []);
 
   // 处理分页
@@ -202,7 +297,10 @@ const QuestionBankManagement = () => {
     setSearchKeyword('');
     setSelectedType('');
     setSelectedDifficulty('');
-    setSelectedLevel('');
+    setSelectedBankId(undefined);
+    setSelectedFirstLevelTag(undefined);
+    setSelectedSecondLevelTag(undefined);
+    setSelectedThirdLevelTag(undefined);
     setCurrentPage(1);
     fetchQuestions(1, pageSize);
   };
@@ -212,6 +310,33 @@ const QuestionBankManagement = () => {
     if (e.key === 'Enter') {
       handleSearch();
     }
+  };
+
+  // 处理一级标签变化
+  const handleFirstLevelTagChange = (tagId: number | undefined) => {
+    setSelectedFirstLevelTag(tagId);
+    setSelectedSecondLevelTag(undefined);
+    setSelectedThirdLevelTag(undefined);
+    setSecondLevelTags([]);
+    setThirdLevelTags([]);
+    if (tagId) {
+      fetchSecondLevelTags(tagId);
+    }
+  };
+
+  // 处理二级标签变化
+  const handleSecondLevelTagChange = (tagId: number | undefined) => {
+    setSelectedSecondLevelTag(tagId);
+    setSelectedThirdLevelTag(undefined);
+    setThirdLevelTags([]);
+    if (tagId) {
+      fetchThirdLevelTags(tagId);
+    }
+  };
+
+  // 处理三级标签变化
+  const handleThirdLevelTagChange = (tagId: number | undefined) => {
+    setSelectedThirdLevelTag(tagId);
   };
 
   // 打开预览
@@ -282,7 +407,7 @@ const QuestionBankManagement = () => {
       options: question.options,
       answer: question.answer,
       difficulty: question.difficulty,
-      level: question.level,
+      bank_id: question.bank_id,
       analysis: question.analysis,
       status: question.status,
     });
@@ -422,12 +547,11 @@ const QuestionBankManagement = () => {
       options: '[]',
       answer: '',
       difficulty: '',
-      level: '',
+      bank_id: '',
       analysis: '',
       status: 1,
     });
     setCreatingTags([]);
-    setCreateAddMethod('single');
 
     // 加载题型列表
     setLoadingQuestionTypes(true);
@@ -440,6 +564,19 @@ const QuestionBankManagement = () => {
       console.error('Error fetching question types:', err);
     } finally {
       setLoadingQuestionTypes(false);
+    }
+
+    // 加载题库列表
+    setLoadingQuestionBanks(true);
+    try {
+      const response = await questionBankApi.getAllBanks();
+      if (response.code === 0 && response.data) {
+        setQuestionBanks(response.data);
+      }
+    } catch (err) {
+      console.error('Error fetching question banks:', err);
+    } finally {
+      setLoadingQuestionBanks(false);
     }
 
     // 加载标签树
@@ -529,7 +666,7 @@ const QuestionBankManagement = () => {
         options: createFormData.options,
         answer: createFormData.answer,
         difficulty: createFormData.difficulty || '',
-        level: createFormData.level || '',
+        bank_id: createFormData.bank_id ? parseInt(createFormData.bank_id) : null,
         analysis: createFormData.analysis || '',
         status: createFormData.status,
         tags: creatingTags.map((tag) => ({
@@ -571,7 +708,7 @@ const QuestionBankManagement = () => {
         options: editFormData.options,
         answer: editFormData.answer,
         difficulty: editFormData.difficulty,
-        level: editFormData.level,
+        bank_id: editFormData.bank_id,
         analysis: editFormData.analysis,
         status: editFormData.status,
         tags: editingTags.map((tag) => ({
@@ -862,6 +999,25 @@ const QuestionBankManagement = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 flex-wrap">
+            <select
+              className="w-40 px-3 py-2 border border-gray-300 rounded-md text-sm"
+              value={selectedBankId || ''}
+              onChange={(e) => setSelectedBankId(e.target.value ? parseInt(e.target.value) : undefined)}
+              disabled={loadingQuestionBanks}
+            >
+              <option value="">全部题库</option>
+              {loadingQuestionBanks ? (
+                <option disabled>加载中...</option>
+              ) : questionBanks.length === 0 ? (
+                <option disabled>暂无题库数据</option>
+              ) : (
+                questionBanks.map((bank: any) => (
+                  <option key={bank.id} value={bank.id}>
+                    {bank.name}
+                  </option>
+                ))
+              )}
+            </select>
             <Input
               placeholder="搜索题干关键字..."
               className="w-48"
@@ -873,12 +1029,18 @@ const QuestionBankManagement = () => {
               className="w-32 px-3 py-2 border border-gray-300 rounded-md text-sm"
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
+              disabled={loadingQuestionTypes}
             >
               <option value="">全部题型</option>
-              <option value="single">单选题</option>
-              <option value="multiple">多选题</option>
-              <option value="judge">判断题</option>
-              <option value="fill">填空题</option>
+              {loadingQuestionTypes ? (
+                <option disabled>加载中...</option>
+              ) : (
+                questionTypes.map((type: any) => (
+                  <option key={type.id} value={type.typeCode}>
+                    {type.typeName}
+                  </option>
+                ))
+              )}
             </select>
             <select
               className="w-32 px-3 py-2 border border-gray-300 rounded-md text-sm"
@@ -891,16 +1053,61 @@ const QuestionBankManagement = () => {
               <option value="hard">困难</option>
             </select>
             <select
-              className="w-32 px-3 py-2 border border-gray-300 rounded-md text-sm"
-              value={selectedLevel}
-              onChange={(e) => setSelectedLevel(e.target.value)}
+              className="w-40 px-3 py-2 border border-gray-300 rounded-md text-sm"
+              value={selectedFirstLevelTag || ''}
+              onChange={(e) => handleFirstLevelTagChange(e.target.value ? parseInt(e.target.value) : undefined)}
+              disabled={loadingFirstLevelTags}
             >
-              <option value="">全部级别</option>
-              <option value="level1">Level 1</option>
-              <option value="level2">Level 2</option>
-              <option value="level3">Level 3</option>
-              <option value="level4">Level 4</option>
-              <option value="level5">Level 5</option>
+              <option value="">全部一级知识点</option>
+              {loadingFirstLevelTags ? (
+                <option disabled>加载中...</option>
+              ) : firstLevelTags.length === 0 ? (
+                <option disabled>暂无数据</option>
+              ) : (
+                firstLevelTags.map((tag: any) => (
+                  <option key={tag.id} value={tag.id}>
+                    {tag.tagName}
+                  </option>
+                ))
+              )}
+            </select>
+            <select
+              className="w-40 px-3 py-2 border border-gray-300 rounded-md text-sm"
+              value={selectedSecondLevelTag || ''}
+              onChange={(e) => handleSecondLevelTagChange(e.target.value ? parseInt(e.target.value) : undefined)}
+              disabled={!selectedFirstLevelTag || loadingSecondLevelTags}
+            >
+              <option value="">全部二级知识点</option>
+              {loadingSecondLevelTags ? (
+                <option disabled>加载中...</option>
+              ) : secondLevelTags.length === 0 ? (
+                <option disabled>暂无数据</option>
+              ) : (
+                secondLevelTags.map((tag: any) => (
+                  <option key={tag.id} value={tag.id}>
+                    {tag.tagName}
+                  </option>
+                ))
+              )}
+            </select>
+            <select
+              className="w-40 px-3 py-2 border border-gray-300 rounded-md text-sm"
+              value={selectedThirdLevelTag || ''}
+              onChange={(e) => handleThirdLevelTagChange(e.target.value ? parseInt(e.target.value) : undefined)}
+              disabled={!selectedSecondLevelTag || loadingThirdLevelTags}
+            >
+              <option value="">全部三级知识点</option>
+              {loadingThirdLevelTags ? (
+                <option disabled>加载中...</option>
+              ) : thirdLevelTags.length === 0 ? (
+                <option disabled>暂无数据</option>
+              ) : (
+                thirdLevelTags.map((tag: any) => (
+                  <option key={tag.id} value={tag.id}>
+                    {tag.tagName}
+                  </option>
+                ))
+              )}
             </select>
             <Button
               size="sm"
@@ -933,7 +1140,7 @@ const QuestionBankManagement = () => {
             </Button>
             <Button size="sm" onClick={handleOpenCreateDialog}>
               <Plus className="h-4 w-4 mr-2" />
-              新增题目
+              单个添加
             </Button>
           </div>
         </div>
@@ -972,7 +1179,7 @@ const QuestionBankManagement = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">题目内容</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">题型</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">难度</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">级别</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">题库ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">状态</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
                 </tr>
@@ -1010,7 +1217,7 @@ const QuestionBankManagement = () => {
                           {getDifficultyLabel(question.difficulty)}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 text-sm">{question.level}</td>
+                      <td className="px-6 py-4 text-sm">{question.bank_id || '-'}</td>
                       <td className="px-6 py-4">
                         <Badge variant="outline" className={getStatusColor(question.status)}>
                           {getStatusLabel(question.status)}
@@ -1302,18 +1509,14 @@ const QuestionBankManagement = () => {
 
                 {/* 级别 */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">级别</label>
-                  <select
-                    value={editFormData.level || ''}
-                    onChange={(e) => handleEditFormChange('level', e.target.value)}
+                  <label className="block text-sm font-medium text-gray-700 mb-2">题库ID</label>
+                  <input
+                    type="number"
+                    value={editFormData.bank_id || ''}
+                    onChange={(e) => handleEditFormChange('bank_id', e.target.value ? parseInt(e.target.value) : '')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  >
-                    <option value="">请选择级别</option>
-                    <option value="level1">一级</option>
-                    <option value="level2">二级</option>
-                    <option value="level3">三级</option>
-                    <option value="level4">四级</option>
-                  </select>
+                    placeholder="请输入题库ID"
+                  />
                 </div>
 
                 {/* 状态 */}
@@ -1519,303 +1722,261 @@ const QuestionBankManagement = () => {
           </DialogHeader>
 
           <div className="space-y-6 pr-4">
-            {/* 添加方式选择 */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">添加方式</label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    value="single"
-                    checked={createAddMethod === 'single'}
-                    onChange={(e) => setCreateAddMethod(e.target.value as 'single' | 'batch' | 'smart')}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm">单个添加</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    value="batch"
-                    checked={createAddMethod === 'batch'}
-                    onChange={(e) => setCreateAddMethod(e.target.value as 'single' | 'batch' | 'smart')}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm">批量导入</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    value="smart"
-                    checked={createAddMethod === 'smart'}
-                    onChange={(e) => setCreateAddMethod(e.target.value as 'single' | 'batch' | 'smart')}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm">智能导入</span>
-                </label>
+            {/* 题目基本信息 */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900">题目基本信息</h3>
+
+              {/* 题型 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">题型 *</label>
+                {loadingQuestionTypes ? (
+                  <div className="flex items-center justify-center py-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <select
+                    value={createFormData.type || ''}
+                    onChange={(e) => handleCreateFormChange('type', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">请选择题型</option>
+                    {questionTypes.map((type: any) => (
+                      <option key={type.id} value={type.id}>
+                        {type.typeName}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* 难度 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">难度</label>
+                <select
+                  value={createFormData.difficulty || ''}
+                  onChange={(e) => handleCreateFormChange('difficulty', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                >
+                  <option value="">请选择难度</option>
+                  <option value="easy">简单</option>
+                  <option value="medium">中等</option>
+                  <option value="hard">困难</option>
+                </select>
+              </div>
+
+              {/* 题库 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">题库 *</label>
+                {loadingQuestionBanks ? (
+                  <div className="flex items-center justify-center py-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <select
+                    value={createFormData.bank_id || ''}
+                    onChange={(e) => handleCreateFormChange('bank_id', e.target.value ? parseInt(e.target.value) : '')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">请选择题库</option>
+                    {questionBanks.map((bank: any) => (
+                      <option key={bank.id} value={bank.id}>
+                        {bank.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* 状态 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">状态</label>
+                <select
+                  value={createFormData.status || 1}
+                  onChange={(e) => handleCreateFormChange('status', parseInt(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                >
+                  <option value={1}>启用</option>
+                  <option value={0}>禁用</option>
+                </select>
               </div>
             </div>
 
-            {/* 单个添加模式 */}
-            {createAddMethod === 'single' && (
-              <>
-                {/* 题目基本信息 */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-gray-900">题目基本信息</h3>
+            {/* 题目内容 */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900">题目内容</h3>
 
-                  {/* 题型 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">题型 *</label>
-                    {loadingQuestionTypes ? (
-                      <div className="flex items-center justify-center py-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+              {/* 题干 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">题干 *</label>
+                <textarea
+                  value={createFormData.stem || ''}
+                  onChange={(e) => handleCreateFormChange('stem', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  rows={4}
+                  placeholder="请输入题目内容"
+                />
+              </div>
+
+              {/* 选项 - 仅对选择题显示 */}
+              {(createFormData.type === 'single' || createFormData.type === 'multiple') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">选项</label>
+                  <div className="space-y-2">
+                    {parseOptionsToArray(createFormData.options).map((option, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <span className="w-8 font-medium text-gray-700">
+                          {String.fromCharCode(65 + index)}.
+                        </span>
+                        <input
+                          type="text"
+                          value={option}
+                          onChange={(e) => handleOptionChange(index, e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                          placeholder={`请输入选项${String.fromCharCode(65 + index)}`}
+                        />
+                        {parseOptionsToArray(createFormData.options).length > 2 && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-600"
+                            onClick={() => handleRemoveOption(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
-                    ) : (
-                      <select
-                        value={createFormData.type || ''}
-                        onChange={(e) => handleCreateFormChange('type', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                      >
-                        <option value="">请选择题型</option>
-                        {questionTypes.map((type: any) => (
-                          <option key={type.id} value={type.id}>
-                            {type.typeName}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-
-                  {/* 难度 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">难度</label>
-                    <select
-                      value={createFormData.difficulty || ''}
-                      onChange={(e) => handleCreateFormChange('difficulty', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    ))}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleAddOption}
+                      className="w-full"
                     >
-                      <option value="">请选择难度</option>
-                      <option value="easy">简单</option>
-                      <option value="medium">中等</option>
-                      <option value="hard">困难</option>
-                    </select>
-                  </div>
-
-                  {/* 级别 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">级别</label>
-                    <select
-                      value={createFormData.level || ''}
-                      onChange={(e) => handleCreateFormChange('level', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    >
-                      <option value="">请选择级别</option>
-                      <option value="level1">一级</option>
-                      <option value="level2">二级</option>
-                      <option value="level3">三级</option>
-                      <option value="level4">四级</option>
-                    </select>
-                  </div>
-
-                  {/* 状态 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">状态</label>
-                    <select
-                      value={createFormData.status || 1}
-                      onChange={(e) => handleCreateFormChange('status', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    >
-                      <option value={1}>启用</option>
-                      <option value={0}>禁用</option>
-                    </select>
+                      + 添加选项
+                    </Button>
                   </div>
                 </div>
+              )}
 
-                {/* 题目内容 */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-gray-900">题目内容</h3>
-
-                  {/* 题干 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">题干 *</label>
-                    <textarea
-                      value={createFormData.stem || ''}
-                      onChange={(e) => handleCreateFormChange('stem', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                      rows={4}
-                      placeholder="请输入题目内容"
-                    />
+              {/* 答案 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {createFormData.type === 'judge' ? '答案（T/F）*' : '答案 *'}
+                </label>
+                {createFormData.type === 'judge' ? (
+                  <div className="flex gap-2">
+                    <Button
+                      variant={createFormData.answer === 'T' ? 'default' : 'outline'}
+                      onClick={() => handleCreateFormChange('answer', 'T')}
+                      className="flex-1"
+                    >
+                      T (正确)
+                    </Button>
+                    <Button
+                      variant={createFormData.answer === 'F' ? 'default' : 'outline'}
+                      onClick={() => handleCreateFormChange('answer', 'F')}
+                      className="flex-1"
+                    >
+                      F (错误)
+                    </Button>
                   </div>
+                ) : (
+                  <input
+                    type="text"
+                    value={createFormData.answer || ''}
+                    onChange={(e) => handleCreateFormChange('answer', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    placeholder="请输入答案"
+                  />
+                )}
+              </div>
 
-                  {/* 选项 - 仅对选择题显示 */}
-                  {(createFormData.type === 'single' || createFormData.type === 'multiple') && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">选项</label>
-                      <div className="space-y-2">
-                        {parseOptionsToArray(createFormData.options).map((option, index) => (
-                          <div key={index} className="flex items-center gap-2">
-                            <span className="w-8 font-medium text-gray-700">
-                              {String.fromCharCode(65 + index)}.
-                            </span>
-                            <input
-                              type="text"
-                              value={option}
-                              onChange={(e) => handleOptionChange(index, e.target.value)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
-                              placeholder={`请输入选项${String.fromCharCode(65 + index)}`}
-                            />
-                            {parseOptionsToArray(createFormData.options).length > 2 && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-red-600"
-                                onClick={() => handleRemoveOption(index)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
+              {/* 解析 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">解析</label>
+                <textarea
+                  value={createFormData.analysis || ''}
+                  onChange={(e) => handleCreateFormChange('analysis', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  rows={3}
+                  placeholder="请输入题目解析"
+                />
+              </div>
+            </div>
+
+            {/* 知识点标签 */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900">知识点标签</h3>
+
+              {/* 已选择的标签 */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">已选择的标签</label>
+                {creatingTags.length > 0 ? (
+                  <div className="space-y-2">
+                    {creatingTags.map((tag, index) => (
+                      <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200">
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                            {tag.firstLevelTagName || `一级(${tag.firstLevelTagId})`}
+                          </Badge>
+                          <span className="text-gray-400">/</span>
+                          <Badge variant="secondary" className="bg-green-100 text-green-800">
+                            {tag.secondLevelTagName || `二级(${tag.secondLevelTagId})`}
+                          </Badge>
+                          <span className="text-gray-400">/</span>
+                          <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                            {tag.thirdLevelTagName || `三级(${tag.thirdLevelTagId})`}
+                          </Badge>
+                        </div>
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={handleAddOption}
-                          className="w-full"
+                          variant="ghost"
+                          className="text-red-600"
+                          onClick={() => handleRemoveTagInCreate(index)}
                         >
-                          + 添加选项
+                          <X className="h-3 w-3" />
                         </Button>
                       </div>
-                    </div>
-                  )}
-
-                  {/* 答案 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {createFormData.type === 'judge' ? '答案（T/F）*' : '答案 *'}
-                    </label>
-                    {createFormData.type === 'judge' ? (
-                      <div className="flex gap-2">
-                        <Button
-                          variant={createFormData.answer === 'T' ? 'default' : 'outline'}
-                          onClick={() => handleCreateFormChange('answer', 'T')}
-                          className="flex-1"
-                        >
-                          T (正确)
-                        </Button>
-                        <Button
-                          variant={createFormData.answer === 'F' ? 'default' : 'outline'}
-                          onClick={() => handleCreateFormChange('answer', 'F')}
-                          className="flex-1"
-                        >
-                          F (错误)
-                        </Button>
-                      </div>
-                    ) : (
-                      <input
-                        type="text"
-                        value={createFormData.answer || ''}
-                        onChange={(e) => handleCreateFormChange('answer', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                        placeholder="请输入答案"
-                      />
-                    )}
+                    ))}
                   </div>
-
-                  {/* 解析 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">解析</label>
-                    <textarea
-                      value={createFormData.analysis || ''}
-                      onChange={(e) => handleCreateFormChange('analysis', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                      rows={3}
-                      placeholder="请输入题目解析"
-                    />
-                  </div>
-                </div>
-
-                {/* 知识点标签 */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-gray-900">知识点标签</h3>
-
-                  {/* 已选择的标签 */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">已选择的标签</label>
-                    {creatingTags.length > 0 ? (
-                      <div className="space-y-2">
-                        {creatingTags.map((tag, index) => (
-                          <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <div className="flex flex-wrap gap-2">
-                              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                                {tag.firstLevelTagName || `一级(${tag.firstLevelTagId})`}
-                              </Badge>
-                              <span className="text-gray-400">/</span>
-                              <Badge variant="secondary" className="bg-green-100 text-green-800">
-                                {tag.secondLevelTagName || `二级(${tag.secondLevelTagId})`}
-                              </Badge>
-                              <span className="text-gray-400">/</span>
-                              <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                                {tag.thirdLevelTagName || `三级(${tag.thirdLevelTagId})`}
-                              </Badge>
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-red-600"
-                              onClick={() => handleRemoveTagInCreate(index)}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-sm text-gray-500">暂无标签</div>
-                    )}
-                  </div>
-
-                  {/* 标签树选择 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">选择标签</label>
-                    {loadingCreateTagTree ? (
-                      <div className="flex items-center justify-center py-4">
-                        <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-                      </div>
-                    ) : createTagTree.length > 0 ? (
-                      <div className="border rounded-lg p-4 bg-gray-50 max-h-[300px] overflow-y-auto">
-                        {createTagTree.map((node) => renderCreateTreeNode(node))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-4 text-gray-500">暂无知识点数据</div>
-                    )}
-                  </div>
-                </div>
-
-                {/* 操作按钮 */}
-                <div className="flex justify-end gap-2 pt-4 border-t">
-                  <Button variant="outline" onClick={handleCloseCreateDialog}>
-                    取消
-                  </Button>
-                  <Button onClick={handleSaveCreate} disabled={savingCreate}>
-                    {savingCreate ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        保存中...
-                      </>
-                    ) : (
-                      '保存'
-                    )}
-                  </Button>
-                </div>
-              </>
-            )}
-
-            {/* 批量导入和智能导入提示 */}
-            {(createAddMethod === 'batch' || createAddMethod === 'smart') && (
-              <div className="flex items-center justify-center py-12 text-gray-500">
-                <p>该功能开发中，敬请期待...</p>
+                ) : (
+                  <div className="text-sm text-gray-500">暂无标签</div>
+                )}
               </div>
-            )}
+
+              {/* 标签树选择 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">选择标签</label>
+                {loadingCreateTagTree ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                  </div>
+                ) : createTagTree.length > 0 ? (
+                  <div className="border rounded-lg p-4 bg-gray-50 max-h-[300px] overflow-y-auto">
+                    {createTagTree.map((node) => renderCreateTreeNode(node))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-gray-500">暂无知识点数据</div>
+                )}
+              </div>
+            </div>
+
+            {/* 操作按钮 */}
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={handleCloseCreateDialog}>
+                取消
+              </Button>
+              <Button onClick={handleSaveCreate} disabled={savingCreate}>
+                {savingCreate ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    保存中...
+                  </>
+                ) : (
+                  '保存'
+                )}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

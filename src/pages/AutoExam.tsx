@@ -26,7 +26,7 @@ const AutoExam = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [answers, setAnswers] = useState<{ [key: number]: number | null }>({});
-  const [timeLeft, setTimeLeft] = useState(120 * 60); // 120分钟倒计时
+  const [timeLeft, setTimeLeft] = useState(90 * 60); // 90分钟倒计时
   const [showResult, setShowResult] = useState(false);
   const totalQuestions = 100;
 

@@ -43,7 +43,7 @@ const ChapterPractice = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [answers, setAnswers] = useState<{ [key: number]: string | null }>({});
-  const [timeLeft, setTimeLeft] = useState(100 * 60); // 100分钟倒计时
+  const [timeLeft, setTimeLeft] = useState(90 * 60); // 90分钟倒计时
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [secondLevelTagId, setSecondLevelTagId] = useState<number | null>(null);

@@ -211,7 +211,7 @@ const TrainingCenter = () => {
         type: "practice",
         totalScore: 100,
         passScore: 60,
-        duration: 120,
+        duration: 90,
         questionCount: 100,
         typeRatio: {
           judge: 20,
@@ -332,7 +332,7 @@ const TrainingCenter = () => {
         type: "practice",
         totalScore: 100,
         passScore: 60,
-        duration: 120,
+        duration: 90,
         questionCount: 100,
         typeRatio: {
           judge: 20,
@@ -607,7 +607,7 @@ const TrainingCenter = () => {
                         <div className="text-gray-700" style={{ fontSize: '1.2vw', marginTop: '0.5%' }}>题目/卷</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-bold text-[#97CAFF]" style={{ fontSize: '3.5vw' }}>120</div>
+                        <div className="font-bold text-[#97CAFF]" style={{ fontSize: '3.5vw' }}>90</div>
                         <div className="text-gray-700" style={{ fontSize: '1.2vw', marginTop: '0.5%' }}>分钟</div>
                       </div>
                     </div>

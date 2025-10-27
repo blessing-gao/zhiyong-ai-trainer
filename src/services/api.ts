@@ -39,26 +39,32 @@ async function apiRequest<T>(
 
 // 题库相关 API
 export const questionApi = {
-  // 统一分页查询题目（支持无条件或条件查询）
+  // 统一分页查询题目（支持无条件或条件查询，支持按知识点标签查询）
   listQuestions: async (
     page: number = 1,
     pageSize: number = 10,
     type?: string,
     difficulty?: string,
-    level?: string,
+    bankId?: number,
     keyword?: string,
     status?: number,
     sortBy?: string,
-    sortOrder?: string
+    sortOrder?: string,
+    firstLevelTagId?: number,
+    secondLevelTagId?: number,
+    thirdLevelTagId?: number
   ) => {
     const params = new URLSearchParams();
     params.append('page', page.toString());
     params.append('pageSize', pageSize.toString());
     if (type) params.append('type', type);
     if (difficulty) params.append('difficulty', difficulty);
-    if (level) params.append('level', level);
+    if (bankId) params.append('bank_id', bankId.toString());
     if (keyword) params.append('keyword', keyword);
     if (status !== undefined) params.append('status', status.toString());
+    if (firstLevelTagId) params.append('first_level_tag_id', firstLevelTagId.toString());
+    if (secondLevelTagId) params.append('second_level_tag_id', secondLevelTagId.toString());
+    if (thirdLevelTagId) params.append('third_level_tag_id', thirdLevelTagId.toString());
     if (sortBy) params.append('sortBy', sortBy);
     if (sortOrder) params.append('sortOrder', sortOrder);
 
@@ -186,7 +192,7 @@ export const tagApi = {
 
   // 获取三级标签
   getThirdLevelTags: async (secondLevelTagId: number) => {
-    return apiRequest(`/api/tags/third-level?secondLevelTagId=${secondLevelTagId}`);
+    return apiRequest(`/api/tags/third-level/${secondLevelTagId}`);
   },
 
   // 获取完整的知识点标签树形结构
@@ -293,6 +299,22 @@ export const paperApi = {
   // 保存试卷（从预览中确认保存）
   savePaper: async (data: any) => {
     return apiRequest('/api/papers/save', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // 灵活组卷 - 预览
+  previewFlexiblePaper: async (data: any) => {
+    return apiRequest('/api/papers/flexible/preview', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // 灵活组卷 - 保存
+  saveFlexiblePaper: async (data: any) => {
+    return apiRequest('/api/papers/flexible/save', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -701,6 +723,24 @@ export const formalExamAnswerApi = {
         paperId,
       }),
     });
+  },
+};
+
+// 题库相关 API
+export const questionBankApi = {
+  // 获取所有题库
+  getAllBanks: async () => {
+    return apiRequest('/api/question-banks');
+  },
+
+  // 获取所有启用的题库
+  getEnabledBanks: async () => {
+    return apiRequest('/api/question-banks/enabled');
+  },
+
+  // 获取单个题库详情
+  getQuestionBank: async (id: number) => {
+    return apiRequest(`/api/question-banks/${id}`);
   },
 };
 

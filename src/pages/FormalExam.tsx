@@ -24,7 +24,7 @@ const FormalExam = () => {
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number[] }>({});
   const [questions, setQuestions] = useState<any[]>([]);
   const [examInfo, setExamInfo] = useState<any>(null);
-  const [timeLeft, setTimeLeft] = useState(100 * 60); // 100分钟倒计时
+  const [timeLeft, setTimeLeft] = useState(90 * 60); // 90分钟倒计时
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [examResult, setExamResult] = useState<any>(null);
