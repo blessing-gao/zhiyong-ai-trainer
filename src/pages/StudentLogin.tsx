@@ -15,8 +15,16 @@ const validateUsername = (username: string): string | null => {
 };
 
 const validatePassword = (password: string): string | null => {
-  if (!password || password.length < 6) {
-    return "密码至少需要6个字符";
+  if (!password || password.length < 8) {
+    return "密码至少需要8个字符";
+  }
+  // 检查是否包含大写字母、小写字母和数字
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+
+  if (!hasUpperCase || !hasLowerCase || !hasNumber) {
+    return "密码必须包含大小写字母和数字";
   }
   return null;
 };
@@ -243,6 +251,11 @@ const StudentLogin = () => {
                   className="h-12 bg-background/50 border-input/50 focus:border-primary focus:bg-background/80 transition-smooth"
                   disabled={isLoading}
                 />
+                {isSignup && (
+                  <p className="text-xs text-muted-foreground">
+                    密码至少8位，必须包含大小写字母和数字
+                  </p>
+                )}
               </div>
 
               {isSignup && (
