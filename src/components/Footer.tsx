@@ -1,26 +1,9 @@
-import { useState, useEffect } from "react";
 import webLogo from "@/assets/web_logo.svg";
 import oilanText from "@/assets/new_text.svg";
 
 const Footer = () => {
-  const [isVertical, setIsVertical] = useState(() => {
-    const saved = localStorage.getItem("navPosition");
-    return saved === "vertical";
-  });
-
-  useEffect(() => {
-    const handleNavChange = (e: CustomEvent) => {
-      setIsVertical(e.detail === "vertical");
-    };
-
-    window.addEventListener("navPositionChange", handleNavChange as EventListener);
-    return () => {
-      window.removeEventListener("navPositionChange", handleNavChange as EventListener);
-    };
-  }, []);
-
   return (
-    <footer className={`bg-gradient-card border-t border-border/50 transition-all duration-300 ${isVertical ? "ml-44" : ""}`}>
+    <footer className="bg-gradient-card border-t border-border/50 transition-all duration-300">
       <div className="container mx-auto px-6 py-12">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Brand section */}

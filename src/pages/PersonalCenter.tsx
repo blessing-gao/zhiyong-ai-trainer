@@ -14,10 +14,6 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 const PersonalCenter = () => {
   const { applyRoleTheme } = useTheme();
-  const [isVertical, setIsVertical] = useState(() => {
-    const saved = localStorage.getItem("navPosition");
-    return saved === "vertical";
-  });
   const [isEditing, setIsEditing] = useState(false);
   const [userInfo, setUserInfo] = useState({
     name: "张三",
@@ -35,17 +31,6 @@ const PersonalCenter = () => {
   useEffect(() => {
     applyRoleTheme();
   }, [applyRoleTheme]);
-
-  useEffect(() => {
-    const handleNavChange = (e: CustomEvent) => {
-      setIsVertical(e.detail === "vertical");
-    };
-
-    window.addEventListener("navPositionChange", handleNavChange as EventListener);
-    return () => {
-      window.removeEventListener("navPositionChange", handleNavChange as EventListener);
-    };
-  }, []);
 
   const dashboardStats = [
     {
@@ -294,7 +279,7 @@ const PersonalCenter = () => {
     <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
       <Header />
       
-      <div className={`pt-20 p-6 transition-all duration-300 relative z-10 ${isVertical ? "ml-44" : ""}`}>
+      <div className="pt-24 p-6 transition-all duration-300 relative z-10">
         <div className="max-w-7xl mx-auto">
           {/* 半透明白色容器 */}
           <div className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl">

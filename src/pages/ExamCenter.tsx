@@ -13,10 +13,6 @@ const ExamCenter = () => {
   const { applyRoleTheme } = useTheme();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isVertical, setIsVertical] = useState(() => {
-    const saved = localStorage.getItem("navPosition");
-    return saved === "vertical";
-  });
   const [activeCardIndex, setActiveCardIndex] = useState(0);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -24,17 +20,6 @@ const ExamCenter = () => {
   useEffect(() => {
     applyRoleTheme();
   }, [applyRoleTheme]);
-
-  useEffect(() => {
-    const handleNavChange = (e: CustomEvent) => {
-      setIsVertical(e.detail === "vertical");
-    };
-
-    window.addEventListener("navPositionChange", handleNavChange as EventListener);
-    return () => {
-      window.removeEventListener("navPositionChange", handleNavChange as EventListener);
-    };
-  }, []);
 
   // 打开新窗口进入考试登录系统
   const handleExamSystem = () => {
@@ -230,7 +215,7 @@ const ExamCenter = () => {
     <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
       <Header />
       
-      <div className={`pt-20 p-6 transition-all duration-300 relative z-10 ${isVertical ? "ml-44" : ""}`}>
+      <div className="pt-24 p-6 transition-all duration-300 relative z-10">
         <div className="max-w-7xl mx-auto">
           {/* 主题部分 - 在上边 */}
           <div className="mb-8">
