@@ -1,5 +1,6 @@
 // API 基础配置
-const API_BASE_URL = 'http://localhost:8081';
+// 使用空字符串，让请求通过 Vite 代理转发到后端
+const API_BASE_URL = '';
 
 // 通用 API 请求函数
 async function apiRequest<T>(
@@ -684,24 +685,16 @@ export const examAnswerApi = {
   getSubmittedAnswers: async (userId: number) => {
     return apiRequest(`/api/exam-answer/submitted?userId=${userId}`);
   },
-
-  // 单题判题
-  checkSingleAnswer: async (request: { questionId: number; userAnswer: string; questionType: string }) => {
-    return apiRequest('/api/exam-answer/check-single-answer', {
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
-  },
 };
 
 // 正式考试答题记录相关 API
 export const formalExamAnswerApi = {
   // 开始正式考试
-  startFormalExam: async (participantId: number, examId: number, paperId: number) => {
+  startFormalExam: async (userId: number, examId: number, paperId: number) => {
     return apiRequest('/api/formal-exam-answer/start', {
       method: 'POST',
       body: JSON.stringify({
-        participantId,
+        userId,
         examId,
         paperId,
       }),
@@ -709,11 +702,11 @@ export const formalExamAnswerApi = {
   },
 
   // 保存正式考试答题进度
-  saveFormalExamProgress: async (participantId: number, examId: number, paperId: number, answers: Record<string, any>) => {
+  saveFormalExamProgress: async (userId: number, examId: number, paperId: number, answers: Record<string, any>) => {
     return apiRequest('/api/formal-exam-answer/save-progress', {
       method: 'POST',
       body: JSON.stringify({
-        participantId,
+        userId,
         examId,
         paperId,
         answers,
@@ -722,11 +715,11 @@ export const formalExamAnswerApi = {
   },
 
   // 提交正式考试
-  submitFormalExam: async (participantId: number, examId: number, paperId: number) => {
+  submitFormalExam: async (userId: number, examId: number, paperId: number) => {
     return apiRequest('/api/formal-exam-answer/submit', {
       method: 'POST',
       body: JSON.stringify({
-        participantId,
+        userId,
         examId,
         paperId,
       }),
