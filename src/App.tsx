@@ -12,6 +12,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import StudentLogin from "./pages/StudentLogin";
 import CourseCenter from "./pages/CourseCenter";
+import CourseDetail from "./pages/CourseDetail";
 import CourseLearning from "./pages/CourseLearning";
 import TrainingCenter from "./pages/TrainingCenter";
 import KnowledgeExplore from "./pages/KnowledgeExplore";
@@ -44,6 +45,8 @@ const App = () => (
               <Route path="/admin" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
               <Route path="/student-login" element={<StudentLogin />} />
               <Route path="/courses" element={<ProtectedRoute><CourseCenter /></ProtectedRoute>} />
+              <Route path="/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
+              <Route path="/courses/:courseId/lessons/:lessonId" element={<ProtectedRoute><CourseLearning /></ProtectedRoute>} />
               <Route path="/courses/:courseId/learn" element={<ProtectedRoute><CourseLearning /></ProtectedRoute>} />
               <Route path="/training" element={<ProtectedRoute><TrainingCenter /></ProtectedRoute>} />
               <Route path="/training/knowledge-explore" element={<ProtectedRoute><KnowledgeExplore /></ProtectedRoute>} />
