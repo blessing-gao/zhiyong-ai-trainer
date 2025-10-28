@@ -991,7 +991,13 @@ export const getCourseBySid = async (sid: string): Promise<Course> => {
 export const getLessonsByCourseId = async (courseId: string): Promise<Lesson[]> => {
   if (USE_MOCK_DATA) {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockLessons[courseId] || [];
+    const lessons = mockLessons[courseId] || [];
+
+    // 为每个课时填充 tasks
+    return lessons.map(lesson => ({
+      ...lesson,
+      tasks: mockTasks[lesson.sid] || []
+    }));
   }
 
   try {
