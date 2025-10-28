@@ -23,18 +23,6 @@ const HeroSection = () => {
         <div className="small-bracket-left top-60 left-40 rotate-45 animate-bracket-glow" style={{
         animationDelay: '1.5s'
       }}></div>
-        
-        {/* Floating geometric elements */}
-        <div className="absolute top-20 -left-60 w-[768px] h-[768px] rounded-full animate-float -z-10" style={{
-          background: 'radial-gradient(circle, hsl(var(--accent) / 0.6) 0%, transparent 70%)'
-        }}></div>
-        <div className="absolute bottom-20 -right-50 w-[640px] h-[640px] rounded-full animate-float-slow -z-10" style={{
-          background: 'radial-gradient(circle, hsl(var(--primary) / 0.6) 0%, transparent 70%)'
-        }}></div>
-        <div className="absolute bottom-60 -right-40 w-[500px] h-[500px] rounded-full animate-float -z-10" style={{
-          background: 'radial-gradient(circle, hsl(var(--accent) / 0.5) 0%, transparent 70%)',
-          animationDelay: '1s'
-        }}></div>
       </div>
 
       <div className="container mx-auto px-6 py-12">
@@ -46,7 +34,7 @@ const HeroSection = () => {
                 从洞察到实践，智涌助您领跑{" "}
                 
               </h1>
-              <p className="text-xl text-white max-w-lg">从洞察到实践，用智能科技引领未来</p>
+              <p className="text-xl text-gray-600 max-w-lg">从洞察到实践，用智能科技引领未来</p>
             </div>
 
             {/* Feature highlights */}

@@ -214,29 +214,6 @@ const CourseLearning = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
-      {/* 渐变圆形背景 */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div 
-          className="absolute top-20 -left-60 w-[768px] h-[768px] rounded-full animate-float" 
-          style={{
-            background: 'radial-gradient(circle, rgba(121, 227, 218, 0.6) 0%, transparent 70%)'
-          }}
-        ></div>
-        <div 
-          className="absolute bottom-80 -right-100 w-[640px] h-[640px] rounded-full animate-float-slow" 
-          style={{
-            background: 'radial-gradient(circle, rgba(151, 202, 255, 0.6) 0%, transparent 70%)'
-          }}
-        ></div>
-        <div 
-          className="absolute bottom-100 -right-60 w-[800px] h-[800px] rounded-full animate-float" 
-          style={{
-            background: 'radial-gradient(circle, rgba(103, 179, 255, 0.5) 0%, transparent 70%)',
-            animationDelay: '1s'
-          }}
-        ></div>
-      </div>
-
       <div className="p-6 relative z-10">
         <div className="max-w-7xl mx-auto">
           {/* 半透明白色容器 */}
@@ -255,22 +232,6 @@ const CourseLearning = () => {
                   className="bg-white border-0 overflow-hidden relative flex flex-col"
                   style={{ height: rightSideHeight > 0 ? `${rightSideHeight}px` : 'auto' }}
                 >
-                  {/* 渐变圆形背景 */}
-                  <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                    <div 
-                      className="absolute -top-20 -left-20 w-80 h-80 rounded-full opacity-50 animate-float"
-                      style={{
-                        background: 'radial-gradient(circle, #A2EBFF 0%, transparent 70%)'
-                      }}
-                    ></div>
-                    <div 
-                      className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full opacity-50 animate-float-slow"
-                      style={{
-                        background: 'radial-gradient(circle, #79E3DA 0%, transparent 70%)'
-                      }}
-                    ></div>
-                  </div>
-
                   <CardHeader className="pb-4 relative z-10 flex-shrink-0">
                     <CardTitle className="text-foreground text-base font-medium">
                       第{currentChapterData?.id}章 {currentChapterData?.title}

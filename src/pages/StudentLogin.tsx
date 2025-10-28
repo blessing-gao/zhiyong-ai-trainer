@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
+import loginBackground from "@/assets/login_background.png";
 
 // 简单的验证函数
 const validateUsername = (username: string): string | null => {
@@ -138,19 +139,22 @@ const StudentLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen relative">
+      {/* 固定背景图层 - 填满整个屏幕 */}
+      <div 
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${loginBackground})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
       <Header />
-      
-      {/* Decorative background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-accent/20 rounded-full blur-xl animate-float"></div>
-        <div className="absolute top-40 right-20 w-24 h-24 bg-primary/30 rounded-full blur-lg animate-float-slow"></div>
-        <div className="absolute bottom-32 left-1/4 w-40 h-40 bg-secondary/40 rounded-full blur-2xl animate-float"></div>
-        <div className="absolute bottom-20 right-10 w-28 h-28 bg-accent/25 rounded-full blur-xl animate-float-slow"></div>
-      </div>
 
-      <main className="relative pt-24 pb-16 px-4">
-        <div className="container mx-auto max-w-md">
+      <main className="relative min-h-screen flex flex-col" style={{ paddingLeft: '5%', paddingRight: '5%', paddingTop: '3%', paddingBottom: '3%' }}>
+        <div className="flex justify-end flex-1 items-center">
+          <div className="w-full max-w-md" style={{ marginRight: '5%' }}>
           {/* Login Card */}
           <div className="bg-card/95 backdrop-blur-lg rounded-3xl border border-border/20 p-8 shadow-float animate-fade-in-up">
             {/* Header */}
@@ -304,6 +308,7 @@ const StudentLogin = () => {
                 </button>
               </span>
             </div>
+          </div>
           </div>
         </div>
       </main>

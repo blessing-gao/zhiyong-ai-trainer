@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { GripVertical, MoreHorizontal } from "lucide-react";
 // 导入Logo图片资源
 import webLogo from "@/assets/web_logo.svg";
-import oilanText from "@/assets/oilan-text.svg";
+import oilanText from "@/assets/new_text.svg";
 
 type NavPosition = "horizontal" | "vertical";
 

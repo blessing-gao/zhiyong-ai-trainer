@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Calendar, Clock, BookOpen, Trophy, TrendingUp, User, MessageSquare, Play, Users, Award } from "lucide-react";
 import Header from "@/components/Header";
-import BackgroundCircles from "@/components/BackgroundCircles";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import aiCourseHero from "@/assets/ai-course-hero.jpg";
@@ -132,20 +131,6 @@ const CourseCenter = () => {
   return (
     <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
       <Header />
-      
-      {/* 蓝色渐变圆形背景元素 */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-20 -left-60 w-[768px] h-[768px] rounded-full animate-float" style={{
-          background: 'radial-gradient(circle, hsl(var(--accent) / 0.6) 0%, transparent 70%)'
-        }}></div>
-        <div className="absolute bottom-80 -right-100 w-[640px] h-[640px] rounded-full animate-float-slow" style={{
-          background: 'radial-gradient(circle, hsl(var(--primary) / 0.6) 0%, transparent 70%)'
-        }}></div>
-        <div className="absolute bottom-100 -right-60 w-[800px] h-[800px] rounded-full animate-float" style={{
-          background: 'radial-gradient(circle, hsl(var(--accent) / 0.5) 0%, transparent 70%)',
-          animationDelay: '1s'
-        }}></div>
-      </div>
       
       <div className={`pt-20 p-6 transition-all duration-300 relative z-10 ${isVertical ? "ml-44" : ""}`}>
         <div className="max-w-7xl mx-auto">

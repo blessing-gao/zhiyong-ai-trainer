@@ -294,20 +294,6 @@ const PersonalCenter = () => {
     <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
       <Header />
       
-      {/* 蓝色渐变圆形背景元素 */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-20 -left-60 w-[768px] h-[768px] rounded-full animate-float" style={{
-          background: 'radial-gradient(circle, hsl(var(--accent) / 0.6) 0%, transparent 70%)'
-        }}></div>
-        <div className="absolute bottom-20 -right-50 w-[640px] h-[640px] rounded-full animate-float-slow" style={{
-          background: 'radial-gradient(circle, hsl(var(--primary) / 0.6) 0%, transparent 70%)'
-        }}></div>
-        <div className="absolute bottom-60 -right-40 w-[500px] h-[500px] rounded-full animate-float" style={{
-          background: 'radial-gradient(circle, hsl(var(--accent) / 0.5) 0%, transparent 70%)',
-          animationDelay: '1s'
-        }}></div>
-      </div>
-      
       <div className={`pt-20 p-6 transition-all duration-300 relative z-10 ${isVertical ? "ml-44" : ""}`}>
         <div className="max-w-7xl mx-auto">
           {/* 半透明白色容器 */}

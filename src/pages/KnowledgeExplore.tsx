@@ -151,15 +151,6 @@ const KnowledgeExplore = () => {
     <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
       <Header />
 
-      {/* 背景装饰 */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-20 -left-60 w-[768px] h-[768px] rounded-full animate-float" style={{
-          background: 'radial-gradient(circle, hsl(var(--accent) / 0.6) 0%, transparent 70%)'
-        }}></div>
-        <div className="absolute bottom-20 -right-50 w-[640px] h-[640px] rounded-full animate-float-slow" style={{
-          background: 'radial-gradient(circle, hsl(var(--primary) / 0.6) 0%, transparent 70%)'
-        }}></div>
-      </div>
 
       <div className={`pt-20 p-6 transition-all duration-300 relative z-10 ${isVertical ? "ml-44" : ""}`}>
         <div className="max-w-7xl mx-auto">

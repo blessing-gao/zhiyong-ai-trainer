@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import webLogo from "@/assets/web_logo.svg";
-import oilanText from "@/assets/oilan-text.svg";
+import oilanText from "@/assets/new_text.svg";
 
 const Footer = () => {
   const [isVertical, setIsVertical] = useState(() => {

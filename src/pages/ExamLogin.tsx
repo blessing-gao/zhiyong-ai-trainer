@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { AlertCircle, Lock, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { examApi } from "@/services/api";
+import loginBackground from "@/assets/login_background.png";
+import logoSvg from "@/assets/oilanai_all.svg";
 
 const ExamLogin = () => {
   const navigate = useNavigate();
@@ -59,12 +61,28 @@ const ExamLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      {/* 背景装饰 */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+    <div 
+      className="min-h-screen flex items-center justify-end relative"
+      style={{
+        paddingLeft: '5%',
+        paddingRight: '5%',
+        paddingTop: '3%',
+        paddingBottom: '3%'
+      }}
+    >
+      {/* 固定背景图层 - 填满整个屏幕 */}
+      <div 
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${loginBackground})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+      {/* Logo in top-left corner */}
+      <div className="fixed z-50" style={{ left: '5%', top: '3%' }}>
+        <img src={logoSvg} alt="Oilan AI" className="h-12 w-auto" />
       </div>
 
       {/* 登录卡片 */}

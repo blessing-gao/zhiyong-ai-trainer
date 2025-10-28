@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import loginBackground from "@/assets/login_background.png";
+import logoSvg from "@/assets/oilanai_all.svg";
 
 // 简单的验证函数
 const validateUsername = (username: string): string | null => {
@@ -78,30 +80,25 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      {/* Back to home button */}
-      <div className="fixed top-8 left-8 z-50">
-        <Link to="/">
-          <Button 
-            variant="outline" 
-            className="bg-card/80 backdrop-blur-sm border-border/20 hover:bg-card/90 rounded-xl"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            返回首页
-          </Button>
-        </Link>
-      </div>
-      
-      {/* Decorative background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-accent/20 rounded-full blur-xl animate-float"></div>
-        <div className="absolute top-40 right-20 w-24 h-24 bg-primary/30 rounded-full blur-lg animate-float-slow"></div>
-        <div className="absolute bottom-32 left-1/4 w-40 h-40 bg-secondary/40 rounded-full blur-2xl animate-float"></div>
-        <div className="absolute bottom-20 right-10 w-28 h-28 bg-accent/25 rounded-full blur-xl animate-float-slow"></div>
-      </div>
+    <div className="min-h-screen relative">
+      {/* 固定背景图层 - 填满整个屏幕 */}
+      <div 
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${loginBackground})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+      <main className="relative min-h-screen flex flex-col" style={{ paddingLeft: '5%', paddingRight: '5%', paddingTop: '3%', paddingBottom: '3%' }}>
+        {/* Logo - 移动端在顶部，PC端在左侧与卡片上对齐 */}
+        <div className="mb-4 lg:mb-0 lg:absolute lg:left-[5%] lg:top-[3%] z-50">
+          <img src={logoSvg} alt="Oilan AI" className="h-12 w-auto mx-auto lg:mx-0" />
+        </div>
 
-      <main className="relative pt-24 pb-16 px-4">
-        <div className="container mx-auto max-w-md">
+        <div className="flex justify-center lg:justify-end flex-1 items-center">
+          <div className="w-full max-w-md">
           {/* Login Card */}
           <div className="bg-card/95 backdrop-blur-lg rounded-3xl border border-border/20 p-8 shadow-float animate-fade-in-up">
             {/* Header */}
@@ -191,6 +188,20 @@ const AdminLogin = () => {
               </span>
             </div>
           </div>
+          </div>
+        </div>
+        
+        {/* Back to home button - 移动端在底部与卡片等宽，PC端在左下角与卡片下对齐 */}
+        <div className="mt-4 lg:mt-0 lg:absolute lg:left-[5%] lg:bottom-[3%] z-50 max-w-md mx-auto lg:mx-0 w-full lg:w-auto">
+          <Link to="/" className="block">
+            <Button 
+              variant="outline" 
+              className="bg-card/80 backdrop-blur-sm border-border/20 hover:bg-card/90 rounded-xl w-full"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              返回首页
+            </Button>
+          </Link>
         </div>
       </main>
     </div>

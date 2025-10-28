@@ -60,10 +60,6 @@ const ServicesSection = () => {
   return <section id="services" className="py-20 relative overflow-hidden">
       {/* Blue bracket background decorations */}
       <div className="absolute inset-0 pointer-events-none -z-10">
-        {/* Sky blue gradient circle */}
-        <div className="absolute -top-[606px] -left-[336px] w-[900px] h-[900px] rounded-full -z-10" style={{
-          background: 'radial-gradient(circle, hsl(var(--accent) / 0.6) 0%, transparent 70%)'
-        }}></div>
         
         <div className="blue-bracket-right top-20 right-10 animate-bracket-glow"></div>
         <div className="small-bracket-left bottom-32 left-16 animate-float-slow"></div>
