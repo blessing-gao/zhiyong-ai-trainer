@@ -52,6 +52,11 @@ const WrongQuestionsPractice = () => {
 
   // 倒计时
   useEffect(() => {
+    // 如果已显示结果，不再运行倒计时
+    if (showResult) {
+      return;
+    }
+
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 0) {
@@ -63,7 +68,7 @@ const WrongQuestionsPractice = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [showResult]);
 
   // 错题数据
   const wrongQuestions = [
@@ -223,21 +228,25 @@ const WrongQuestionsPractice = () => {
               <div className="text-center">
                 <h1 className="text-2xl font-bold text-foreground">错题练习</h1>
                 <p className="text-muted-foreground">针对性练习，巩固薄弱知识点</p>
-                <div className="flex justify-center gap-2 mt-2">
-                  <Badge className="bg-red-100 text-red-700 border-red-200">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    错题 {currentQuestion + 1}/{wrongQuestions.length}
-                  </Badge>
-                  <Badge className="bg-primary text-white">
-                    {currentQuestionData.category}
-                  </Badge>
-                </div>
+                {!showResult && (
+                  <div className="flex justify-center gap-2 mt-2">
+                    <Badge className="bg-red-100 text-red-700 border-red-200">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      错题 {currentQuestion + 1}/{wrongQuestions.length}
+                    </Badge>
+                    <Badge className="bg-primary text-white">
+                      {currentQuestionData.category}
+                    </Badge>
+                  </div>
+                )}
               </div>
               
-              <div className="flex items-center gap-2 text-foreground">
-                <Clock className="h-4 w-4" />
-                <span className="font-mono">{formatTime(timeLeft)}</span>
-              </div>
+              {!showResult && (
+                <div className="flex items-center gap-2 text-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span className="font-mono">{formatTime(timeLeft)}</span>
+                </div>
+              )}
             </div>
 
             {/* 错题统计信息 */}

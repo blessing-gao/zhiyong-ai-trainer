@@ -70,10 +70,10 @@ const Header = () => {
             </nav>
 
             <div className="flex items-center space-x-3">
-              {user ? (
+              {user && user.userType === "user" ? (
                 <>
                   <span className="text-sm text-foreground/70">
-                    欢迎，{userRole === "student" ? "学生" : userRole === "teacher" ? "老师" : "用户"}
+                    欢迎，{user.realName || "用户"}
                   </span>
                   <Button
                     variant="ghost"
@@ -94,7 +94,7 @@ const Header = () => {
                   <Link to="/student-login">用户登录</Link>
                 </Button>
               )}
-              
+
               {/* 切换手柄 */}
               <div
                 onClick={togglePosition}
@@ -149,10 +149,10 @@ const Header = () => {
 
         {/* 用户操作 */}
         <div className="mt-auto pt-4 border-t border-border/20">
-          {user ? (
+          {user && user.userType === "user" ? (
             <div className="space-y-2">
-              <p className="text-xs text-foreground/70 text-center">
-                {userRole === "student" ? "学生" : userRole === "teacher" ? "老师" : "用户"}
+              <p className="text-xs text-foreground/70 text-center truncate">
+                {user.realName || "用户"}
               </p>
               <Button
                 variant="ghost"

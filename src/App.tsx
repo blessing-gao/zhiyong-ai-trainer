@@ -17,6 +17,7 @@ import TrainingCenter from "./pages/TrainingCenter";
 import KnowledgeExplore from "./pages/KnowledgeExplore";
 import AutoExam from "./pages/AutoExam";
 import ChapterPractice from "./pages/ChapterPractice";
+import PracticeModeChapter from "./pages/PracticeModeChapter";
 import SimulationExam from "./pages/SimulationExam";
 import WrongQuestionsPractice from "./pages/WrongQuestionsPractice";
 import ExamCenter from "./pages/ExamCenter";
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/training/knowledge-explore" element={<ProtectedRoute><KnowledgeExplore /></ProtectedRoute>} />
               <Route path="/training/auto-exam" element={<ProtectedRoute><AutoExam /></ProtectedRoute>} />
               <Route path="/training/chapter/:chapterName" element={<ProtectedRoute><ChapterPractice /></ProtectedRoute>} />
+              <Route path="/training/practice/:chapterName" element={<ProtectedRoute><PracticeModeChapter /></ProtectedRoute>} />
               <Route path="/training/simulation/:examId" element={<ProtectedRoute><SimulationExam /></ProtectedRoute>} />
               <Route path="/training/wrong-questions" element={<ProtectedRoute><WrongQuestionsPractice /></ProtectedRoute>} />
               <Route path="/exam" element={<ProtectedRoute><ExamCenter /></ProtectedRoute>} />

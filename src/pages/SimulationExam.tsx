@@ -64,7 +64,7 @@ const SimulationExam = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [handleSubmitExam]);
 
   // 考试数据
   const examData = {
