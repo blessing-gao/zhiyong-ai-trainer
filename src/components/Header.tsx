@@ -88,17 +88,18 @@ const Header = () => {
               <>
                 <div className="h-8 w-px bg-gray-300 mr-6"></div>
                 <div className="relative group">
-                  <button className="text-lg text-gray-700 hover:text-black hover:font-bold transition-all duration-100 font-medium">
+                  <button className="relative text-lg text-gray-700 hover:text-black hover:font-bold transition-all duration-100 font-medium pb-1">
                     {user.realName || "用户"}
+                    <span className="absolute left-0 right-0 bottom-[-20px] w-0 h-[8px] bg-[#67B3FF] rounded-full transition-all duration-100 group-hover:w-full mx-auto"></span>
                   </button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-full right-0 mt-2 text-lg text-gray-700 hover:text-black hover:font-bold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 rounded-lg px-4 py-2 whitespace-nowrap"
-                    onClick={handleLogout}
-                  >
-                    退出登录
-                  </Button>
+                  <div className="absolute top-[calc(100%+24px)] left-1/2 -translate-x-1/2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg rounded-xl border border-gray-100 py-3 px-4 min-w-[140px]">
+                    <button
+                      className="w-full text-lg text-gray-700 hover:font-bold transition-all duration-100 text-center py-2"
+                      onClick={handleLogout}
+                    >
+                      退出登录
+                    </button>
+                  </div>
                 </div>
               </>
             ) : (
