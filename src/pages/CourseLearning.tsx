@@ -46,12 +46,16 @@ const CourseLearning: React.FC = () => {
 
         // 获取当前课时的第一个任务
         const currentLesson = lessonsData.find(l => l.sid === lessonId);
+        console.log("Current lesson:", currentLesson);
+
         if (currentLesson?.tasks?.[0]) {
           const taskData = await getTaskBySid(currentLesson.tasks[0].sid);
+          console.log("Task data:", taskData);
           setCurrentTask(taskData);
 
           // 获取子任务 Tab
           const tabs = await getSubtaskTabsByTaskId(taskData.sid);
+          console.log("Subtask tabs:", tabs);
           setSubtaskTabs(tabs);
 
           // 恢复上次的 Tab
@@ -59,6 +63,8 @@ const CourseLearning: React.FC = () => {
           setSearchParams({
             tab: savedTabId || tabs[0]?.id || ""
           });
+        } else {
+          console.warn("No tasks found in lesson");
         }
 
         // 计算课程进度
@@ -85,7 +91,6 @@ const CourseLearning: React.FC = () => {
 
       // 重置为第一个 Tab
       setSearchParams({
-        mode: currentMode,
         tab: tabs[0]?.id || ""
       });
 
@@ -99,7 +104,6 @@ const CourseLearning: React.FC = () => {
   // 处理 Tab 切换
   const handleTabChange = (tabId: string) => {
     setSearchParams({
-      mode: currentMode,
       tab: tabId
     });
     localStorage.setItem(`course-${courseId}-task-${currentTask?.sid}-tab`, tabId);
