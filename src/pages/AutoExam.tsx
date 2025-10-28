@@ -37,6 +37,11 @@ const AutoExam = () => {
 
   // 倒计时
   useEffect(() => {
+    // 如果已显示结果，不再运行倒计时
+    if (showResult) {
+      return;
+    }
+
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 0) {
@@ -48,7 +53,7 @@ const AutoExam = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [showResult]);
 
   // 生成100道题目
   const generateQuestions = (): Question[] => {
@@ -231,13 +236,17 @@ const AutoExam = () => {
             
             <div className="text-center">
               <h1 className="text-2xl font-bold text-foreground">自动组卷考试</h1>
-              <p className="text-muted-foreground">第 {currentQuestion + 1}/{totalQuestions} 题</p>
+              {!showResult && (
+                <p className="text-muted-foreground">第 {currentQuestion + 1}/{totalQuestions} 题</p>
+              )}
             </div>
             
-            <div className="flex items-center gap-2 text-foreground">
-              <Clock className="h-4 w-4" />
-              <span className="font-mono text-lg">{formatTime(timeLeft)}</span>
-            </div>
+            {!showResult && (
+              <div className="flex items-center gap-2 text-foreground">
+                <Clock className="h-4 w-4" />
+                <span className="font-mono text-lg">{formatTime(timeLeft)}</span>
+              </div>
+            )}
           </div>
 
           {/* 进度条 */}

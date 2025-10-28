@@ -118,10 +118,10 @@ const KnowledgeExplore = () => {
       // 调用 API 获取该二级标签下的所有题目
       const response: any = await questionApi.getQuestionsBySecondLevelTag(secondLevelTagId);
       if (response.code === 0 && response.data) {
-        // 将题目数据存储到 localStorage，供 ChapterPractice 页面使用
+        // 将题目数据存储到 localStorage，供 PracticeModeChapter 页面使用
         localStorage.setItem(`questions_${secondLevelTagId}`, JSON.stringify(response.data));
-        // 导航到答题页面
-        navigate(`/training/chapter/${tagName}`, {
+        // 导航到刷题模式页面
+        navigate(`/training/practice/${tagName}`, {
           state: {
             secondLevelTagId,
             questions: response.data

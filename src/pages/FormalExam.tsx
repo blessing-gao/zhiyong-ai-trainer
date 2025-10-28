@@ -28,10 +28,10 @@ const FormalExam = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [examResult, setExamResult] = useState<any>(null);
-  const [resultTab, setResultTab] = useState<'correct' | 'wrong'>('correct');
   const [resultCurrentQuestion, setResultCurrentQuestion] = useState(0);
   const [paperId, setPaperId] = useState<number | null>(null);
   const [examId, setExamId] = useState<number | null>(null);
+  const [participantId, setParticipantId] = useState<number | null>(null);
   const [saveProgressInterval, setSaveProgressInterval] = useState<NodeJS.Timeout | null>(null);
   const [isFormalExam, setIsFormalExam] = useState(false);
 
@@ -76,6 +76,12 @@ const FormalExam = () => {
       if (currentExamInfo) {
         const examInfo = JSON.parse(currentExamInfo);
         paperIdData = examInfo.paperId || location.state.paperId;
+
+        // 获取 participantId（考试系统的考生ID）
+        if (examInfo.participantId) {
+          setParticipantId(examInfo.participantId);
+          console.log("✅ 获取到 participantId:", examInfo.participantId);
+        }
 
         // 如果有 paperId，从后端获取真实的试卷数据
         if (paperIdData) {
@@ -235,11 +241,6 @@ const FormalExam = () => {
       }
     }
 
-    // 如果是从考试系统进入且有 paperId，则已经在异步函数中处理了，直接返回
-    if (location.state && location.state.fromExamSystem && paperIdData) {
-      return;
-    }
-
     // 检查是否是正式考试
     const isFormalExamFlag = location.state?.isFormalExam || false;
     const examIdData = location.state?.examId || null;
@@ -286,6 +287,10 @@ const FormalExam = () => {
       }
 
       setTimeLeft(remainingTime);
+      console.log(`⏱️ 设置倒计时时间: ${remainingTime}秒 (${Math.floor(remainingTime / 60)}分钟)`);
+    } else {
+      console.warn("⚠️ 未找到考试时长信息，使用默认时间 90 分钟");
+      setTimeLeft(90 * 60);
     }
 
     setIsLoading(false);
@@ -294,14 +299,20 @@ const FormalExam = () => {
 
   // 正式考试开始逻辑
   useEffect(() => {
-    if (!isFormalExam || !user || !examId || !paperId) {
+    if (!isFormalExam || !examId || !paperId) {
+      return;
+    }
+
+    // 对于正式考试，必须有 participantId
+    if (!participantId) {
+      console.warn("⚠️ 正式考试缺少 participantId，无法开始考试");
       return;
     }
 
     const startFormalExam = async () => {
       try {
-        console.log("🚀 开始正式考试...");
-        const response: any = await formalExamAnswerApi.startFormalExam(user.id, examId, paperId);
+        console.log("🚀 开始正式考试，participantId:", participantId);
+        const response: any = await formalExamAnswerApi.startFormalExam(participantId, examId, paperId);
 
         if (response.code === 0 && response.data) {
           const examAnswer = response.data;
@@ -364,10 +375,15 @@ const FormalExam = () => {
     };
 
     startFormalExam();
-  }, [isFormalExam, user, examId, paperId, examInfo]);
+  }, [isFormalExam, participantId, examId, paperId, examInfo]);
 
   // 倒计时
   useEffect(() => {
+    // 如果已提交或已显示结果，不再运行倒计时
+    if (examResult) {
+      return;
+    }
+
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 0) {
@@ -378,7 +394,7 @@ const FormalExam = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [examResult]);
 
   // 定时保存答题进度（每30秒保存一次）
   useEffect(() => {
@@ -408,14 +424,17 @@ const FormalExam = () => {
 
         // 根据是否是正式考试调用不同的接口
         let response: any;
-        if (isFormalExam && examId) {
-          // 正式考试
-          console.log("📡 调用正式考试保存接口，userId:", user.id, "examId:", examId, "paperId:", paperId);
-          response = await formalExamAnswerApi.saveFormalExamProgress(user.id, examId, paperId, answers);
-        } else {
-          // 试题训练
+        if (isFormalExam && examId && participantId) {
+          // 正式考试 - 使用 participantId（考试系统的考生ID）
+          console.log("📡 调用正式考试保存接口，participantId:", participantId, "examId:", examId, "paperId:", paperId);
+          response = await formalExamAnswerApi.saveFormalExamProgress(participantId, examId, paperId, answers);
+        } else if (user && paperId) {
+          // 试题训练 - 使用 user.id（用户系统的用户ID）
           console.log("📡 调用试题训练保存接口，userId:", user.id, "paperId:", paperId);
           response = await examAnswerApi.saveAnswerProgress(user.id, paperId, answers);
+        } else {
+          console.warn("⚠️ 缺少必要参数，无法保存答题进度");
+          return;
         }
 
         if (response.code === 0) {
@@ -435,7 +454,7 @@ const FormalExam = () => {
         clearInterval(interval);
       }
     };
-  }, [user, paperId, selectedAnswers, isFormalExam, examId]);
+  }, [user, paperId, selectedAnswers, isFormalExam, examId, participantId]);
 
   // 生成默认题目（备用）
   const generateDefaultQuestions = () => {
@@ -541,8 +560,8 @@ const FormalExam = () => {
     if (window.confirm(confirmMessage)) {
       setIsSubmitting(true);
       try {
-        if (isFormalExam && user && examId && paperId) {
-          // 正式考试流程
+        if (isFormalExam && participantId && examId && paperId) {
+          // 正式考试流程 - 使用 participantId（考试系统的考生ID）
           console.log("📤 提交正式考试...");
 
           // 先保存最后的答题进度
@@ -551,7 +570,7 @@ const FormalExam = () => {
             answers[index] = answerIndexes.join(',');
           });
 
-          const saveResponse: any = await formalExamAnswerApi.saveFormalExamProgress(user.id, examId, paperId, answers);
+          const saveResponse: any = await formalExamAnswerApi.saveFormalExamProgress(participantId, examId, paperId, answers);
           if (saveResponse.code === 0) {
             console.log("✅ 最后的答题进度已保存");
           } else {
@@ -560,15 +579,15 @@ const FormalExam = () => {
 
           // 提交正式考试
           console.log("📤 准备提交正式考试，参数:", {
-            userId: user.id,
+            participantId: participantId,
             examId: examId,
             paperId: paperId,
-            userIdType: typeof user.id,
+            participantIdType: typeof participantId,
             examIdType: typeof examId,
             paperIdType: typeof paperId
           });
 
-          const submitResponse: any = await formalExamAnswerApi.submitFormalExam(user.id, examId, paperId);
+          const submitResponse: any = await formalExamAnswerApi.submitFormalExam(participantId, examId, paperId);
 
           console.log("📥 收到提交响应:", {
             code: submitResponse.code,
@@ -617,7 +636,7 @@ const FormalExam = () => {
             return {
               questionId: question.id,
               questionType: question.type,
-              answer: selectedIndexes.join(',') // 多选用逗号分隔
+              answer: selectedIndexes.join('') // 不加逗号，直接拼接 ABCDE
             };
           });
 
@@ -667,21 +686,73 @@ const FormalExam = () => {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // 将答案序号转换为字母（0->A, 1->B, 2->C, 3->D）
+  // 将答案序号转换为字母（0->A, 1->B, 2->C, 3->D），并排序
   const convertAnswerToLetters = (answer: string) => {
     if (!answer) return "";
 
     // 检查是否是序号形式（全是数字和逗号）
     if (/^[0-9,]+$/.test(answer)) {
       // 是序号形式，转换为字母
-      const indexes = answer.split(",");
-      return indexes.map(idx => {
+      let indexes: string[];
+      if (answer.includes(",")) {
+        indexes = answer.split(",");
+      } else {
+        // 如果没有逗号，将每个字符作为一个数字
+        indexes = answer.split("");
+      }
+
+      const letters = indexes.map(idx => {
         const index = parseInt(idx.trim());
         return String.fromCharCode(65 + index); // 65 是 'A' 的 ASCII 码
-      }).join(",");
+      });
+
+      // 对字母进行排序，确保显示为 ABCDE 的顺序
+      return letters.sort().join("");
     }
-    // 已经是字母形式，直接返回
-    return answer;
+    // 已经是字母形式，排序后返回
+    return answer.split("").sort().join("");
+  };
+
+  // 获取题型标签
+  const getQuestionTypeLabel = (type: string): string => {
+    switch (type) {
+      case 'single':
+        return '单选题';
+      case 'multiple':
+        return '多选题';
+      case 'judge':
+        return '判断题';
+      default:
+        return type;
+    }
+  };
+
+  // 合并答对和答错的题目，按原始答题卡顺序排序
+  const getAllQuestionsInOrder = () => {
+    if (!examResult || !questions) return [];
+
+    // 创建一个 Map，方便快速查找答对和答错的题目
+    const correctMap = new Map();
+    const wrongMap = new Map();
+
+    (examResult.correctQuestions || []).forEach((q: any) => {
+      correctMap.set(q.questionId, { ...q, isCorrect: true });
+    });
+
+    (examResult.wrongQuestions || []).forEach((q: any) => {
+      wrongMap.set(q.questionId, { ...q, isCorrect: false });
+    });
+
+    // 按照原始 questions 数组的顺序排列
+    return questions.map((q: any) => {
+      const questionId = q.id;
+      if (correctMap.has(questionId)) {
+        return correctMap.get(questionId);
+      } else if (wrongMap.has(questionId)) {
+        return wrongMap.get(questionId);
+      }
+      return null;
+    }).filter((q: any) => q !== null);
   };
 
   // 解析选项（支持 JSON 数组格式和换行符分隔格式）
@@ -727,13 +798,17 @@ const FormalExam = () => {
               
               <div className="text-center">
                 <h1 className="text-2xl font-bold text-foreground">AI训练师AI证照职考试</h1>
-                <p className="text-muted-foreground">卷第 {currentQuestion + 1}/{totalQuestions} 题</p>
+                {!examResult && (
+                  <p className="text-muted-foreground">卷第 {currentQuestion + 1}/{totalQuestions} 题</p>
+                )}
               </div>
               
-              <div className="flex items-center gap-2 text-foreground">
-                <Clock className="h-4 w-4" />
-                <span className="font-mono text-lg">{formatTime(timeLeft)}</span>
-              </div>
+              {!examResult && (
+                <div className="flex items-center gap-2 text-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span className="font-mono text-lg">{formatTime(timeLeft)}</span>
+                </div>
+              )}
             </div>
 
             {/* 如果已提交，显示结果 */}
@@ -774,46 +849,21 @@ const FormalExam = () => {
                   <div className="lg:col-span-1">
                     <Card className="bg-white/10 border-white/20 backdrop-blur-sm sticky top-24">
                       <CardHeader>
-                        <CardTitle className="text-sm">
-                          <div className="flex gap-2 mb-3">
-                            <Button
-                              variant={resultTab === 'correct' ? 'default' : 'outline'}
-                              onClick={() => {
-                                setResultTab('correct');
-                                setResultCurrentQuestion(0);
-                              }}
-                              className="gap-2 flex-1 text-xs"
-                            >
-                              <CheckCircle className="h-3 w-3" />
-                              答对
-                            </Button>
-                            <Button
-                              variant={resultTab === 'wrong' ? 'default' : 'outline'}
-                              onClick={() => {
-                                setResultTab('wrong');
-                                setResultCurrentQuestion(0);
-                              }}
-                              className="gap-2 flex-1 text-xs"
-                            >
-                              <XCircle className="h-3 w-3" />
-                              答错
-                            </Button>
-                          </div>
-                        </CardTitle>
+                        <CardTitle className="text-sm">答题卡</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-5 gap-2">
-                          {(resultTab === 'correct' ? examResult.correctQuestions : examResult.wrongQuestions).map(
+                          {getAllQuestionsInOrder().map(
                             (question: any, index: number) => (
                               <button
                                 key={question.questionId}
                                 onClick={() => setResultCurrentQuestion(index)}
                                 className={`w-full aspect-square rounded-lg font-semibold text-sm transition-all ${
                                   resultCurrentQuestion === index
-                                    ? resultTab === 'correct'
+                                    ? question.isCorrect
                                       ? 'bg-green-600 text-white border-2 border-green-400'
                                       : 'bg-red-600 text-white border-2 border-red-400'
-                                    : resultTab === 'correct'
+                                    : question.isCorrect
                                     ? 'bg-green-500/20 text-green-600 border border-green-500/30 hover:bg-green-500/30'
                                     : 'bg-red-500/20 text-red-600 border border-red-500/30 hover:bg-red-500/30'
                                 }`}
@@ -830,26 +880,31 @@ const FormalExam = () => {
                   {/* 右侧题目详情 */}
                   <div className="lg:col-span-3">
                     {(() => {
-                      const currentQuestions = resultTab === 'correct' ? examResult.correctQuestions : examResult.wrongQuestions;
-                      const currentQuestion = currentQuestions[resultCurrentQuestion];
+                      const allQuestions = getAllQuestionsInOrder();
+                      const currentQuestion = allQuestions[resultCurrentQuestion];
 
                       if (!currentQuestion) return null;
 
                       return (
                         <Card className={`bg-white/10 border-white/20 backdrop-blur-sm ${
-                          resultTab === 'correct' ? 'border-green-500/30' : 'border-red-500/30'
+                          currentQuestion.isCorrect ? 'border-green-500/30' : 'border-red-500/30'
                         }`}>
                           <CardHeader>
                             <div className="flex items-center justify-between">
-                              <CardTitle className="text-lg">
-                                第 {resultCurrentQuestion + 1} 题 {resultTab === 'correct' ? '✓' : '✗'}
-                              </CardTitle>
+                              <div>
+                                <CardTitle className="text-lg">
+                                  第 {resultCurrentQuestion + 1} 题 {currentQuestion.isCorrect ? '✓' : '✗'}
+                                </CardTitle>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  题型：{getQuestionTypeLabel(currentQuestion.type)}
+                                </p>
+                              </div>
                               <span className={`text-sm font-medium px-3 py-1 rounded-full ${
-                                resultTab === 'correct'
+                                currentQuestion.isCorrect
                                   ? 'bg-green-500/20 text-green-600'
                                   : 'bg-red-500/20 text-red-600'
                               }`}>
-                                {resultTab === 'correct' ? '答对' : '答错'}
+                                {currentQuestion.isCorrect ? '答对' : '答错'}
                               </span>
                             </div>
                           </CardHeader>
@@ -867,33 +922,66 @@ const FormalExam = () => {
                                 <div className="space-y-2">
                                   {parseOptions(currentQuestion.options).map((option: string, idx: number) => {
                                     const optionLetter = String.fromCharCode(65 + idx); // A, B, C, D...
-                                    const isUserAnswer = currentQuestion.userAnswer.includes(String(idx));
-                                    const isCorrectAnswer = currentQuestion.answer.includes(String(idx));
+
+                                    // 判断题特殊处理：A=正确，B=错误
+                                    let displayLabel = optionLetter;
+                                    if (currentQuestion.type === 'judge') {
+                                      displayLabel = idx === 0 ? '正确' : '错误';
+                                    }
+
+                                    // 检查用户是否选了这个选项（支持 ABCDE 和 0,1,2 两种格式）
+                                    let isUserAnswer = false;
+                                    if (currentQuestion.userAnswer) {
+                                      // 如果是字母格式（ABCDE）
+                                      if (/^[A-Z]+$/.test(currentQuestion.userAnswer)) {
+                                        isUserAnswer = currentQuestion.userAnswer.includes(optionLetter);
+                                      } else {
+                                        // 如果是数字格式（0,1,2 或 012）
+                                        isUserAnswer = currentQuestion.userAnswer.includes(String(idx));
+                                      }
+                                    }
+
+                                    // 检查这个选项是否是正确答案（支持 ABCDE 和 0,1,2 两种格式）
+                                    let isCorrectAnswer = false;
+                                    if (currentQuestion.answer) {
+                                      // 如果是字母格式（ABCDE）
+                                      if (/^[A-Z]+$/.test(currentQuestion.answer)) {
+                                        isCorrectAnswer = currentQuestion.answer.includes(optionLetter);
+                                      } else {
+                                        // 如果是数字格式（0,1,2 或 012）
+                                        isCorrectAnswer = currentQuestion.answer.includes(String(idx));
+                                      }
+                                    }
+
+                                    // 颜色逻辑：
+                                    // 1. 如果是正确答案中的选项，显示绿色
+                                    // 2. 如果用户选了但不是正确答案，显示红色
+                                    // 3. 其他显示灰色
+                                    let bgColor = 'bg-white/5 border-white/10';
+                                    let textColor = 'text-muted-foreground';
+                                    let statusText = '';
+
+                                    if (isCorrectAnswer) {
+                                      bgColor = 'bg-green-500/10 border-green-500/50';
+                                      textColor = 'text-green-600';
+                                      statusText = '✓ 正确';
+                                    } else if (isUserAnswer) {
+                                      bgColor = 'bg-red-500/10 border-red-500/50';
+                                      textColor = 'text-red-600';
+                                      statusText = '✗ 你选';
+                                    }
 
                                     return (
                                       <div
                                         key={idx}
-                                        className={`p-3 rounded-lg border-2 transition-all ${
-                                          isCorrectAnswer
-                                            ? 'bg-green-500/10 border-green-500/50'
-                                            : isUserAnswer && resultTab === 'wrong'
-                                            ? 'bg-red-500/10 border-red-500/50'
-                                            : 'bg-white/5 border-white/10'
-                                        }`}
+                                        className={`p-3 rounded-lg border-2 transition-all ${bgColor}`}
                                       >
                                         <div className="flex items-start gap-3">
-                                          <span className={`font-semibold min-w-fit ${
-                                            isCorrectAnswer
-                                              ? 'text-green-600'
-                                              : isUserAnswer && resultTab === 'wrong'
-                                              ? 'text-red-600'
-                                              : 'text-muted-foreground'
-                                          }`}>
-                                            {optionLetter}.
+                                          <span className={`font-semibold min-w-fit ${textColor}`}>
+                                            {displayLabel}.
                                           </span>
                                           <span className="text-foreground">{option.trim()}</span>
-                                          {isCorrectAnswer && <span className="ml-auto text-green-600 font-semibold">✓ 正确</span>}
-                                          {isUserAnswer && resultTab === 'wrong' && <span className="ml-auto text-red-600 font-semibold">✗ 你选</span>}
+                                          {statusText && <span className={`ml-auto font-semibold ${textColor}`}>{statusText}</span>}
                                         </div>
                                       </div>
                                     );
@@ -906,20 +994,28 @@ const FormalExam = () => {
                             <div className="grid grid-cols-2 gap-4">
                               <div className="p-3 bg-white/5 rounded-lg border border-white/10">
                                 <p className="text-xs text-muted-foreground mb-1">您的答案</p>
-                                <p className="text-sm font-semibold text-foreground">{convertAnswerToLetters(currentQuestion.userAnswer)}</p>
+                                <p className="text-sm font-semibold text-foreground">
+                                  {!currentQuestion.userAnswer || currentQuestion.userAnswer === ''
+                                    ? '未作答'
+                                    : currentQuestion.type === 'judge'
+                                    ? (currentQuestion.userAnswer === '0' ? '正确' : '错误')
+                                    : convertAnswerToLetters(currentQuestion.userAnswer)
+                                  }
+                                </p>
                               </div>
-                              <div className={`p-3 rounded-lg border ${
-                                resultTab === 'correct'
-                                  ? 'bg-green-500/10 border-green-500/20'
-                                  : 'bg-green-500/10 border-green-500/20'
-                              }`}>
+                              <div className="p-3 rounded-lg border bg-green-500/10 border-green-500/20">
                                 <p className="text-xs text-green-600 mb-1">正确答案</p>
-                                <p className="text-sm font-semibold text-green-600">{convertAnswerToLetters(currentQuestion.answer)}</p>
+                                <p className="text-sm font-semibold text-green-600">
+                                  {currentQuestion.type === 'judge'
+                                    ? (currentQuestion.answer === '0' ? '正确' : '错误')
+                                    : convertAnswerToLetters(currentQuestion.answer)
+                                  }
+                                </p>
                               </div>
                             </div>
 
                             {/* 解析（仅答错时显示） */}
-                            {resultTab === 'wrong' && currentQuestion.analysis && (
+                            {!currentQuestion.isCorrect && currentQuestion.analysis && (
                               <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                                 <p className="text-sm font-semibold text-blue-600 mb-2">📖 解析</p>
                                 <p className="text-sm text-muted-foreground">{currentQuestion.analysis}</p>
