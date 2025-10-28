@@ -345,186 +345,242 @@ const mockLessons: { [courseId: string]: Lesson[] } = {
   ]
 };
 
-// Mock 任务数据
+// Mock 任务数据 - 支持子任务和多种类型
 const mockTasks: { [lessonId: string]: Task[] } = {
   "lesson-001-01": [
     {
       sid: "task-001-01-01",
-      name: "video-lecture",
-      title: "视频讲解：AI发展史",
-      description: "观看AI发展历程的视频讲解",
+      name: "ai-overview",
+      title: "人工智能概述",
+      description: "了解人工智能的基础概念、核心技术和应用领域",
       status: "active",
-      duration: 30,
+      type: "document",
+      duration: 12,
       durationUnit: "分钟",
-      materials: [
-        {
-          type: "video",
-          title: "AI发展史",
-          description: "从图灵测试到ChatGPT的AI发展历程",
-          minioPath: "/videos/ai-history.mp4"
-        }
-      ],
+      completed: true,
+      content: `
+        <h2>前言</h2>
+        <p>2022年11月30日，美国旧金山的人工智能研究公司OpenAI公司通过其官方宣布："实验性ChatGPT吧，这是我们训练的模型，它以对话方式进行交互。对话格式使ChatGPT能够回答后续问题，承认错误，挑战不正确的前提，并拒绝不适当的请求。"</p>
+        <p>ChatGPT这款通过Web界面与用户互动的聊天机器人，先是在美国引发了广泛关注，随后迅速在全球范围内掀起了一股AI热潮...</p>
+        <h3>ChatGPT的本质</h3>
+        <p>它是一种基于深度学习的大语言模型（Large Language Model，LLM），可预测一个最有可能接续的文本内容...</p>
+      `,
       created_at: "2025-01-15T10:00:00Z"
     },
     {
       sid: "task-001-01-02",
-      name: "reading-material",
-      title: "阅读材料：AI核心概念",
-      description: "阅读AI核心概念的文档",
+      name: "ml-basics",
+      title: "机器学习基础",
+      description: "学习机器学习的基本原理、算法类型和应用场景",
       status: "active",
-      duration: 20,
+      type: "document",
+      duration: 15,
       durationUnit: "分钟",
-      materials: [
-        {
-          type: "document",
-          title: "AI核心概念",
-          description: "机器学习、深度学习、神经网络等核心概念",
-          minioPath: "/docs/ai-concepts.pdf"
-        }
-      ],
+      completed: true,
+      content: `
+        <h2>机器学习概述</h2>
+        <p>机器学习是人工智能的核心技术之一，它使计算机能够从数据中学习并做出预测或决策...</p>
+        <h3>监督学习</h3>
+        <p>监督学习使用标记的训练数据来学习输入和输出之间的映射关系...</p>
+        <h3>无监督学习</h3>
+        <p>无监督学习从未标记的数据中发现隐藏的模式和结构...</p>
+      `,
+      created_at: "2025-01-15T10:00:00Z"
+    },
+    {
+      sid: "task-001-01-03",
+      name: "dl-principles",
+      title: "深度学习原理",
+      description: "深入理解神经网络、反向传播等深度学习核心技术",
+      status: "active",
+      type: "document",
+      duration: 18,
+      durationUnit: "分钟",
+      completed: false,
+      content: `
+        <h2>神经网络基础</h2>
+        <p>神经网络是深度学习的基础，它模拟人脑神经元的工作方式...</p>
+        <h3>激活函数</h3>
+        <p>激活函数为神经网络引入非线性，常用的激活函数包括ReLU、Sigmoid、Tanh等...</p>
+      `,
       created_at: "2025-01-15T10:00:00Z"
     }
   ],
   "lesson-001-02": [
     {
       sid: "task-001-02-01",
-      name: "video-lecture",
-      title: "视频讲解：机器学习基础",
+      name: "ml-concepts",
+      title: "机器学习概念",
       description: "学习机器学习的基本原理和算法",
       status: "active",
-      duration: 35,
+      type: "document",
+      duration: 15,
       durationUnit: "分钟",
-      materials: [
-        {
-          type: "video",
-          title: "机器学习入门",
-          description: "监督学习、无监督学习、强化学习的基本概念",
-          minioPath: "/videos/ml-basics.mp4"
-        }
-      ],
+      completed: true,
+      content: `
+        <h2>机器学习的三大类型</h2>
+        <h3>1. 监督学习</h3>
+        <p>使用标记数据进行训练，包括分类和回归任务...</p>
+        <h3>2. 无监督学习</h3>
+        <p>从未标记数据中发现模式，包括聚类和降维...</p>
+        <h3>3. 强化学习</h3>
+        <p>通过与环境交互学习最优策略...</p>
+      `,
       created_at: "2025-01-15T10:00:00Z"
     },
     {
       sid: "task-001-02-02",
-      name: "practice",
-      title: "实践练习：线性回归",
-      description: "通过实际案例学习线性回归算法",
+      name: "feature-engineering",
+      title: "特征工程",
+      description: "学习如何提取和选择有效的特征",
       status: "active",
-      duration: 25,
+      type: "document",
+      duration: 20,
       durationUnit: "分钟",
-      materials: [
-        {
-          type: "code",
-          title: "线性回归代码示例",
-          description: "Python实现的线性回归算法",
-          minioPath: "/code/linear-regression.py"
-        }
-      ],
+      completed: false,
+      content: `
+        <h2>特征工程的重要性</h2>
+        <p>特征工程是机器学习中最重要的环节之一...</p>
+        <h3>特征提取</h3>
+        <p>从原始数据中提取有意义的特征...</p>
+        <h3>特征选择</h3>
+        <p>选择对模型最有帮助的特征...</p>
+      `,
       created_at: "2025-01-15T10:00:00Z"
     }
   ],
   "lesson-001-03": [
     {
       sid: "task-001-03-01",
-      name: "video-lecture",
-      title: "视频讲解：深度学习原理",
+      name: "nn-basics",
+      title: "神经网络基础",
       description: "深入理解神经网络和反向传播",
       status: "active",
-      duration: 40,
+      type: "document",
+      duration: 18,
       durationUnit: "分钟",
-      materials: [
-        {
-          type: "video",
-          title: "深度学习基础",
-          description: "神经网络结构、激活函数、反向传播算法",
-          minioPath: "/videos/deep-learning.mp4"
-        }
-      ],
+      completed: false,
+      content: `
+        <h2>神经网络结构</h2>
+        <p>神经网络由输入层、隐藏层和输出层组成...</p>
+        <h3>前向传播</h3>
+        <p>数据从输入层经过隐藏层传递到输出层...</p>
+        <h3>反向传播</h3>
+        <p>通过梯度下降算法更新网络权重...</p>
+      `,
       created_at: "2025-01-15T10:00:00Z"
     },
     {
       sid: "task-001-03-02",
-      name: "reading",
-      title: "阅读材料：CNN与RNN",
+      name: "cnn-rnn",
+      title: "CNN与RNN",
       description: "学习卷积神经网络和循环神经网络",
       status: "active",
-      duration: 30,
+      type: "document",
+      duration: 22,
       durationUnit: "分钟",
-      materials: [
-        {
-          type: "document",
-          title: "CNN与RNN详解",
-          description: "图像识别和序列处理的核心技术",
-          minioPath: "/docs/cnn-rnn.pdf"
-        }
-      ],
+      completed: false,
+      content: `
+        <h2>卷积神经网络（CNN）</h2>
+        <p>CNN特别适合处理图像数据...</p>
+        <h3>卷积层</h3>
+        <p>通过卷积核提取图像特征...</p>
+        <h2>循环神经网络（RNN）</h2>
+        <p>RNN适合处理序列数据...</p>
+      `,
       created_at: "2025-01-15T10:00:00Z"
     }
   ],
   "lesson-001-04": [
     {
       sid: "task-001-04-01",
-      name: "video-lecture",
-      title: "视频讲解：生成式AI技术",
-      description: "学习GPT、DALL-E等生成式AI模型的原理和应用",
+      name: "generative-ai-intro",
+      title: "生成式AI技术简介",
+      description: "了解生成式AI的基本概念和应用",
       status: "active",
-      duration: 45,
+      type: "document",
+      duration: 12,
       durationUnit: "分钟",
-      materials: [
-        {
-          type: "video",
-          title: "生成式AI概述",
-          description: "从GAN到Transformer，了解生成式AI的发展",
-          minioPath: "/videos/generative-ai.mp4"
-        }
-      ],
+      completed: false,
       content: `
-        <h2>生成式AI技术概述</h2>
-        <p>生成式人工智能（Generative AI）是一类能够创造新内容的AI技术，包括文本、图像、音频、视频等多种形式。</p>
-
-        <h3>主要技术</h3>
+        <h2>第一章 生成式人工智能简介</h2>
+        <h3>前言</h3>
+        <p>2022年11月30日，美国旧金山的人工智能研究公司OpenAI公司通过其官方宣布："实验性ChatGPT吧，这是我们训练的模型，它以对话方式进行交互。对话格式使ChatGPT能够回答后续问题，承认错误，挑战不正确的前提，并拒绝不适当的请求。"</p>
+        <p>ChatGPT这款通过Web界面与用户互动的聊天机器人，先是在美国引发了广泛关注，随后迅速在全球范围内掀起了一股AI热潮...</p>
+        <h3>ChatGPT的本质</h3>
+        <p>它是一种基于深度学习的大语言模型（Large Language Model，LLM），可预测一个最有可能接续的文本内容...</p>
+        <h3>目录</h3>
         <ul>
-          <li><strong>GPT系列</strong>：基于Transformer的大语言模型，擅长文本生成</li>
-          <li><strong>DALL-E</strong>：文本到图像的生成模型</li>
-          <li><strong>Stable Diffusion</strong>：开源的图像生成模型</li>
-          <li><strong>Midjourney</strong>：艺术风格的图像生成工具</li>
-        </ul>
-
-        <h3>应用场景</h3>
-        <ul>
-          <li>内容创作：文章写作、代码生成、图像设计</li>
-          <li>辅助工作：文档总结、翻译、数据分析</li>
-          <li>创意设计：艺术创作、广告设计、游戏开发</li>
+          <li>1.1 从图灵测试到ChatGPT</li>
+          <li>1.2 从数据到智能</li>
+          <li>1.3 通用人工智能的曙光</li>
         </ul>
       `,
       created_at: "2025-01-15T10:00:00Z"
     },
     {
       sid: "task-001-04-02",
-      name: "practice",
-      title: "实践：使用ChatGPT进行对话",
-      description: "体验大语言模型的对话能力",
+      name: "generative-ai-practice",
+      title: "生成式AI实践 - 学习实践",
+      description: "通过Jupyter Notebook学习生成式AI的实际应用",
       status: "active",
-      duration: 30,
+      type: "notebook",
+      duration: 45,
       durationUnit: "分钟",
+      completed: false,
+      notebookUrl: "/notebooks/generative-ai-practice.ipynb",
+      content: `
+        <h2>第一章 生成式人工智能简介 - 学习实践</h2>
+        <p>本Notebook是第一章《生成式人工智能简介》的配套学习资料。首先确保你的学习环境已安装以下Python库...</p>
+        <h3>1. 导入必要的库</h3>
+        <pre><code>import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import CountVectorizer</code></pre>
+        <h3>2. 核心概念回顾</h3>
+        <h4>2.1 图灵测试与智能度量</h4>
+        <p>图灵测试是评估机器智能的经典方法...</p>
+
+      `,
       materials: [
         {
           type: "document",
-          title: "ChatGPT使用指南",
-          description: "如何有效地与ChatGPT进行对话",
-          minioPath: "/docs/chatgpt-guide.pdf"
+          title: "Jupyter Notebook 使用指南",
+          description: "学习如何使用 Jupyter Notebook 进行交互式编程",
+          minioPath: "/docs/jupyter-guide.pdf"
         }
       ],
+      created_at: "2025-01-15T10:00:00Z"
+    },
+    {
+      sid: "task-001-04-03",
+      name: "generative-ai-lab",
+      title: "生成式AI实验",
+      description: "在实验环境中体验生成式AI的能力",
+      status: "active",
+      type: "lab",
+      duration: 30,
+      durationUnit: "分钟",
+      completed: false,
+      lab: {
+        type: "interactive",
+        id: "lab-generative-ai-001",
+        url: "/labs/generative-ai",
+        description: "交互式实验环境，可以直接与生成式AI模型对话"
+      },
       content: `
-        <h2>ChatGPT实践练习</h2>
-        <p>通过实际操作，学习如何有效地使用ChatGPT。</p>
-
-        <h3>练习任务</h3>
+        <h2>实验目标</h2>
+        <p>通过本实验，你将：</p>
+        <ul>
+          <li>体验生成式AI的文本生成能力</li>
+          <li>了解提示词（Prompt）的重要性</li>
+          <li>学习如何优化AI输出质量</li>
+        </ul>
+        <h3>实验步骤</h3>
         <ol>
-          <li>尝试让ChatGPT解释一个复杂的概念</li>
-          <li>让ChatGPT帮你写一段代码</li>
-          <li>使用ChatGPT进行头脑风暴</li>
-          <li>让ChatGPT总结一篇文章</li>
+          <li>点击"启动实验"按钮</li>
+          <li>在对话框中输入你的问题</li>
+          <li>观察AI的回答并尝试优化提示词</li>
         </ol>
       `,
       created_at: "2025-01-15T10:00:00Z"

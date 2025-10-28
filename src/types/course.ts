@@ -57,9 +57,14 @@ export interface Task {
   status: "active" | "draft" | "archived";
   duration?: number;
   durationUnit?: string;
+  type?: "document" | "video" | "notebook" | "lab" | "quiz" | "assignment"; // 任务类型
   materials?: Material[]; // 教学材料列表
-  content?: string;
-  lab?: Lab;
+  content?: string; // 文档内容（HTML或Markdown）
+  notebookUrl?: string; // Jupyter Notebook URL
+  videoUrl?: string; // 视频URL
+  lab?: Lab; // 实验环境
+  subtasks?: Task[]; // 子任务列表
+  completed?: boolean; // 是否完成
   created_by?: string;
   created_at?: string;
   updated_at?: string;

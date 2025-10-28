@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -7,9 +6,10 @@ import {
   Clock, 
   CheckCircle, 
   ArrowLeft,
-  PlayCircle,
   FileText,
-  Code
+  Code,
+  PlayCircle,
+  FlaskConical
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate, useParams } from "react-router-dom";
@@ -24,11 +24,11 @@ const CourseLearning = () => {
   const [course, setCourse] = useState<Course | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
-  const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+  const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Apply theme based on user role
+  // Apply theme
   useEffect(() => {
     applyRoleTheme();
   }, [applyRoleTheme]);
@@ -71,9 +71,11 @@ const CourseLearning = () => {
   // 加载当前课时详情
   useEffect(() => {
     if (!lessonId) {
-      // 如果没有指定课时，使用第一个课时
       if (lessons.length > 0) {
         setCurrentLesson(lessons[0]);
+        if (lessons[0].tasks && lessons[0].tasks.length > 0) {
+          setCurrentTaskId(lessons[0].tasks[0].sid);
+        }
       }
       return;
     }
@@ -82,6 +84,9 @@ const CourseLearning = () => {
       try {
         const lessonData = await getLessonBySid(lessonId);
         setCurrentLesson(lessonData);
+        if (lessonData.tasks && lessonData.tasks.length > 0) {
+          setCurrentTaskId(lessonData.tasks[0].sid);
+        }
       } catch (err) {
         console.error("Failed to fetch lesson:", err);
       }
@@ -98,16 +103,47 @@ const CourseLearning = () => {
     navigate(`/courses/${courseId}/lessons/${lesson.sid}`);
   };
 
-  const handleNextTask = () => {
-    if (currentLesson?.tasks && currentTaskIndex < currentLesson.tasks.length - 1) {
-      setCurrentTaskIndex(currentTaskIndex + 1);
+  const handleTaskClick = (taskId: string) => {
+    setCurrentTaskId(taskId);
+  };
+
+  const getTaskIcon = (type?: string) => {
+    switch (type) {
+      case "document":
+        return <FileText className="h-4 w-4" />;
+      case "notebook":
+        return <Code className="h-4 w-4" />;
+      case "video":
+        return <PlayCircle className="h-4 w-4" />;
+      case "lab":
+        return <FlaskConical className="h-4 w-4" />;
+      default:
+        return <BookOpen className="h-4 w-4" />;
     }
   };
 
-  const handlePrevTask = () => {
-    if (currentTaskIndex > 0) {
-      setCurrentTaskIndex(currentTaskIndex - 1);
+  const currentTask = currentLesson?.tasks?.find(t => t.sid === currentTaskId);
+
+  // 获取任务的 Tab 配置
+  const getTaskTabs = (task: Task) => {
+    const tabs = [];
+    
+    // 文档内容 Tab
+    if (task.content || task.type === "document") {
+      tabs.push({ value: "document", label: "文档", icon: <FileText className="h-4 w-4 mr-2" /> });
     }
+    
+    // 实验 Tab
+    if (task.lab || task.type === "lab") {
+      tabs.push({ value: "lab", label: "实验", icon: <FlaskConical className="h-4 w-4 mr-2" /> });
+    }
+    
+    // Notebook Tab
+    if (task.notebookUrl || task.type === "notebook") {
+      tabs.push({ value: "notebook", label: "Notebook", icon: <Code className="h-4 w-4 mr-2" /> });
+    }
+    
+    return tabs;
   };
 
   if (loading) {
@@ -124,218 +160,215 @@ const CourseLearning = () => {
   if (error || !course) {
     return (
       <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardContent className="pt-6">
-            <p className="text-destructive mb-4">加载课程失败</p>
-            <Button onClick={() => navigate('/courses')}>返回课程列表</Button>
-          </CardContent>
-        </Card>
+        <div className="max-w-md bg-white rounded-lg p-6">
+          <p className="text-destructive mb-4">加载课程失败</p>
+          <Button onClick={() => navigate('/courses')}>返回课程列表</Button>
+        </div>
       </div>
     );
   }
 
-  const currentTask = currentLesson?.tasks?.[currentTaskIndex];
+  const taskTabs = currentTask ? getTaskTabs(currentTask) : [];
 
   return (
-    <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
-      {/* 背景装饰 */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl"></div>
+    <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* 顶部导航栏 */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBackToCourse}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            返回课程详情
+          </Button>
+          <div className="h-6 w-px bg-gray-300"></div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">{course.title}</h1>
+            <p className="text-sm text-gray-500">{currentLesson?.title || '选择课时'}</p>
+          </div>
+        </div>
       </div>
 
-      <div className="p-6 relative z-10">
-        <div className="max-w-7xl mx-auto">
-          {/* 半透明白色容器 */}
-          <div className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl">
-            
-            {/* 顶部导航 */}
-            <div className="flex items-center justify-between mb-6">
-              <Button
-                variant="ghost"
-                onClick={handleBackToCourse}
-                className="text-foreground hover:bg-white/20"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                返回课程详情
-              </Button>
-              <div className="text-right">
-                <h1 className="text-2xl font-bold text-foreground">{course.title}</h1>
-                <p className="text-muted-foreground">{currentLesson?.title || '选择课时'}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* 左侧：课时列表 */}
-              <div className="lg:col-span-1">
-                <Card className="bg-white border-0">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-foreground text-base font-medium">
-                      课时列表
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 max-h-[600px] overflow-y-auto">
-                    {lessons.map((lesson, index) => (
-                      <div 
-                        key={lesson.sid}
-                        className={`p-3 rounded-lg cursor-pointer transition-all ${
-                          lesson.sid === currentLesson?.sid
-                            ? 'bg-blue-50 border-2 border-blue-300' 
-                            : 'hover:bg-gray-50 border border-transparent'
+      {/* 主内容区域 */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* 左侧：课时和任务列表 */}
+        <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+          <div className="p-4 border-b border-gray-200">
+            <h2 className="font-semibold text-gray-900">课时列表</h2>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {lessons.map((lesson, lessonIndex) => (
+              <div key={lesson.sid} className="border-b border-gray-100">
+                <div
+                  className={`p-4 cursor-pointer transition-colors ${
+                    lesson.sid === currentLesson?.sid
+                      ? 'bg-blue-50'
+                      : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => handleLessonClick(lesson)}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                      lesson.sid === currentLesson?.sid
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-600'
+                    }`}>
+                      {lessonIndex + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">
+                        {lesson.title}
+                      </div>
+                      {lesson.description && (
+                        <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                          {lesson.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 任务列表 */}
+                {lesson.sid === currentLesson?.sid && lesson.tasks && lesson.tasks.length > 0 && (
+                  <div className="bg-gray-50 py-2">
+                    {lesson.tasks.map((task, taskIndex) => (
+                      <div
+                        key={task.sid}
+                        className={`px-4 py-2 mx-2 mb-1 rounded cursor-pointer transition-colors flex items-center gap-2 ${
+                          task.sid === currentTaskId
+                            ? 'bg-blue-100 text-blue-900'
+                            : 'hover:bg-white text-gray-700'
                         }`}
-                        onClick={() => handleLessonClick(lesson)}
+                        onClick={() => handleTaskClick(task.sid)}
                       >
-                        <div className="flex items-start gap-2">
-                          <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                            lesson.sid === currentLesson?.sid
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-gray-200 text-gray-600'
-                          }`}>
-                            {index + 1}
+                        <div className="flex-shrink-0 text-xs font-medium text-gray-500">
+                          {taskIndex + 1}
+                        </div>
+                        {getTaskIcon(task.type)}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm truncate">{task.title}</div>
+                          <div className="text-xs text-gray-500 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {task.duration} {task.durationUnit || '分钟'}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-foreground truncate">
-                              {lesson.title}
+                        </div>
+                        {task.completed && (
+                          <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 右侧：内容区域 */}
+        <div className="flex-1 flex flex-col overflow-hidden bg-white">
+          {currentTask ? (
+            <>
+              {/* 任务标题 */}
+              <div className="px-6 py-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {getTaskIcon(currentTask.type)}
+                    <h2 className="text-xl font-semibold text-gray-900">{currentTask.title}</h2>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Clock className="h-4 w-4" />
+                    {currentTask.duration} {currentTask.durationUnit || '分钟'}
+                  </div>
+                </div>
+                {currentTask.description && (
+                  <p className="text-sm text-gray-600 mt-2">{currentTask.description}</p>
+                )}
+              </div>
+
+              {/* Tab 内容 */}
+              {taskTabs.length > 0 ? (
+                <Tabs defaultValue={taskTabs[0].value} className="flex-1 flex flex-col">
+                  <TabsList className="mx-6 mt-4 w-auto self-start">
+                    {taskTabs.map(tab => (
+                      <TabsTrigger key={tab.value} value={tab.value} className="flex items-center">
+                        {tab.icon}
+                        {tab.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  
+                  <div className="flex-1 overflow-y-auto px-6 py-4">
+                    {taskTabs.map(tab => (
+                      <TabsContent key={tab.value} value={tab.value} className="mt-0">
+                        {tab.value === "document" && currentTask.content && (
+                          <div className="prose max-w-none">
+                            <div dangerouslySetInnerHTML={{ __html: currentTask.content }} />
+                          </div>
+                        )}
+                        
+                        {tab.value === "notebook" && (
+                          <div className="space-y-4">
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                              <h3 className="font-semibold text-blue-900 mb-2">Jupyter Notebook</h3>
+                              <p className="text-sm text-blue-700 mb-4">
+                                点击下方按钮在新窗口中打开 Jupyter Notebook 进行交互式学习
+                              </p>
+                              <Button className="bg-blue-600 hover:bg-blue-700">
+                                <Code className="mr-2 h-4 w-4" />
+                                打开 Notebook
+                              </Button>
                             </div>
-                            {lesson.description && (
-                              <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                                {lesson.description}
+                            {currentTask.content && (
+                              <div className="prose max-w-none">
+                                <div dangerouslySetInnerHTML={{ __html: currentTask.content }} />
                               </div>
                             )}
                           </div>
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* 右侧：学习内容 */}
-              <div className="lg:col-span-3">
-                <Card className="bg-white border-0">
-                  <CardHeader>
-                    <CardTitle className="text-foreground flex items-center gap-2">
-                      <BookOpen className="h-5 w-5" />
-                      {currentLesson?.title || '请选择课时'}
-                    </CardTitle>
-                    {currentLesson?.description && (
-                      <p className="text-muted-foreground text-sm mt-2">
-                        {currentLesson.description}
-                      </p>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    {currentLesson?.tasks && currentLesson.tasks.length > 0 ? (
-                      <Tabs defaultValue="content" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3">
-                          <TabsTrigger value="content">学习内容</TabsTrigger>
-                          <TabsTrigger value="materials">学习资料</TabsTrigger>
-                          <TabsTrigger value="lab">实验环境</TabsTrigger>
-                        </TabsList>
+                        )}
                         
-                        <TabsContent value="content" className="mt-6">
-                          {currentTask ? (
-                            <div className="space-y-4">
-                              <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-semibold">{currentTask.title}</h3>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  <Clock className="h-4 w-4" />
-                                  {currentTask.duration} {currentTask.durationUnit || '分钟'}
-                                </div>
+                        {tab.value === "lab" && currentTask.lab && (
+                          <div className="space-y-4">
+                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                              <h3 className="font-semibold text-purple-900 mb-2">实验环境</h3>
+                              <p className="text-sm text-purple-700 mb-4">
+                                {currentTask.lab.description || '点击下方按钮启动实验环境'}
+                              </p>
+                              <Button className="bg-purple-600 hover:bg-purple-700">
+                                <FlaskConical className="mr-2 h-4 w-4" />
+                                启动实验
+                              </Button>
+                            </div>
+                            {currentTask.content && (
+                              <div className="prose max-w-none">
+                                <div dangerouslySetInnerHTML={{ __html: currentTask.content }} />
                               </div>
-                              
-                              {currentTask.description && (
-                                <p className="text-muted-foreground">{currentTask.description}</p>
-                              )}
-
-                              {currentTask.content && (
-                                <div className="prose max-w-none">
-                                  <div dangerouslySetInnerHTML={{ __html: currentTask.content }} />
-                                </div>
-                              )}
-
-                              {/* 任务导航 */}
-                              <div className="flex items-center justify-between pt-6 border-t">
-                                <Button
-                                  variant="outline"
-                                  onClick={handlePrevTask}
-                                  disabled={currentTaskIndex === 0}
-                                >
-                                  上一个任务
-                                </Button>
-                                <span className="text-sm text-muted-foreground">
-                                  任务 {currentTaskIndex + 1} / {currentLesson.tasks.length}
-                                </span>
-                                <Button
-                                  onClick={handleNextTask}
-                                  disabled={currentTaskIndex === currentLesson.tasks.length - 1}
-                                >
-                                  下一个任务
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <p className="text-muted-foreground">暂无学习内容</p>
-                          )}
-                        </TabsContent>
-
-                        <TabsContent value="materials" className="mt-6">
-                          {currentTask?.materials && currentTask.materials.length > 0 ? (
-                            <div className="space-y-3">
-                              {currentTask.materials.map((material, index) => (
-                                <Card key={index} className="border">
-                                  <CardContent className="p-4">
-                                    <div className="flex items-start gap-3">
-                                      {material.type === 'video' && <PlayCircle className="h-5 w-5 text-blue-500 flex-shrink-0 mt-1" />}
-                                      {material.type === 'document' && <FileText className="h-5 w-5 text-green-500 flex-shrink-0 mt-1" />}
-                                      {material.type === 'code' && <Code className="h-5 w-5 text-purple-500 flex-shrink-0 mt-1" />}
-                                      <div className="flex-1">
-                                        <h4 className="font-medium">{material.title}</h4>
-                                        {material.description && (
-                                          <p className="text-sm text-muted-foreground mt-1">{material.description}</p>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-muted-foreground">暂无学习资料</p>
-                          )}
-                        </TabsContent>
-
-                        <TabsContent value="lab" className="mt-6">
-                          {currentTask?.lab ? (
-                            <div className="space-y-4">
-                              <Card className="border-blue-200 bg-blue-50">
-                                <CardContent className="p-4">
-                                  <h4 className="font-medium mb-2">实验环境</h4>
-                                  <p className="text-sm text-muted-foreground mb-4">
-                                    {currentTask.lab.description || '点击下方按钮启动实验环境'}
-                                  </p>
-                                  <Button className="w-full">
-                                    启动实验环境
-                                  </Button>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          ) : (
-                            <p className="text-muted-foreground">本课时暂无实验环境</p>
-                          )}
-                        </TabsContent>
-                      </Tabs>
-                    ) : (
-                      <div className="text-center py-12">
-                        <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <p className="text-muted-foreground">本课时暂无学习任务</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                            )}
+                          </div>
+                        )}
+                      </TabsContent>
+                    ))}
+                  </div>
+                </Tabs>
+              ) : (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center">
+                    <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">暂无学习内容</p>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg">请从左侧选择课时和任务</p>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
