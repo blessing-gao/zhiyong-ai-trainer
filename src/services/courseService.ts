@@ -2,6 +2,7 @@ import {
   Course,
   Lesson,
   Task,
+  SubtaskTab,
   ApiResponse,
   CourseListResponse,
   CourseDetailResponse,
@@ -756,6 +757,207 @@ from sklearn.feature_extraction.text import CountVectorizer</code></pre>
   ]
 };
 
+// Mock 子任务 Tab 数据 - 支持双层 Tab（学习类/实践类）
+const mockSubtaskTabs: { [taskId: string]: SubtaskTab[] } = {
+  "task-001-04-01": [
+    {
+      id: "subtask-001-04-01-01",
+      title: "讲义文档",
+      category: "study",
+      type: "document",
+      source: {
+        html: `
+          <h2>生成式AI技术简介</h2>
+          <h3>1. 什么是生成式AI？</h3>
+          <p>生成式AI是指能够生成新内容（如文本、图像、音频等）的人工智能系统。与传统AI不同，生成式AI不仅能够理解和分析数据，还能够创造全新的内容。</p>
+          <h3>2. 核心技术</h3>
+          <ul>
+            <li><strong>大语言模型（LLM）</strong>：如GPT系列、Claude等</li>
+            <li><strong>扩散模型</strong>：用于图像生成，如DALL-E、Stable Diffusion</li>
+            <li><strong>变换器架构</strong>：Transformer是现代生成式AI的基础</li>
+          </ul>
+          <h3>3. 应用领域</h3>
+          <ul>
+            <li>内容创作：文章、代码、创意写作</li>
+            <li>客服支持：智能对话、问答系统</li>
+            <li>数据分析：自动报告生成、数据解释</li>
+            <li>教育培训：个性化学习、智能辅导</li>
+          </ul>
+        `
+      },
+      duration: 12,
+      completed: false,
+      progress: 0
+    },
+    {
+      id: "subtask-001-04-01-02",
+      title: "参考资料",
+      category: "study",
+      type: "pdf",
+      source: {
+        iframeSrc: "http://101.37.166.27/pdf-viewer?file=generative-ai-intro.pdf"
+      },
+      duration: 15,
+      completed: false,
+      progress: 0
+    },
+    {
+      id: "subtask-001-04-01-03",
+      title: "视频讲解",
+      category: "study",
+      type: "video",
+      source: {
+        iframeSrc: "http://www.shenben.club:8888/video-player?video=generative-ai-intro.mp4"
+      },
+      duration: 20,
+      completed: false,
+      progress: 0
+    }
+  ],
+  "task-001-04-02": [
+    {
+      id: "subtask-001-04-02-01",
+      title: "学习指南",
+      category: "study",
+      type: "markdown",
+      source: {
+        md: `# Jupyter Notebook 学习指南
+
+## 环境准备
+\`\`\`bash
+pip install jupyter numpy pandas matplotlib scikit-learn
+\`\`\`
+
+## 核心概念
+- **单元格（Cell）**：Notebook的基本单位
+- **代码单元**：执行Python代码
+- **Markdown单元**：编写文档和说明
+
+## 快捷键
+- Ctrl+Enter：执行当前单元
+- Shift+Enter：执行并移到下一单元
+- A：在上方插入单元
+- B：在下方插入单元
+`
+      },
+      duration: 10,
+      completed: false,
+      prerequisites: ["subtask-001-04-01-01"],
+      progress: 0
+    },
+    {
+      id: "subtask-001-04-02-02",
+      title: "Notebook实践",
+      category: "practice",
+      type: "notebook",
+      source: {
+        iframeSrc: "http://101.37.166.27/jupyter-lab?notebook=generative-ai-practice.ipynb"
+      },
+      duration: 45,
+      completed: false,
+      prerequisites: ["subtask-001-04-02-01"],
+      progress: 0
+    },
+    {
+      id: "subtask-001-04-02-03",
+      title: "代码示例",
+      category: "practice",
+      type: "iframe",
+      source: {
+        iframeSrc: "http://www.shenben.club:8888/code-viewer?lang=python&file=generative-ai-examples.py"
+      },
+      duration: 20,
+      completed: false,
+      progress: 0
+    }
+  ],
+  "task-001-04-03": [
+    {
+      id: "subtask-001-04-03-01",
+      title: "实验说明",
+      category: "study",
+      type: "document",
+      source: {
+        html: `
+          <h2>生成式AI实验</h2>
+          <h3>实验目标</h3>
+          <p>通过本实验，你将体验生成式AI的文本生成能力，并学习如何优化提示词以获得更好的结果。</p>
+          <h3>实验步骤</h3>
+          <ol>
+            <li>启动实验环境</li>
+            <li>输入初始提示词</li>
+            <li>观察AI的回答</li>
+            <li>优化提示词并重试</li>
+            <li>记录实验结果</li>
+          </ol>
+          <h3>评估标准</h3>
+          <ul>
+            <li>回答的准确性</li>
+            <li>回答的完整性</li>
+            <li>提示词的优化程度</li>
+          </ul>
+        `
+      },
+      duration: 10,
+      completed: false,
+      progress: 0
+    },
+    {
+      id: "subtask-001-04-03-02",
+      title: "在线实验",
+      category: "practice",
+      type: "lab",
+      source: {
+        iframeSrc: "http://101.37.166.27/lab-environment?lab=generative-ai-001"
+      },
+      duration: 30,
+      completed: false,
+      prerequisites: ["subtask-001-04-03-01"],
+      progress: 0
+    },
+    {
+      id: "subtask-001-04-03-03",
+      title: "实验报告模板",
+      category: "practice",
+      type: "markdown",
+      source: {
+        md: `# 生成式AI实验报告
+
+## 实验信息
+- 实验名称：生成式AI体验
+- 实验日期：____年____月____日
+- 学生姓名：________________
+
+## 实验过程
+### 第一次尝试
+**提示词**：
+\`\`\`
+[输入你的提示词]
+\`\`\`
+
+**AI回答**：
+[记录AI的回答]
+
+### 第二次尝试（优化后）
+**改进的提示词**：
+\`\`\`
+[输入优化后的提示词]
+\`\`\`
+
+**AI回答**：
+[记录AI的回答]
+
+## 实验总结
+[写下你的发现和体会]
+`
+      },
+      duration: 15,
+      completed: false,
+      progress: 0
+    }
+  ]
+};
+
 // 获取课程详情
 export const getCourseBySid = async (sid: string): Promise<Course> => {
   if (USE_MOCK_DATA) {
@@ -878,6 +1080,71 @@ export const getTaskBySid = async (sid: string): Promise<Task> => {
     return task;
   } catch (error) {
     console.error("Error fetching task:", error);
+    throw error;
+  }
+};
+
+// 获取子任务 Tab 列表
+export const getSubtaskTabsByTaskId = async (taskId: string): Promise<SubtaskTab[]> => {
+  if (USE_MOCK_DATA) {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    return mockSubtaskTabs[taskId] || [];
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/subtabs`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch subtask tabs: ${response.statusText}`);
+    }
+    const data: ApiResponse<SubtaskTab[]> = await response.json();
+    if (data.code !== 0) {
+      throw new Error(data.msg || "Failed to fetch subtask tabs");
+    }
+    return data.data;
+  } catch (error) {
+    console.error("Error fetching subtask tabs:", error);
+    throw error;
+  }
+};
+
+// 更新子任务 Tab 的完成状态和进度
+export const updateSubtaskTabProgress = async (
+  taskId: string,
+  tabId: string,
+  progress: number,
+  completed: boolean
+): Promise<SubtaskTab> => {
+  if (USE_MOCK_DATA) {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    const tabs = mockSubtaskTabs[taskId];
+    if (tabs) {
+      const tab = tabs.find(t => t.id === tabId);
+      if (tab) {
+        tab.progress = progress;
+        tab.completed = completed;
+        tab.lastViewedAt = new Date().toISOString();
+        return tab;
+      }
+    }
+    throw new Error("Subtask tab not found");
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/subtabs/${tabId}/progress`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ progress, completed })
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to update subtask tab: ${response.statusText}`);
+    }
+    const data: ApiResponse<SubtaskTab> = await response.json();
+    if (data.code !== 0) {
+      throw new Error(data.msg || "Failed to update subtask tab");
+    }
+    return data.data;
+  } catch (error) {
+    console.error("Error updating subtask tab:", error);
     throw error;
   }
 };

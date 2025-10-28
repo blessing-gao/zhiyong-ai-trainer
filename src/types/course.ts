@@ -48,6 +48,36 @@ export interface Lab {
   url?: string;
 }
 
+// 子任务 Tab 类型定义
+export type TaskCategory = "study" | "practice";
+export type SubtaskType = "document" | "markdown" | "pdf" | "video" | "notebook" | "vscode" | "annotation" | "agent" | "quiz" | "lab" | "iframe";
+
+// 子任务 Tab 对象（右侧学习区的多 Tab 容器）
+export interface SubtaskTab {
+  id: string;
+  title: string;
+  category: TaskCategory;
+  type: SubtaskType;
+  source?: {
+    url?: string;
+    fileId?: string;
+    html?: string;
+    md?: string;
+    iframeSrc?: string;
+  };
+  duration?: number;
+  completed?: boolean;
+  prerequisites?: string[]; // 前置子任务 ID
+  progress?: number; // 0-100
+  lastViewedAt?: string;
+  lastViewedPosition?: {
+    page?: number;
+    scrollY?: number;
+    playbackTime?: number;
+    cursorPos?: number;
+  };
+}
+
 // 任务对象
 export interface Task {
   sid: string;
@@ -63,7 +93,7 @@ export interface Task {
   notebookUrl?: string; // Jupyter Notebook URL
   videoUrl?: string; // 视频URL
   lab?: Lab; // 实验环境
-  subtasks?: Task[]; // 子任务列表
+  subtasks?: SubtaskTab[]; // 新增：子任务 Tab 列表（右侧学习区多 Tab）
   completed?: boolean; // 是否完成
   created_by?: string;
   created_at?: string;

@@ -7,7 +7,8 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
+    port: 28070,
+    strictPort: true, // 如果端口被占用则报错，而不是尝试其他端口
     proxy: {
       '/api': {
         target: 'http://ai.imayuan.com:38080',
