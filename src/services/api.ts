@@ -1,5 +1,8 @@
-// API 基础配置
-const API_BASE_URL = 'http://localhost:8081';
+// // API 基础配置
+// const API_BASE_URL = 'http://localhost:8081';
+
+// 使用空字符串，让请求通过 Vite 代理转发到后端
+const API_BASE_URL = '';
 
 // 通用 API 请求函数
 async function apiRequest<T>(

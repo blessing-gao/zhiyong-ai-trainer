@@ -302,7 +302,6 @@ const QuestionBankManagement = () => {
     setSelectedSecondLevelTag(undefined);
     setSelectedThirdLevelTag(undefined);
     setCurrentPage(1);
-    fetchQuestions(1, pageSize);
   };
 
   // 处理查询条件回车
@@ -1593,23 +1592,23 @@ const QuestionBankManagement = () => {
                 {/* 答案 */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {editFormData.type === 'judge' ? '答案（T/F）' : '答案'}
+                    {editFormData.type === 'judge' ? '答案（A/B）' : '答案'}
                   </label>
                   {editFormData.type === 'judge' ? (
                     <div className="flex gap-2">
                       <Button
-                        variant={editFormData.answer === 'T' ? 'default' : 'outline'}
-                        onClick={() => handleEditFormChange('answer', 'T')}
+                        variant={editFormData.answer === 'A' ? 'default' : 'outline'}
+                        onClick={() => handleEditFormChange('answer', 'A')}
                         className="flex-1"
                       >
-                        T (正确)
+                        A (正确)
                       </Button>
                       <Button
-                        variant={editFormData.answer === 'F' ? 'default' : 'outline'}
-                        onClick={() => handleEditFormChange('answer', 'F')}
+                        variant={editFormData.answer === 'B' ? 'default' : 'outline'}
+                        onClick={() => handleEditFormChange('answer', 'B')}
                         className="flex-1"
                       >
-                        F (错误)
+                        B (错误)
                       </Button>
                     </div>
                   ) : (
@@ -1741,7 +1740,7 @@ const QuestionBankManagement = () => {
                   >
                     <option value="">请选择题型</option>
                     {questionTypes.map((type: any) => (
-                      <option key={type.id} value={type.id}>
+                      <option key={type.id} value={type.typeCode}>
                         {type.typeName}
                       </option>
                     ))}
@@ -1861,23 +1860,23 @@ const QuestionBankManagement = () => {
               {/* 答案 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {createFormData.type === 'judge' ? '答案（T/F）*' : '答案 *'}
+                  {createFormData.type === 'judge' ? '答案（A/B）*' : '答案 *'}
                 </label>
                 {createFormData.type === 'judge' ? (
                   <div className="flex gap-2">
                     <Button
-                      variant={createFormData.answer === 'T' ? 'default' : 'outline'}
-                      onClick={() => handleCreateFormChange('answer', 'T')}
+                      variant={createFormData.answer === 'A' ? 'default' : 'outline'}
+                      onClick={() => handleCreateFormChange('answer', 'A')}
                       className="flex-1"
                     >
-                      T (正确)
+                      A (正确)
                     </Button>
                     <Button
-                      variant={createFormData.answer === 'F' ? 'default' : 'outline'}
-                      onClick={() => handleCreateFormChange('answer', 'F')}
+                      variant={createFormData.answer === 'B' ? 'default' : 'outline'}
+                      onClick={() => handleCreateFormChange('answer', 'B')}
                       className="flex-1"
                     >
-                      F (错误)
+                      B (错误)
                     </Button>
                   </div>
                 ) : (

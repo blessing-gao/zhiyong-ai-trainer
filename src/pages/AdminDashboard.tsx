@@ -80,7 +80,7 @@ const AdminDashboard = () => {
             passRate: response.data.passRate || 0
           });
         } else {
-          console.warn("⚠️ 获取仪表盘统计数据失败:", response.message);
+          console.warn("⚠️ 获取仪表盘统计数据失败:", response.msg);
         }
       } catch (error) {
         console.error("❌ 获取仪表盘统计数据出错:", error);

@@ -171,8 +171,6 @@ const UserManagement = () => {
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
-              setCurrentPage(1);
-              loadUsers(1);
             }}
             className="px-3 py-2 border border-gray-200 rounded-xl text-sm"
           >

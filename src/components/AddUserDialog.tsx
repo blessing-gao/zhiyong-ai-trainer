@@ -102,7 +102,7 @@ const AddUserDialog = ({ isOpen, onClose, onSuccess }: AddUserDialogProps) => {
         onSuccess();
         onClose();
       } else {
-        toast({ title: "错误", description: response.message || "添加用户失败", variant: "destructive" });
+        toast({ title: "错误", description: response.msg || "添加用户失败", variant: "destructive" });
       }
     } catch (error) {
       toast({ title: "错误", description: "添加用户失败", variant: "destructive" });

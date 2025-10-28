@@ -411,7 +411,7 @@ const FlexiblePaperDialog: React.FC<FlexiblePaperDialogProps> = ({
         onOpenChange(false);
         resetForm();
       } else {
-        setError(response.message || '保存试卷失败');
+        setError(response.msg || '保存试卷失败');
       }
     } catch (err) {
       setError('保存试卷出错: ' + (err instanceof Error ? err.message : '未知错误'));
