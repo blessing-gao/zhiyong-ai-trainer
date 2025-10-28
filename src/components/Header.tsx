@@ -3,30 +3,38 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
-import { GripVertical, MoreHorizontal } from "lucide-react";
 // 导入Logo图片资源
 import webLogo from "@/assets/web_logo.svg";
 import oilanText from "@/assets/new_text.svg";
 
-type NavPosition = "horizontal" | "vertical";
-
 // 定义Header组件为函数组件
 const Header = () => {
-  const { user, userRole, logout } = useAuth();
-  const [position, setPosition] = useState<NavPosition>(() => {
-    const saved = localStorage.getItem("navPosition");
-    return (saved as NavPosition) || "horizontal";
-  });
+  const { user, logout } = useAuth();
+  const [visible, setVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
-    localStorage.setItem("navPosition", position);
-    // 触发自定义事件通知其他组件
-    window.dispatchEvent(new CustomEvent("navPositionChange", { detail: position }));
-  }, [position]);
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // 向下滚动时隐藏导航栏
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setVisible(false);
+      } 
+      // 向上滚动时显示导航栏
+      else if (currentScrollY < lastScrollY) {
+        setVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
 
-  const togglePosition = () => {
-    setPosition(position === "horizontal" ? "vertical" : "horizontal");
-  };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
 
   const handleLogout = () => {
     logout();
@@ -35,147 +43,81 @@ const Header = () => {
   // 导航链接数据
   const navLinks = [
     { to: "/", label: "首页" },
-    { to: "/courses", label: "课程中心" },
-    { to: "/training", label: "训练中心" },
-    { to: "/exam", label: "考试中心" },
+    { to: "/courses", label: "课程" },
+    { to: "/training", label: "训练" },
+    { to: "/exam", label: "考试" },
     { to: "/profile", label: "个人中心" },
   ];
 
-  // 横版布局
-  if (position === "horizontal") {
-    return (
-      <header className="fixed top-4 left-4 right-4 z-50 transition-all duration-300">
-        <div className="bg-card/70 backdrop-blur-lg rounded-2xl border border-border/20 px-6 py-3 shadow-soft">
-          <div className="flex items-center justify-between">
-            <Link to="/admin-login" className="flex items-center space-x-3 group">
-              <img 
-                src={webLogo} 
-                alt="Web Logo" 
-                className="h-8 w-auto transition-transform group-hover:scale-110 cursor-pointer" 
-                title="点击进入管理员登录"
-              />
-              <img src={oilanText} alt="Oilan" className="h-6 w-auto" />
-            </Link>
+  return (
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200/50 shadow-sm transition-transform duration-300 ${
+        visible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
+      <div className="w-full px-[5%] py-4">
+        <div className="flex items-center justify-between">
+          {/* Logo区域 */}
+          <Link to="/admin-login" className="flex items-center space-x-3 group">
+            <img 
+              src={webLogo} 
+              alt="Web Logo" 
+              className="h-9 w-auto transition-transform group-hover:scale-105 cursor-pointer" 
+              title="点击进入管理员登录"
+            />
+            <img src={oilanText} alt="Oilan" className="h-[18px] w-auto" />
+          </Link>
 
-            <nav className="hidden md:flex items-center space-x-12">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="text-sm text-foreground/70 hover:text-primary transition-smooth"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
+          {/* 导航链接区域 - 居中 */}
+          <nav className="hidden md:flex flex-row items-center gap-[8vw]">
+            {navLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="relative text-lg text-gray-700 hover:text-black hover:font-bold transition-all duration-100 font-medium group"
+              >
+                {link.label}
+                <span className="absolute left-0 right-0 bottom-[-20px] w-0 h-[8px] bg-[#67B3FF] rounded-full transition-all duration-100 group-hover:w-full mx-auto"></span>
+              </Link>
+            ))}
+          </nav>
 
-            <div className="flex items-center space-x-3">
-              {user && user.userType === "user" ? (
-                <>
-                  <span className="text-sm text-foreground/70">
-                    欢迎，{user.realName || "用户"}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-sm text-foreground/70 hover:text-primary"
-                    onClick={handleLogout}
-                  >
-                    退出登录
-                  </Button>
-                </>
-              ) : (
+          {/* 右侧按钮区域 */}
+          <div className="flex items-center space-x-3">
+            {user && user.userType === "user" ? (
+              <>
+                <div className="h-8 w-px bg-gray-300 mr-6"></div>
+                <div className="relative group">
+                  <button className="relative text-lg text-gray-700 hover:text-black hover:font-bold transition-all duration-100 font-medium pb-1">
+                    {user.realName || "用户"}
+                    <span className="absolute left-0 right-0 bottom-[-20px] w-0 h-[8px] bg-[#67B3FF] rounded-full transition-all duration-100 group-hover:w-full mx-auto"></span>
+                  </button>
+                  <div className="absolute top-[calc(100%+24px)] left-1/2 -translate-x-1/2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg rounded-xl border border-gray-100 py-3 px-4 min-w-[140px]">
+                    <button
+                      className="w-full text-lg text-gray-700 hover:font-bold transition-all duration-100 text-center py-2"
+                      onClick={handleLogout}
+                    >
+                      退出登录
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="h-8 w-px bg-gray-300 mr-6"></div>
                 <Button
-                  variant="ghost"
                   size="sm"
-                  className="text-sm text-foreground/70 hover:text-foreground animate-pulse hover:animate-none"
+                  className="bg-[#67B3FF] hover:bg-[#5AA3EF] text-white text-lg rounded-full px-6"
                   asChild
                 >
-                  <Link to="/student-login">用户登录</Link>
+                  <Link to="/student-login">登录</Link>
                 </Button>
-              )}
-
-              {/* 切换手柄 */}
-              <div
-                onClick={togglePosition}
-                className="cursor-pointer ml-2 text-muted-foreground hover:text-foreground transition-colors"
-                title="点击切换布局"
-              >
-                <GripVertical className="h-5 w-5" />
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
-      </header>
-    );
-  }
-
-  // 竖版布局
-  return (
-    <aside className="fixed top-4 left-4 bottom-4 z-50 w-40 transition-all duration-300">
-      <div className="h-full bg-card/70 backdrop-blur-lg rounded-2xl border border-border/20 p-3 shadow-soft flex flex-col">
-        {/* 切换手柄 */}
-        <div
-          onClick={togglePosition}
-          className="cursor-pointer mb-4 text-muted-foreground hover:text-foreground transition-colors self-center"
-          title="点击切换布局"
-        >
-          <MoreHorizontal className="h-5 w-5" />
-        </div>
-
-        {/* Logo */}
-        <Link to="/admin-login" className="flex flex-col items-center space-y-2 mb-6 pb-4 border-b border-border/20 group">
-          <img 
-            src={webLogo} 
-            alt="Web Logo" 
-            className="h-10 w-auto transition-transform group-hover:scale-110 cursor-pointer" 
-            title="点击进入管理员登录"
-          />
-          <img src={oilanText} alt="Oilan" className="h-6 w-auto" />
-        </Link>
-
-        {/* 导航链接 */}
-        <nav className="flex flex-col justify-around flex-1">
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="text-xs text-foreground/70 hover:text-primary hover:bg-primary/10 px-3 py-2 rounded-lg transition-all text-center"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* 用户操作 */}
-        <div className="mt-auto pt-4 border-t border-border/20">
-          {user && user.userType === "user" ? (
-            <div className="space-y-2">
-              <p className="text-xs text-foreground/70 text-center truncate">
-                {user.realName || "用户"}
-              </p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full text-xs text-foreground/70 hover:text-primary px-2 py-1"
-                onClick={handleLogout}
-              >
-                退出
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full text-xs text-foreground/70 hover:text-foreground animate-pulse hover:animate-none px-2 py-1"
-              asChild
-            >
-              <Link to="/student-login">登录</Link>
-            </Button>
-          )}
-        </div>
       </div>
-    </aside>
+    </header>
   );
 };
 

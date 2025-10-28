@@ -22,10 +22,6 @@ import { useNavigate } from "react-router-dom";
 const WrongQuestionsPractice = () => {
   const { applyRoleTheme } = useTheme();
   const navigate = useNavigate();
-  const [isVertical, setIsVertical] = useState(() => {
-    const saved = localStorage.getItem("navPosition");
-    return saved === "vertical";
-  });
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -38,17 +34,6 @@ const WrongQuestionsPractice = () => {
   useEffect(() => {
     applyRoleTheme();
   }, [applyRoleTheme]);
-
-  useEffect(() => {
-    const handleNavChange = (e: CustomEvent) => {
-      setIsVertical(e.detail === "vertical");
-    };
-
-    window.addEventListener("navPositionChange", handleNavChange as EventListener);
-    return () => {
-      window.removeEventListener("navPositionChange", handleNavChange as EventListener);
-    };
-  }, []);
 
   // 倒计时
   useEffect(() => {
@@ -209,7 +194,7 @@ const WrongQuestionsPractice = () => {
     <div className="min-h-screen bg-gradient-hero">
       <Header />
       
-      <div className={`pt-20 p-6 transition-all duration-300 ${isVertical ? "ml-44" : ""}`}>
+      <div className="pt-24 p-6 transition-all duration-300">
         <div className="max-w-4xl mx-auto">
           {/* 半透明白色容器 */}
           <div className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl">

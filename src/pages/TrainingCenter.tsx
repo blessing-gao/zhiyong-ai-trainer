@@ -17,27 +17,12 @@ import trainingCenterBg from "@/assets/training-center-bg.png";
 const TrainingCenter = () => {
   const { applyRoleTheme } = useTheme();
   const navigate = useNavigate();
-  const [isVertical, setIsVertical] = useState(() => {
-    const saved = localStorage.getItem("navPosition");
-    return saved === "vertical";
-  });
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Apply theme based on user role
   useEffect(() => {
     applyRoleTheme();
   }, [applyRoleTheme]);
-
-  useEffect(() => {
-    const handleNavChange = (e: CustomEvent) => {
-      setIsVertical(e.detail === "vertical");
-    };
-
-    window.addEventListener("navPositionChange", handleNavChange as EventListener);
-    return () => {
-      window.removeEventListener("navPositionChange", handleNavChange as EventListener);
-    };
-  }, []);
 
   // 知识探索模式
   const handleKnowledgeExplore = () => {
@@ -59,7 +44,7 @@ const TrainingCenter = () => {
       <Header />
 
 
-      <div className={`pt-20 p-6 transition-all duration-300 relative z-10 ${isVertical ? "ml-44" : ""}`}>
+      <div className="pt-24 p-6 transition-all duration-300 relative z-10">
         <div className="max-w-7xl mx-auto">
           {/* 页面标题 */}
           <div className="text-center mb-12">

@@ -37,10 +37,6 @@ interface SecondLevelTag {
 const KnowledgeExplore = () => {
   const { applyRoleTheme } = useTheme();
   const navigate = useNavigate();
-  const [isVertical, setIsVertical] = useState(() => {
-    const saved = localStorage.getItem("navPosition");
-    return saved === "vertical";
-  });
   const [firstLevelTags, setFirstLevelTags] = useState<FirstLevelTag[]>([]);
   const [secondLevelTags, setSecondLevelTags] = useState<SecondLevelTag[]>([]);
   const [selectedFirstLevelId, setSelectedFirstLevelId] = useState<number | null>(null);
@@ -51,17 +47,6 @@ const KnowledgeExplore = () => {
   useEffect(() => {
     applyRoleTheme();
   }, [applyRoleTheme]);
-
-  useEffect(() => {
-    const handleNavChange = (e: CustomEvent) => {
-      setIsVertical(e.detail === "vertical");
-    };
-
-    window.addEventListener("navPositionChange", handleNavChange as EventListener);
-    return () => {
-      window.removeEventListener("navPositionChange", handleNavChange as EventListener);
-    };
-  }, []);
 
   // 加载一级标签
   useEffect(() => {
@@ -152,7 +137,7 @@ const KnowledgeExplore = () => {
       <Header />
 
 
-      <div className={`pt-20 p-6 transition-all duration-300 relative z-10 ${isVertical ? "ml-44" : ""}`}>
+      <div className="pt-24 p-6 transition-all duration-300 relative z-10">
         <div className="max-w-7xl mx-auto">
           {/* 返回按钮 */}
           <Button
