@@ -384,6 +384,319 @@ const mockTasks: { [lessonId: string]: Task[] } = {
       ],
       created_at: "2025-01-15T10:00:00Z"
     }
+  ],
+  "lesson-001-02": [
+    {
+      sid: "task-001-02-01",
+      name: "video-lecture",
+      title: "视频讲解：机器学习基础",
+      description: "学习机器学习的基本原理和算法",
+      status: "active",
+      duration: 35,
+      durationUnit: "分钟",
+      materials: [
+        {
+          type: "video",
+          title: "机器学习入门",
+          description: "监督学习、无监督学习、强化学习的基本概念",
+          minioPath: "/videos/ml-basics.mp4"
+        }
+      ],
+      created_at: "2025-01-15T10:00:00Z"
+    },
+    {
+      sid: "task-001-02-02",
+      name: "practice",
+      title: "实践练习：线性回归",
+      description: "通过实际案例学习线性回归算法",
+      status: "active",
+      duration: 25,
+      durationUnit: "分钟",
+      materials: [
+        {
+          type: "code",
+          title: "线性回归代码示例",
+          description: "Python实现的线性回归算法",
+          minioPath: "/code/linear-regression.py"
+        }
+      ],
+      created_at: "2025-01-15T10:00:00Z"
+    }
+  ],
+  "lesson-001-03": [
+    {
+      sid: "task-001-03-01",
+      name: "video-lecture",
+      title: "视频讲解：深度学习原理",
+      description: "深入理解神经网络和反向传播",
+      status: "active",
+      duration: 40,
+      durationUnit: "分钟",
+      materials: [
+        {
+          type: "video",
+          title: "深度学习基础",
+          description: "神经网络结构、激活函数、反向传播算法",
+          minioPath: "/videos/deep-learning.mp4"
+        }
+      ],
+      created_at: "2025-01-15T10:00:00Z"
+    },
+    {
+      sid: "task-001-03-02",
+      name: "reading",
+      title: "阅读材料：CNN与RNN",
+      description: "学习卷积神经网络和循环神经网络",
+      status: "active",
+      duration: 30,
+      durationUnit: "分钟",
+      materials: [
+        {
+          type: "document",
+          title: "CNN与RNN详解",
+          description: "图像识别和序列处理的核心技术",
+          minioPath: "/docs/cnn-rnn.pdf"
+        }
+      ],
+      created_at: "2025-01-15T10:00:00Z"
+    }
+  ],
+  "lesson-001-04": [
+    {
+      sid: "task-001-04-01",
+      name: "video-lecture",
+      title: "视频讲解：生成式AI技术",
+      description: "学习GPT、DALL-E等生成式AI模型的原理和应用",
+      status: "active",
+      duration: 45,
+      durationUnit: "分钟",
+      materials: [
+        {
+          type: "video",
+          title: "生成式AI概述",
+          description: "从GAN到Transformer，了解生成式AI的发展",
+          minioPath: "/videos/generative-ai.mp4"
+        }
+      ],
+      content: `
+        <h2>生成式AI技术概述</h2>
+        <p>生成式人工智能（Generative AI）是一类能够创造新内容的AI技术，包括文本、图像、音频、视频等多种形式。</p>
+
+        <h3>主要技术</h3>
+        <ul>
+          <li><strong>GPT系列</strong>：基于Transformer的大语言模型，擅长文本生成</li>
+          <li><strong>DALL-E</strong>：文本到图像的生成模型</li>
+          <li><strong>Stable Diffusion</strong>：开源的图像生成模型</li>
+          <li><strong>Midjourney</strong>：艺术风格的图像生成工具</li>
+        </ul>
+
+        <h3>应用场景</h3>
+        <ul>
+          <li>内容创作：文章写作、代码生成、图像设计</li>
+          <li>辅助工作：文档总结、翻译、数据分析</li>
+          <li>创意设计：艺术创作、广告设计、游戏开发</li>
+        </ul>
+      `,
+      created_at: "2025-01-15T10:00:00Z"
+    },
+    {
+      sid: "task-001-04-02",
+      name: "practice",
+      title: "实践：使用ChatGPT进行对话",
+      description: "体验大语言模型的对话能力",
+      status: "active",
+      duration: 30,
+      durationUnit: "分钟",
+      materials: [
+        {
+          type: "document",
+          title: "ChatGPT使用指南",
+          description: "如何有效地与ChatGPT进行对话",
+          minioPath: "/docs/chatgpt-guide.pdf"
+        }
+      ],
+      content: `
+        <h2>ChatGPT实践练习</h2>
+        <p>通过实际操作，学习如何有效地使用ChatGPT。</p>
+
+        <h3>练习任务</h3>
+        <ol>
+          <li>尝试让ChatGPT解释一个复杂的概念</li>
+          <li>让ChatGPT帮你写一段代码</li>
+          <li>使用ChatGPT进行头脑风暴</li>
+          <li>让ChatGPT总结一篇文章</li>
+        </ol>
+      `,
+      created_at: "2025-01-15T10:00:00Z"
+    }
+  ],
+  "lesson-001-05": [
+    {
+      sid: "task-001-05-01",
+      name: "case-study",
+      title: "案例分析：AI在各行业的应用",
+      description: "通过真实案例了解AI的实际应用",
+      status: "active",
+      duration: 40,
+      durationUnit: "分钟",
+      materials: [
+        {
+          type: "video",
+          title: "AI应用案例集锦",
+          description: "医疗、金融、教育、制造等行业的AI应用",
+          minioPath: "/videos/ai-cases.mp4"
+        },
+        {
+          type: "document",
+          title: "AI应用白皮书",
+          description: "详细的行业应用分析报告",
+          minioPath: "/docs/ai-applications.pdf"
+        }
+      ],
+      content: `
+        <h2>AI实际应用案例</h2>
+
+        <h3>医疗健康</h3>
+        <ul>
+          <li>医学影像诊断：使用深度学习识别病变</li>
+          <li>药物研发：AI加速新药发现</li>
+          <li>个性化治疗：基于患者数据的精准医疗</li>
+        </ul>
+
+        <h3>金融服务</h3>
+        <ul>
+          <li>风险评估：智能信用评分</li>
+          <li>欺诈检测：实时交易监控</li>
+          <li>智能投顾：个性化投资建议</li>
+        </ul>
+
+        <h3>教育培训</h3>
+        <ul>
+          <li>个性化学习：自适应学习系统</li>
+          <li>智能辅导：AI助教和答疑</li>
+          <li>自动评分：作业和考试自动批改</li>
+        </ul>
+      `,
+      created_at: "2025-01-15T10:00:00Z"
+    }
+  ],
+  "lesson-002-01": [
+    {
+      sid: "task-002-01-01",
+      name: "video-lecture",
+      title: "视频讲解：提示词基础",
+      description: "学习提示词的基本结构和编写原则",
+      status: "active",
+      duration: 30,
+      durationUnit: "分钟",
+      materials: [
+        {
+          type: "video",
+          title: "提示词入门",
+          description: "如何编写有效的提示词",
+          minioPath: "/videos/prompt-basics.mp4"
+        }
+      ],
+      content: `
+        <h2>提示词基础</h2>
+        <p>提示词（Prompt）是与AI模型交互的关键，好的提示词能够获得更准确、更有用的回答。</p>
+
+        <h3>提示词的基本结构</h3>
+        <ul>
+          <li><strong>角色设定</strong>：告诉AI扮演什么角色</li>
+          <li><strong>任务描述</strong>：清晰说明要完成的任务</li>
+          <li><strong>上下文信息</strong>：提供必要的背景信息</li>
+          <li><strong>输出格式</strong>：指定期望的输出格式</li>
+        </ul>
+
+        <h3>编写原则</h3>
+        <ol>
+          <li>清晰明确：避免模糊和歧义</li>
+          <li>具体详细：提供足够的细节</li>
+          <li>结构化：使用列表、编号等组织信息</li>
+          <li>迭代优化：根据结果不断改进</li>
+        </ol>
+      `,
+      created_at: "2025-02-01T10:00:00Z"
+    }
+  ],
+  "lesson-002-02": [
+    {
+      sid: "task-002-02-01",
+      name: "video-lecture",
+      title: "视频讲解：高级提示技巧",
+      description: "掌握Few-shot、Chain-of-Thought等高级技巧",
+      status: "active",
+      duration: 40,
+      durationUnit: "分钟",
+      materials: [
+        {
+          type: "video",
+          title: "高级提示工程",
+          description: "Few-shot Learning、CoT、Self-Consistency等技巧",
+          minioPath: "/videos/advanced-prompts.mp4"
+        }
+      ],
+      content: `
+        <h2>高级提示技巧</h2>
+
+        <h3>Few-shot Learning</h3>
+        <p>通过提供几个示例，让AI理解任务模式。</p>
+        <pre>
+示例1：输入 -> 输出
+示例2：输入 -> 输出
+示例3：输入 -> 输出
+现在处理：新输入 -> ?
+        </pre>
+
+        <h3>Chain-of-Thought (CoT)</h3>
+        <p>引导AI展示推理过程，提高复杂问题的准确性。</p>
+        <p>关键短语："让我们一步步思考"、"请详细说明推理过程"</p>
+
+        <h3>Self-Consistency</h3>
+        <p>让AI生成多个答案，然后选择最一致的结果。</p>
+      `,
+      created_at: "2025-02-01T10:00:00Z"
+    }
+  ],
+  "lesson-003-01": [
+    {
+      sid: "task-003-01-01",
+      name: "video-lecture",
+      title: "视频讲解：数据标注方法",
+      description: "学习各类数据标注的方法和质量标准",
+      status: "active",
+      duration: 35,
+      durationUnit: "分钟",
+      materials: [
+        {
+          type: "video",
+          title: "数据标注入门",
+          description: "文本、图像、音频等数据的标注方法",
+          minioPath: "/videos/data-annotation.mp4"
+        }
+      ],
+      content: `
+        <h2>数据标注基础</h2>
+        <p>数据标注是AI训练师的核心工作之一，高质量的标注数据是训练优秀AI模型的基础。</p>
+
+        <h3>标注类型</h3>
+        <ul>
+          <li><strong>文本标注</strong>：情感分析、实体识别、文本分类</li>
+          <li><strong>图像标注</strong>：目标检测、图像分割、关键点标注</li>
+          <li><strong>音频标注</strong>：语音识别、说话人识别、情感识别</li>
+        </ul>
+
+        <h3>质量标准</h3>
+        <ol>
+          <li>准确性：标注结果符合实际</li>
+          <li>一致性：相同情况使用相同标准</li>
+          <li>完整性：不遗漏需要标注的内容</li>
+          <li>规范性：遵循标注指南</li>
+        </ol>
+      `,
+      created_at: "2025-03-01T10:00:00Z"
+    }
   ]
 };
 
