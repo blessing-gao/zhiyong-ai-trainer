@@ -72,7 +72,7 @@ const BatchImportUsersDialog = ({ isOpen, onClose, onSuccess }: BatchImportUsers
         setStep("result");
         toast({ title: "成功", description: `成功导入 ${response.data.success_count} 条记录` });
       } else {
-        toast({ title: "错误", description: response.message || "导入失败", variant: "destructive" });
+        toast({ title: "错误", description: response.msg || "导入失败", variant: "destructive" });
       }
     } catch (error) {
       console.error("❌ 批量导入失败:", error);

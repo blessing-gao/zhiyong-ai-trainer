@@ -302,7 +302,7 @@ const PaperManagement = () => {
         // 重置表单
         handleCloseCreateDialog();
       } else {
-        setCreateError(response.message || '创建试卷失败');
+        setCreateError(response.msg || '创建试卷失败');
       }
     } catch (err) {
       setCreateError('创建试卷出错: ' + (err instanceof Error ? err.message : '未知错误'));
@@ -428,7 +428,7 @@ const PaperManagement = () => {
           p.id === paperId ? { ...p, status: newStatus } : p
         ));
       } else {
-        setError(response.message || '更改试卷状态失败');
+        setError(response.msg || '更改试卷状态失败');
       }
     } catch (err) {
       setError('更改试卷状态出错: ' + (err instanceof Error ? err.message : '未知错误'));
