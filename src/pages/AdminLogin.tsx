@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 import loginBackground from "@/assets/login_background.png";
 import logoSvg from "@/assets/oilanai_all.svg";
 
@@ -92,10 +91,10 @@ const AdminLogin = () => {
         }}
       />
       <main className="relative min-h-screen flex flex-col" style={{ paddingLeft: '5%', paddingRight: '5%', paddingTop: '3%', paddingBottom: '3%' }}>
-        {/* Logo - 移动端在顶部，PC端在左侧与卡片上对齐 */}
-        <div className="mb-4 lg:mb-0 lg:absolute lg:left-[5%] lg:top-[3%] z-50">
-          <img src={logoSvg} alt="Oilan AI" className="h-12 w-auto mx-auto lg:mx-0" />
-        </div>
+        {/* Logo - 移动端在顶部，PC端在左侧与卡片上对齐 - 点击返回首页 */}
+        <Link to="/" className="mb-4 lg:mb-0 lg:absolute lg:left-[5%] lg:top-[3%] z-50 block">
+          <img src={logoSvg} alt="Oilan AI" className="h-12 w-auto mx-auto lg:mx-0 cursor-pointer hover:opacity-80 transition-opacity" />
+        </Link>
 
         <div className="flex justify-center lg:justify-end flex-1 items-center">
           <div className="w-full max-w-md">
@@ -189,19 +188,6 @@ const AdminLogin = () => {
             </div>
           </div>
           </div>
-        </div>
-        
-        {/* Back to home button - 移动端在底部与卡片等宽，PC端在左下角与卡片下对齐 */}
-        <div className="mt-4 lg:mt-0 lg:absolute lg:left-[5%] lg:bottom-[3%] z-50 max-w-md mx-auto lg:mx-0 w-full lg:w-auto">
-          <Link to="/" className="block">
-            <Button 
-              variant="outline" 
-              className="bg-card/80 backdrop-blur-sm border-border/20 hover:bg-card/90 rounded-xl w-full"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              返回首页
-            </Button>
-          </Link>
         </div>
       </main>
     </div>

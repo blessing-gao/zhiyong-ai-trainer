@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import Header from "@/components/Header";
 import loginBackground from "@/assets/login_background.png";
+import logoSvg from "@/assets/oilanai_all.svg";
 
 // 简单的验证函数
 const validateUsername = (username: string): string | null => {
@@ -150,11 +150,14 @@ const StudentLogin = () => {
           backgroundRepeat: 'no-repeat'
         }}
       />
-      <Header />
-
       <main className="relative min-h-screen flex flex-col" style={{ paddingLeft: '5%', paddingRight: '5%', paddingTop: '3%', paddingBottom: '3%' }}>
-        <div className="flex justify-end flex-1 items-center">
-          <div className="w-full max-w-md" style={{ marginRight: '5%' }}>
+        {/* Logo - 移动端在顶部，PC端在左侧与卡片上对齐 - 点击返回首页 */}
+        <Link to="/" className="mb-4 lg:mb-0 lg:absolute lg:left-[5%] lg:top-[3%] z-50 block">
+          <img src={logoSvg} alt="Oilan AI" className="h-12 w-auto mx-auto lg:mx-0 cursor-pointer hover:opacity-80 transition-opacity" />
+        </Link>
+
+        <div className="flex justify-center lg:justify-end flex-1 items-center">
+          <div className="w-full max-w-md">
           {/* Login Card */}
           <div className="bg-card/95 backdrop-blur-lg rounded-3xl border border-border/20 p-8 shadow-float animate-fade-in-up">
             {/* Header */}
@@ -168,9 +171,20 @@ const StudentLogin = () => {
               <p className="text-muted-foreground">欢迎{isSignup ? "加入" : "回到"}智涌·人工智能中心</p>
             </div>
 
+            {/* Divider - 仅在登录模式显示 */}
+            {!isSignup && (
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border/30" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-4 text-muted-foreground">用户登录</span>
+                </div>
+              </div>
+            )}
 
             {/* Login/Signup Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className={isSignup ? "space-y-4" : "space-y-6"}>
               {isSignup && (
                 <>
                   <div className="space-y-2">

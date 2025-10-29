@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertCircle, Lock, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { examApi } from "@/services/api";
 import loginBackground from "@/assets/login_background.png";
 import logoSvg from "@/assets/oilanai_all.svg";
@@ -80,10 +80,10 @@ const ExamLogin = () => {
           backgroundRepeat: 'no-repeat'
         }}
       />
-      {/* Logo in top-left corner */}
-      <div className="fixed z-50" style={{ left: '5%', top: '3%' }}>
-        <img src={logoSvg} alt="Oilan AI" className="h-12 w-auto" />
-      </div>
+      {/* Logo in top-left corner - 点击返回首页 */}
+      <Link to="/" className="fixed z-50" style={{ left: '5%', top: '3%' }}>
+        <img src={logoSvg} alt="Oilan AI" className="h-12 w-auto cursor-pointer hover:opacity-80 transition-opacity" />
+      </Link>
 
       {/* 登录卡片 */}
       <div className="relative z-10 w-full max-w-md">
