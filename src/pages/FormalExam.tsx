@@ -34,11 +34,29 @@ const FormalExam = () => {
   const [participantId, setParticipantId] = useState<number | null>(null);
   const [saveProgressInterval, setSaveProgressInterval] = useState<NodeJS.Timeout | null>(null);
   const [isFormalExam, setIsFormalExam] = useState(false);
+  const [showReminder, setShowReminder] = useState(true);
+  const [reminderFadeOut, setReminderFadeOut] = useState(false);
 
   // Apply theme based on user role
   useEffect(() => {
     applyRoleTheme();
   }, [applyRoleTheme]);
+
+  // 考试提醒：2.5秒后开始淡出，3秒后完全消失
+  useEffect(() => {
+    const fadeOutTimer = setTimeout(() => {
+      setReminderFadeOut(true);
+    }, 2500);
+
+    const hideTimer = setTimeout(() => {
+      setShowReminder(false);
+    }, 3000);
+
+    return () => {
+      clearTimeout(fadeOutTimer);
+      clearTimeout(hideTimer);
+    };
+  }, []);
 
   // 初始化题目数据
   useEffect(() => {
@@ -779,106 +797,101 @@ const FormalExam = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      <div className="p-6">
-        <div className="max-w-[1400px] mx-auto">
-          {/* 半透明白色容器 */}
-          <div className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl">
-            
-            {/* 头部信息 */}
-            <div className="flex items-center justify-between mb-8">
-              <Button
-                variant="outline"
-                onClick={() => navigate(isFormalExam ? '/exam' : '/training')}
-                className="border-border text-foreground hover:bg-muted/50"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                {isFormalExam ? '返回考试中心' : '返回训练中心'}
-              </Button>
-              
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-foreground">AI训练师AI证照职考试</h1>
-                {!examResult && (
-                  <p className="text-muted-foreground">卷第 {currentQuestion + 1}/{totalQuestions} 题</p>
-                )}
-              </div>
-              
-              {!examResult && (
-                <div className="flex items-center gap-2 text-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span className="font-mono text-lg">{formatTime(timeLeft)}</span>
+    <div className="min-h-screen bg-gradient-hero px-[5%] py-[3%]">
+      {/* 头部信息 */}
+      <div className="flex items-center justify-between mb-8">
+        <Button
+          variant="outline"
+          onClick={() => navigate(isFormalExam ? '/exam' : '/training')}
+          className="border-border text-foreground hover:bg-muted/50"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {isFormalExam ? '返回考试中心' : '返回训练中心'}
+        </Button>
+        
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground">AI训练师AI证照职考试</h1>
+          {!examResult && (
+            <p className="text-muted-foreground">卷第 {currentQuestion + 1}/{totalQuestions} 题</p>
+          )}
+        </div>
+        
+        {!examResult && (
+          <div className="flex items-center gap-2 text-foreground">
+            <Clock className="h-4 w-4" />
+            <span className="font-mono text-lg">{formatTime(timeLeft)}</span>
+          </div>
+        )}
+      </div>
+
+      {/* 如果已提交，显示结果 */}
+      {examResult ? (
+        <div className="space-y-6">
+          {/* 成绩总览 */}
+          <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-center text-2xl text-foreground">答题结果</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-4 gap-4 text-center">
+                <div className="p-4 bg-white/5 rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-2">总题数</p>
+                  <p className="text-2xl font-bold text-foreground">{examResult.totalQuestions}</p>
                 </div>
-              )}
+                <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
+                  <p className="text-sm text-green-600 mb-2">答对</p>
+                  <p className="text-2xl font-bold text-green-600">{examResult.correctCount}</p>
+                </div>
+                <div className="p-4 bg-red-500/10 rounded-lg border border-red-500/20">
+                  <p className="text-sm text-red-600 mb-2">答错</p>
+                  <p className="text-2xl font-bold text-red-600">{examResult.wrongCount}</p>
+                </div>
+                <div className={`p-4 rounded-lg border ${examResult.passed ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                  <p className="text-sm mb-2">{examResult.passed ? '及格' : '未及格'}</p>
+                  <p className={`text-2xl font-bold ${examResult.passed ? 'text-green-600' : 'text-red-600'}`}>
+                    {examResult.score.toFixed(1)}分
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 答题卡形式的结果展示 */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* 左侧答题卡 */}
+            <div className="lg:col-span-1">
+              <Card className="bg-white/10 border-white/20 backdrop-blur-sm sticky top-24 h-[calc(100vh-200px)] flex flex-col">
+                <CardHeader className="flex-shrink-0">
+                  <CardTitle className="text-sm">答题卡</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 overflow-hidden">
+                  <div className="grid grid-cols-5 gap-2 h-full overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-white/10">
+                    {getAllQuestionsInOrder().map(
+                      (question: any, index: number) => (
+                        <button
+                          key={question.questionId}
+                          onClick={() => setResultCurrentQuestion(index)}
+                          className={`w-full aspect-square rounded-lg font-semibold text-sm transition-all ${
+                            resultCurrentQuestion === index
+                              ? question.isCorrect
+                                ? 'bg-green-600 text-white border-2 border-green-400'
+                                : 'bg-red-600 text-white border-2 border-red-400'
+                              : question.isCorrect
+                              ? 'bg-green-500/20 text-green-600 border border-green-500/30 hover:bg-green-500/30'
+                              : 'bg-red-500/20 text-red-600 border border-red-500/30 hover:bg-red-500/30'
+                          }`}
+                        >
+                          {index + 1}
+                        </button>
+                      )
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* 如果已提交，显示结果 */}
-            {examResult ? (
-              <div className="space-y-6">
-                {/* 成绩总览 */}
-                <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="text-center text-2xl text-foreground">答题结果</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-4 gap-4 text-center">
-                      <div className="p-4 bg-white/5 rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-2">总题数</p>
-                        <p className="text-2xl font-bold text-foreground">{examResult.totalQuestions}</p>
-                      </div>
-                      <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
-                        <p className="text-sm text-green-600 mb-2">答对</p>
-                        <p className="text-2xl font-bold text-green-600">{examResult.correctCount}</p>
-                      </div>
-                      <div className="p-4 bg-red-500/10 rounded-lg border border-red-500/20">
-                        <p className="text-sm text-red-600 mb-2">答错</p>
-                        <p className="text-2xl font-bold text-red-600">{examResult.wrongCount}</p>
-                      </div>
-                      <div className={`p-4 rounded-lg border ${examResult.passed ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
-                        <p className="text-sm mb-2">{examResult.passed ? '及格' : '未及格'}</p>
-                        <p className={`text-2xl font-bold ${examResult.passed ? 'text-green-600' : 'text-red-600'}`}>
-                          {examResult.score.toFixed(1)}分
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* 答题卡形式的结果展示 */}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                  {/* 左侧答题卡 */}
-                  <div className="lg:col-span-1">
-                    <Card className="bg-white/10 border-white/20 backdrop-blur-sm sticky top-24">
-                      <CardHeader>
-                        <CardTitle className="text-sm">答题卡</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-5 gap-2">
-                          {getAllQuestionsInOrder().map(
-                            (question: any, index: number) => (
-                              <button
-                                key={question.questionId}
-                                onClick={() => setResultCurrentQuestion(index)}
-                                className={`w-full aspect-square rounded-lg font-semibold text-sm transition-all ${
-                                  resultCurrentQuestion === index
-                                    ? question.isCorrect
-                                      ? 'bg-green-600 text-white border-2 border-green-400'
-                                      : 'bg-red-600 text-white border-2 border-red-400'
-                                    : question.isCorrect
-                                    ? 'bg-green-500/20 text-green-600 border border-green-500/30 hover:bg-green-500/30'
-                                    : 'bg-red-500/20 text-red-600 border border-red-500/30 hover:bg-red-500/30'
-                                }`}
-                              >
-                                {index + 1}
-                              </button>
-                            )
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* 右侧题目详情 */}
-                  <div className="lg:col-span-3">
+            {/* 右侧题目详情 */}
+            <div className="lg:col-span-3">
                     {(() => {
                       const allQuestions = getAllQuestionsInOrder();
                       const currentQuestion = allQuestions[resultCurrentQuestion];
@@ -1025,57 +1038,57 @@ const FormalExam = () => {
                         </Card>
                       );
                     })()}
+            </div>
+          </div>
+
+          {/* 返回按钮 */}
+          <div className="flex justify-center gap-4">
+            <Button
+              onClick={() => navigate(isFormalExam ? '/exam' : '/training')}
+              className="bg-primary hover:bg-primary-dark text-white"
+            >
+              {isFormalExam ? '返回考试中心' : '返回训练中心'}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* 主体内容区 - 左右分栏 */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+            {/* 左侧答题卡 */}
+            <div className="lg:col-span-1">
+              <Card className="bg-white/10 border-white/20 backdrop-blur-sm sticky top-24 h-[calc(100vh-200px)] flex flex-col">
+                <CardHeader className="flex-shrink-0">
+                  <CardTitle className="text-foreground text-center">答题卡</CardTitle>
+                  <p className="text-sm text-muted-foreground text-center">已答题 {Object.keys(selectedAnswers).length}/{totalQuestions}</p>
+                </CardHeader>
+                <CardContent className="flex-1 overflow-hidden">
+                  <div className="grid grid-cols-5 gap-2 h-full overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-white/10">
+                    {Array.from({ length: totalQuestions }, (_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleQuestionClick(i)}
+                        className={`
+                          h-10 rounded-lg font-medium text-sm transition-all duration-200
+                          ${currentQuestion === i
+                            ? 'bg-primary text-white ring-2 ring-primary ring-offset-2 ring-offset-white/10'
+                            : selectedAnswers[i] !== undefined && selectedAnswers[i].length > 0
+                            ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                            : 'bg-white/10 text-foreground hover:bg-white/20'
+                          }
+                        `}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                {/* 返回按钮 */}
-                <div className="flex justify-center gap-4">
-                  <Button
-                    onClick={() => navigate(isFormalExam ? '/exam' : '/training')}
-                    className="bg-primary hover:bg-primary-dark text-white"
-                  >
-                    {isFormalExam ? '返回考试中心' : '返回训练中心'}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* 主体内容区 - 左右分栏 */}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              
-              {/* 左侧答题卡 */}
-              <div className="lg:col-span-1">
-                <Card className="bg-white/10 border-white/20 backdrop-blur-sm sticky top-24">
-                  <CardHeader>
-                    <CardTitle className="text-foreground text-center">答题卡</CardTitle>
-                    <p className="text-sm text-muted-foreground text-center">已答题 {Object.keys(selectedAnswers).length}/{totalQuestions}</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-5 gap-2 max-h-[500px] overflow-y-auto">
-                      {Array.from({ length: totalQuestions }, (_, i) => (
-                        <button
-                          key={i}
-                          onClick={() => handleQuestionClick(i)}
-                          className={`
-                            h-10 rounded-lg font-medium text-sm transition-all duration-200
-                            ${currentQuestion === i
-                              ? 'bg-primary text-white ring-2 ring-primary ring-offset-2 ring-offset-white/10'
-                              : selectedAnswers[i] !== undefined && selectedAnswers[i].length > 0
-                              ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                              : 'bg-white/10 text-foreground hover:bg-white/20'
-                            }
-                          `}
-                        >
-                          {i + 1}
-                        </button>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* 右侧题目区 */}
-              <div className="lg:col-span-3">
+            {/* 右侧题目区 */}
+            <div className="lg:col-span-3">
                 {isLoading ? (
                   <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
                     <CardContent className="p-8 text-center">
@@ -1240,21 +1253,20 @@ const FormalExam = () => {
                     下一题
                   </Button>
                 </div>
-              </div>
             </div>
-              </>
-            )}
           </div>
+            </>
+          )}
 
-          {/* 考试提醒 */}
-          <div className="fixed bottom-8 right-8 bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 shadow-lg max-w-xs">
-            <h4 className="font-semibold text-yellow-800 mb-2">考试提醒</h4>
-            <p className="text-sm text-yellow-700">
-              记住考试题目！请仔细阅读每道题目。
-            </p>
-          </div>
+      {/* 考试提醒 - 3秒后自动消失 */}
+      {showReminder && (
+        <div className={`fixed bottom-8 right-8 bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 shadow-lg max-w-xs animate-fade-in-up transition-opacity duration-500 ${reminderFadeOut ? 'opacity-0' : 'opacity-100'}`}>
+          <h4 className="font-semibold text-yellow-800 mb-2">考试提醒</h4>
+          <p className="text-sm text-yellow-700">
+            记住考试题目！请仔细阅读每道题目。
+          </p>
         </div>
-      </div>
+      )}
     </div>
   );
 };

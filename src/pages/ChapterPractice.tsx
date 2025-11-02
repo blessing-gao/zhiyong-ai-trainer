@@ -216,13 +216,13 @@ const ChapterPractice = () => {
               
               {/* 左侧答题卡 */}
               <div className="lg:col-span-1">
-                <Card className="bg-white/10 border-white/20 backdrop-blur-sm sticky top-24">
-                  <CardHeader>
+                <Card className="bg-white/10 border-white/20 backdrop-blur-sm sticky top-24 h-[calc(100vh-200px)] flex flex-col">
+                  <CardHeader className="flex-shrink-0">
                     <CardTitle className="text-foreground text-center">答题卡</CardTitle>
                     <p className="text-sm text-muted-foreground text-center">已答题 {Object.keys(answers).length}/{totalQuestions}</p>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-5 gap-2 max-h-[500px] overflow-y-auto">
+                  <CardContent className="flex-1 overflow-hidden">
+                    <div className="grid grid-cols-5 gap-2 h-full overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-white/10">
                       {Array.from({ length: totalQuestions }, (_, i) => (
                         <button
                           key={i}

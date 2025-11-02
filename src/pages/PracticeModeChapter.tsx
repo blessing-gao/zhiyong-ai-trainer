@@ -233,246 +233,240 @@ const PracticeModeChapter = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Header />
-      <div className="p-6">
-        <div className="max-w-[1400px] mx-auto">
-          {/* 半透明白色容器 */}
-          <div className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl">
-            
-            {/* 头部信息 */}
-            <div className="flex items-center justify-between mb-8">
-              <Button
-                variant="outline"
-                onClick={() => navigate('/training/knowledge-explore')}
-                className="border-border text-foreground hover:bg-muted/50"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                返回
-              </Button>
-              
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-foreground">刷题模式</h1>
-                <p className="text-muted-foreground">第 {currentQuestion + 1}/{totalQuestions} 题</p>
-              </div>
-              
-              <div className="text-sm text-muted-foreground">
-                已完成: {Object.keys(questionResults).length}/{totalQuestions}
-              </div>
-            </div>
+      <div className="px-[5%] py-[3%] pt-24">
+        {/* 头部信息 */}
+        <div className="flex items-center justify-between mb-8">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/training/knowledge-explore')}
+            className="border-border text-foreground hover:bg-muted/50"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            返回
+          </Button>
+          
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-foreground">刷题模式</h1>
+            <p className="text-muted-foreground">第 {currentQuestion + 1}/{totalQuestions} 题</p>
+          </div>
+          
+          <div className="text-sm text-muted-foreground">
+            已完成: {Object.keys(questionResults).length}/{totalQuestions}
+          </div>
+        </div>
 
-            {/* 主体内容区 - 左右分栏 */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              
-              {/* 左侧题目导航 */}
-              <div className="lg:col-span-1">
-                <Card className="bg-white/10 border-white/20 backdrop-blur-sm sticky top-24">
-                  <CardHeader>
-                    <CardTitle className="text-foreground text-center">题目导航</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-5 gap-2 max-h-[500px] overflow-y-auto">
-                      {Array.from({ length: totalQuestions }, (_, i) => {
-                        const result = questionResults[i];
-                        return (
-                          <button
-                            key={i}
-                            onClick={() => handleQuestionClick(i)}
-                            className={`
-                              h-10 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center
-                              ${currentQuestion === i 
-                                ? 'bg-primary text-white ring-2 ring-primary ring-offset-2 ring-offset-white/10' 
-                                : result
-                                ? result.isCorrect
-                                  ? 'bg-green-500/30 text-green-300 hover:bg-green-500/40'
-                                  : 'bg-red-500/30 text-red-300 hover:bg-red-500/40'
-                                : 'bg-white/5 text-foreground hover:bg-white/10'
-                              }
-                            `}
-                          >
-                            {result ? (
-                              result.isCorrect ? (
-                                <CheckCircle className="h-4 w-4" />
-                              ) : (
-                                <XCircle className="h-4 w-4" />
-                              )
-                            ) : (
-                              i + 1
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* 右侧题目区 */}
-              <div className="lg:col-span-3">
-                <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-primary w-12 h-12 rounded-full flex items-center justify-center">
-                          <Target className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-foreground text-xl">题目 {currentQuestion + 1}</CardTitle>
-                          <p className="text-sm text-muted-foreground">
-                            {currentQuestionData.type === 'judge' ? '判断题' : currentQuestionData.type === 'single' ? '单选题' : '多选题'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Badge variant="outline" className="text-foreground">
-                          难度: {currentQuestionData.difficulty}
-                        </Badge>
-                        <Badge variant="outline" className="text-foreground">
-                          {currentQuestionData.level}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      {/* 题目 */}
-                      <div className="text-lg text-foreground leading-relaxed font-medium p-4 bg-white/5 rounded-lg">
-                        {currentQuestionData.stem}
-                      </div>
-
-                      {/* 选项 */}
-                      <div className="space-y-3">
-                        {parseOptions(currentQuestionData).map((option, index) => {
-                          const answerLetter = String.fromCharCode(65 + index);
-                          const currentAnswers = selectedAnswers[currentQuestion] || '';
-                          const isSelected = currentAnswers.includes(answerLetter);
-
-                          // 检查每个选项是否在正确答案中
-                          let isCorrectAnswer = false;
-                          if (currentResult?.correctAnswer) {
-                            isCorrectAnswer = currentResult.correctAnswer.includes(answerLetter);
+        {/* 主体内容区 - 左右分栏 */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          
+          {/* 左侧题目导航 */}
+          <div className="lg:col-span-1">
+            <Card className="bg-white/10 border-white/20 backdrop-blur-sm sticky top-24 h-[calc(100vh-200px)] flex flex-col">
+              <CardHeader className="flex-shrink-0">
+                <CardTitle className="text-foreground text-center">题目导航</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-hidden">
+                <div className="grid grid-cols-5 gap-2 h-full overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-white/10">
+                  {Array.from({ length: totalQuestions }, (_, i) => {
+                    const result = questionResults[i];
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => handleQuestionClick(i)}
+                        className={`
+                          h-10 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center
+                          ${currentQuestion === i 
+                            ? 'bg-primary text-white ring-2 ring-primary ring-offset-2 ring-offset-white/10' 
+                            : result
+                            ? result.isCorrect
+                              ? 'bg-green-500/30 text-green-300 hover:bg-green-500/40'
+                              : 'bg-red-500/30 text-red-300 hover:bg-red-500/40'
+                            : 'bg-white/5 text-foreground hover:bg-white/10'
                           }
+                        `}
+                      >
+                        {result ? (
+                          result.isCorrect ? (
+                            <CheckCircle className="h-4 w-4" />
+                          ) : (
+                            <XCircle className="h-4 w-4" />
+                          )
+                        ) : (
+                          i + 1
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-                          // 判断选项的状态
-                          // 1. 未判题时选中的选项 - 蓝色
-                          const isSelectedBeforeCheck = isSelected && !currentResult;
+          {/* 右侧题目区 */}
+          <div className="lg:col-span-3">
+            <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-primary w-12 h-12 rounded-full flex items-center justify-center">
+                      <Target className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-foreground text-xl">题目 {currentQuestion + 1}</CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        {currentQuestionData.type === 'judge' ? '判断题' : currentQuestionData.type === 'single' ? '单选题' : '多选题'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge variant="outline" className="text-foreground">
+                      难度: {currentQuestionData.difficulty}
+                    </Badge>
+                    <Badge variant="outline" className="text-foreground">
+                      {currentQuestionData.level}
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* 题目 */}
+                  <div className="text-lg text-foreground leading-relaxed font-medium p-4 bg-white/5 rounded-lg">
+                    {currentQuestionData.stem}
+                  </div>
 
-                          // 2. 判题后答对的选项 - 绿色（用户选了且答对，或者是正确答案）
-                          const isCorrectAfterCheck = currentResult && isCorrectAnswer;
+                  {/* 选项 */}
+                  <div className="space-y-3">
+                    {parseOptions(currentQuestionData).map((option, index) => {
+                      const answerLetter = String.fromCharCode(65 + index);
+                      const currentAnswers = selectedAnswers[currentQuestion] || '';
+                      const isSelected = currentAnswers.includes(answerLetter);
 
-                          // 3. 判题后答错的选项 - 红色（用户选了但不是正确答案）
-                          const isWrongAfterCheck = currentResult && isSelected && !isCorrectAnswer;
+                      // 检查每个选项是否在正确答案中
+                      let isCorrectAnswer = false;
+                      if (currentResult?.correctAnswer) {
+                        isCorrectAnswer = currentResult.correctAnswer.includes(answerLetter);
+                      }
 
-                          return (
-                            <div
-                              key={index}
-                              className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                                isSelectedBeforeCheck
-                                  ? 'bg-blue-500/20 border-blue-500 shadow-md'
-                                  : isCorrectAfterCheck
-                                  ? 'bg-green-500/20 border-green-500 shadow-md'
-                                  : isWrongAfterCheck
-                                  ? 'bg-red-500/20 border-red-500 shadow-md'
-                                  : 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/30'
-                              } ${currentResult ? 'cursor-not-allowed' : ''}`}
-                              onClick={() => !currentResult && handleAnswerSelect(index)}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className={`w-6 h-6 rounded-${currentQuestionData.type === 'multiple' ? 'md' : 'full'} border-2 flex items-center justify-center transition-all ${
-                                  isSelectedBeforeCheck
-                                    ? 'border-blue-500 bg-blue-500'
-                                    : isCorrectAfterCheck
-                                    ? 'border-green-500 bg-green-500'
-                                    : isWrongAfterCheck
-                                    ? 'border-red-500 bg-red-500'
-                                    : 'border-white/30'
-                                }`}>
-                                  {(isSelectedBeforeCheck || isCorrectAfterCheck || isWrongAfterCheck) && (
-                                    <div className={`${currentQuestionData.type === 'multiple' ? 'w-2 h-2' : 'w-3 h-3'} bg-white ${currentQuestionData.type === 'multiple' ? 'rounded' : 'rounded-full'}`}></div>
-                                  )}
-                                </div>
-                                <span className="text-foreground">
-                                  <span className="font-semibold">{answerLetter}.</span> {option}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                      // 判断选项的状态
+                      // 1. 未判题时选中的选项 - 蓝色
+                      const isSelectedBeforeCheck = isSelected && !currentResult;
 
-                      {/* 判题结果 */}
-                      {currentResult && (
-                        <div className={`p-4 rounded-lg ${
-                          currentResult.isCorrect
-                            ? 'bg-green-500/20 border border-green-500'
-                            : 'bg-red-500/20 border border-red-500'
-                        }`}>
-                          <div className="flex items-center gap-2 mb-2">
-                            {currentResult.isCorrect ? (
-                              <>
-                                <CheckCircle className="h-5 w-5 text-green-400" />
-                                <span className="font-semibold text-green-300">答对了！</span>
-                              </>
-                            ) : (
-                              <>
-                                <XCircle className="h-5 w-5 text-red-400" />
-                                <span className="font-semibold text-red-300">答错了</span>
-                              </>
-                            )}
-                          </div>
-                          {!currentResult.isCorrect && (
-                            <>
-                              <p className="text-sm text-foreground/80 mb-2">
-                                <span className="font-semibold">正确答案：</span> {currentResult.correctAnswer}
-                              </p>
-                              {currentResult.analysis && (
-                                <p className="text-sm text-foreground/80">
-                                  <span className="font-semibold">解析：</span> {currentResult.analysis}
-                                </p>
+                      // 2. 判题后答对的选项 - 绿色（用户选了且答对，或者是正确答案）
+                      const isCorrectAfterCheck = currentResult && isCorrectAnswer;
+
+                      // 3. 判题后答错的选项 - 红色（用户选了但不是正确答案）
+                      const isWrongAfterCheck = currentResult && isSelected && !isCorrectAnswer;
+
+                      return (
+                        <div
+                          key={index}
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                            isSelectedBeforeCheck
+                              ? 'bg-blue-500/20 border-blue-500 shadow-md'
+                              : isCorrectAfterCheck
+                              ? 'bg-green-500/20 border-green-500 shadow-md'
+                              : isWrongAfterCheck
+                              ? 'bg-red-500/20 border-red-500 shadow-md'
+                              : 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/30'
+                          } ${currentResult ? 'cursor-not-allowed' : ''}`}
+                          onClick={() => !currentResult && handleAnswerSelect(index)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-6 h-6 rounded-${currentQuestionData.type === 'multiple' ? 'md' : 'full'} border-2 flex items-center justify-center transition-all ${
+                              isSelectedBeforeCheck
+                                ? 'border-blue-500 bg-blue-500'
+                                : isCorrectAfterCheck
+                                ? 'border-green-500 bg-green-500'
+                                : isWrongAfterCheck
+                                ? 'border-red-500 bg-red-500'
+                                : 'border-white/30'
+                            }`}>
+                              {(isSelectedBeforeCheck || isCorrectAfterCheck || isWrongAfterCheck) && (
+                                <div className={`${currentQuestionData.type === 'multiple' ? 'w-2 h-2' : 'w-3 h-3'} bg-white ${currentQuestionData.type === 'multiple' ? 'rounded' : 'rounded-full'}`}></div>
                               )}
-                            </>
-                          )}
+                            </div>
+                            <span className="text-foreground">
+                              <span className="font-semibold">{answerLetter}.</span> {option}
+                            </span>
+                          </div>
                         </div>
-                      )}
+                      );
+                    })}
+                  </div>
 
-                      {checkingAnswer && (
-                        <div className="flex items-center justify-center gap-2 text-foreground">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>判题中...</span>
-                        </div>
+                  {/* 判题结果 */}
+                  {currentResult && (
+                    <div className={`p-4 rounded-lg ${
+                      currentResult.isCorrect
+                        ? 'bg-green-500/20 border border-green-500'
+                        : 'bg-red-500/20 border border-red-500'
+                    }`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        {currentResult.isCorrect ? (
+                          <>
+                            <CheckCircle className="h-5 w-5 text-green-400" />
+                            <span className="font-semibold text-green-300">答对了！</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="h-5 w-5 text-red-400" />
+                            <span className="font-semibold text-red-300">答错了</span>
+                          </>
+                        )}
+                      </div>
+                      {!currentResult.isCorrect && (
+                        <>
+                          <p className="text-sm text-foreground/80 mb-2">
+                            <span className="font-semibold">正确答案：</span> {currentResult.correctAnswer}
+                          </p>
+                          {currentResult.analysis && (
+                            <p className="text-sm text-foreground/80">
+                              <span className="font-semibold">解析：</span> {currentResult.analysis}
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
-
-                {/* 导航按钮 */}
-                <div className="flex justify-between items-center mt-6">
-                  <Button
-                    variant="outline"
-                    onClick={handlePrevious}
-                    disabled={currentQuestion === 0}
-                    className="border-border text-foreground hover:bg-muted/50 disabled:opacity-50"
-                  >
-                    上一题
-                  </Button>
-
-                  {currentQuestionData.type === 'multiple' && !currentResult && selectedAnswers[currentQuestion] && (
-                    <Button
-                      onClick={handleSubmitMultipleChoice}
-                      disabled={checkingAnswer}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      {checkingAnswer ? '判题中...' : '提交答案'}
-                    </Button>
                   )}
 
-                  <Button
-                    onClick={handleNext}
-                    disabled={currentQuestion === totalQuestions - 1 || (currentQuestionData.type === 'multiple' && !currentResult)}
-                    className="bg-primary hover:bg-primary-dark text-white disabled:opacity-50"
-                  >
-                    下一题
-                  </Button>
+                  {checkingAnswer && (
+                    <div className="flex items-center justify-center gap-2 text-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>判题中...</span>
+                    </div>
+                  )}
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+
+            {/* 导航按钮 */}
+            <div className="flex justify-between items-center mt-6">
+              <Button
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={currentQuestion === 0}
+                className="border-border text-foreground hover:bg-muted/50 disabled:opacity-50"
+              >
+                上一题
+              </Button>
+
+              {currentQuestionData.type === 'multiple' && !currentResult && selectedAnswers[currentQuestion] && (
+                <Button
+                  onClick={handleSubmitMultipleChoice}
+                  disabled={checkingAnswer}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {checkingAnswer ? '判题中...' : '提交答案'}
+                </Button>
+              )}
+
+              <Button
+                onClick={handleNext}
+                disabled={currentQuestion === totalQuestions - 1 || (currentQuestionData.type === 'multiple' && !currentResult)}
+                className="bg-primary hover:bg-primary-dark text-white disabled:opacity-50"
+              >
+                下一题
+              </Button>
             </div>
           </div>
         </div>
